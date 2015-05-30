@@ -20,13 +20,8 @@ def read_yaml(path):
 
 def readbin(path):
     """ Read the specified file into a byte array (integers). """
-    bytes = []
-    with open(path, 'rb') as f:
-        bytestring = f.read(1)
-        while bytestring != b"":
-            byte = bytestring[0]
-            bytes.append(byte)
-            bytestring = f.read(1)
+    f = open(path, 'rb')
+    bytes = list(f.read())
     return bytes
 
 def tabulate(stream, cols):

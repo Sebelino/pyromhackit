@@ -3,7 +3,7 @@
 import argparse
 import yaml
 import sys
-from prettytable import PrettyTable, NONE
+from prettytable import PrettyTable
 from pdb import set_trace
 
 def filecontents(path):
@@ -23,7 +23,6 @@ def pretty_table(matrix, encoder=dict()):
     """ Readable representation of a list of lists, translating entries according to encoder. """
     if len(matrix) == 0:
         return u""
-    header = [str(i+1) for i in range(len(matrix[0]))]
     table = PrettyTable(header=False, border=True, padding_width=0)
     for row in matrix:
         filteredrow = row[::2]

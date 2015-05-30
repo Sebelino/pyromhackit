@@ -34,5 +34,5 @@ BF 01 0B 01 BF 01 0C 01 BF 01 0D 01 BF 01 0E 01
 
 $00/B800-B81F: Big letters at menu screen.
 
-
+Diacritics: Dakuten and handakuten diacritics are added to letters by placing them on the tile above the letter.
 

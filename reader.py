@@ -38,9 +38,9 @@ def compact(stream, cols):
         If cols = 0, output everything on one line. """
     output = []
     for i in range(len(stream)):
-        output.append(stream[i])
         if cols > 0 and i % cols == 0:
             output.append('\n')
+        output.append(stream[i])
     return "".join(output).strip()
     
 def minimal(stream, cols):

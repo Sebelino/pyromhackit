@@ -1,0 +1,56 @@
+﻿ROM:
+
+$00/0040: MAJINTENSEI2
+
+$00/0200: At the Atlus startup screen, the animation will pause for this many time units. The first word is the number of "seconds"; the second number is the number of "minutes".
+
+RAM:
+$7E/00F0: MAJINTENSEI2
+
+VRAM:
+$00/7000-8000: BG#4. Japanese & English characters at the naming screen.
+$00/7940-794F: Letters A B C D.
+
+BF 01 0B 01 BF 01 0C 01 BF 01 0D 01 BF 01 0E 01
+
+^  ^  ^  ^  ^  ^  ^  ^  ^  ^  ^  ^  ^  ^  ^  ^
+|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  +-- Style of 'D'
+|  |  |  |  |  |  |  |  |  |  |  |  |  |  +----- 'D'
+|  |  |  |  |  |  |  |  |  |  |  |  |  +-------- Style of whitespace
+|  |  |  |  |  |  |  |  |  |  |  |  +----------- Whitespace
+|  |  |  |  |  |  |  |  |  |  |  +-------------- Style of 'C'
+|  |  |  |  |  |  |  |  |  |  +----------------- 'C'
+|  |  |  |  |  |  |  |  |  +-------------------- Style of whitespace
+|  |  |  |  |  |  |  |  +----------------------- Whitespace
+|  |  |  |  |  |  |  +-------------------------- Style of 'B'
+|  |  |  |  |  |  +----------------------------- 'B'
+|  |  |  |  |  +-------------------------------- Style of whitespace
+|  |  |  |  +----------------------------------- Whitespace
+|  |  |  +-------------------------------------- Style of 'A'
+|  |  +----------------------------------------- 'A'
+|  +-------------------------------------------- Style of whitespace (not loaded)
++----------------------------------------------- Whitespace (not loaded)
+
+$00/B800-B81F: Big letters at menu screen.
+
+Character dictionary for character style 01:
+00 : (Whitespace)
+01 : 0
+02 : 1
+03 : 2
+04 : 3
+05 : 4
+06 : 5
+07 : 6
+08 : 7
+09 : 8
+0A : 9
+0B : A
+0C : B
+...
+24 : Z
+25 : あ
+26 : い
+
+

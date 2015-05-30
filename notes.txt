@@ -6,6 +6,15 @@ $00/0200: At the Atlus startup screen, the animation will pause for this many ti
 
 RAM:
 $7E/00F0: MAJINTENSEI2
+$7E/0A30: First hex: "Scene" number? During the intro, it incremented 00 -> 01 -> 02 -> ...
+$7E/0A40: During the naming screen, this holds the name, e.g. "FFFFHHHH":
+11 00 11 00 11 00 11 00 12 00 12 00 12 00 12 00
+
+$7E/0A50: First hex is a "script counter" that changes every time a new message is displayed.
+$7E/1A90: Color palette
+
+$7E/2010: Second occurrence of "FFFFHHHH".
+$7E/2030[12]: If < 26, Karen will call you ナオキ ("Naoki"), otherwise she will call you by your chosen name.
 
 VRAM:
 $00/7000-8000: BG#4. Japanese & English characters at the naming screen.
@@ -35,4 +44,9 @@ BF 01 0B 01 BF 01 0C 01 BF 01 0D 01 BF 01 0E 01
 $00/B800-B81F: Big letters at menu screen.
 
 Diacritics: Dakuten and handakuten diacritics are added to letters by placing them on the tile above the letter.
+
+Output "G":
+$C0/7BC0 22 73 13 C0 JSL $C01373[$C0:1373]   A:0001 X:6000 Y:8008 P:envmxdIzc
+$C0/7BC0 22 73 13 C0 JSL $C01373[$C0:1373]   A:0001 X:6000 Y:800A P:envmxdIzc
+$C0/7BC0 22 73 13 C0 JSL $C01373[$C0:1373]   A:0001 X:6000 Y:800C P:envmxdIzc
 

@@ -19,6 +19,7 @@ def read_yaml(path):
     return dct
 
 def readbin(path):
+    """ Read the specified file into a byte array (integers). """
     bytes = []
     with open(path, 'rb') as f:
         bytestring = f.read(1)
@@ -29,6 +30,7 @@ def readbin(path):
     return bytes
 
 def tabulate(stream, cols):
+    """ Display the stream of characters in a table. """
     table = PrettyTable(header=False, border=True, padding=0)
     for i in range(0, len(stream), cols):
         row = stream[i:i+cols]
@@ -36,6 +38,7 @@ def tabulate(stream, cols):
     return table
 
 def convert(infile, informat, outformat, transliterationfile):
+    """ Uses the informat to read the infile, does some transliteration and outputs it in outformat. """
     contents = readbin(infile)
     charmap = read_yaml(transliterationfile) if transliterationfile else dict()
     contents = [ord(charmap[b]) if b in charmap else b for b in contents]

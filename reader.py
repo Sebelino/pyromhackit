@@ -50,24 +50,32 @@ def pack(stream):
     output = [e for e in stream if e not in whitespace]
     return output
 
-def convert(infile, inencoding, pipeline, width, transliterationfile):
+def convert(infile, inencoding, pipeline, width, transliterationfiles):
     """ Uses the inencoding to read the infile, does some transliteration and applies a sequence of additional processing filters. """
     contents = readbin(infile)
-    charmap = read_yaml(transliterationfile) if transliterationfile else dict()
-    contents = [ord(charmap[b]) if b in charmap else b for b in contents]
     contenttype = [int]
+    mapfiles = iter(transliterationfiles) if transliterationfiles else iter([])
+    def transliterate(stream):
+        try:
+            mapfile = next(mapfiles)
+        except StopIteration:
+            (a, b) = (len([p for p in pipeline if p == "map"]), len(transliterationfiles))
+            raise Exception("Supplied %s MAPs but only %s file." % (a, b))
+        map = read_yaml(mapfile)
+        return [ord(map[b]) if b in map else b for b in stream]
     pipe = {
         "hex": ([int], [str], lambda lst: [("0"+hex(n)[2:])[-2:].upper() for n in lst]),
         "text": ([int], [str], lambda lst: [chr(n) for n in lst]),
         "odd": (None, None, lambda lst: lst[::2]),
-        "table": (None, str, lambda lst: tabulate(lst, width)),
         "pack": ([str], str, pack),
+        "map": (None, None, lambda lst: transliterate(lst)),
+        "table": (None, str, lambda lst: tabulate(lst, width)),
     }
     for filter in pipeline:
-        (inputtype, outputtype, f) = pipe[filter]
-        if inputtype not in [None,contenttype]:
+        (inputtype, outputtype, operation) = pipe[filter]
+        if inputtype not in [None, contenttype]:
             raise Exception("Filter %s expected type %s, got %s" % (filter, inputtype, contenttype))
-        contents = f(contents)
+        contents = operation(contents)
         if outputtype is not None: contenttype = outputtype
     if isinstance(contents, list):  # If still a list, make it into a string
         contents = compact(contents, width)
@@ -78,13 +86,14 @@ if __name__ == '__main__':
     parser.add_argument('infile', help="Path to the file containing the hex.")
     """ Encoding: The appearance of the characters themselves (hexadecimal, ASCII, etc.) """
     parser.add_argument('inencoding', choices=["bin", "hex"], help="Encoding of the read file.")
-    parser.add_argument('--transliteration', '-t', help="YAML file mapping the read bytes into characters.")
+    parser.add_argument('--transliteration', '-t', nargs='+', help="YAML file mapping a set of symbols to another set of symbols.")
     parser.add_argument('process', nargs='*',
-                        choices=["odd",  # [X] -> [X] : Strip away the 2nd, 4th, 6th... character
-                                 "hex",  # [Int] -> [String] : Show the values in hexadecimal
-                                 "text",  # [Int] -> [String] : Convert the values to UTF-8 characters
-                                 "pack",  # [String] -> [String] : Strip away whitespace
-                                 "table",  # [String] -> String : Display the results in a table
+                        choices=["odd",  # [X] -> [X] : Strip away the 2nd, 4th, 6th... character.
+                                 "hex",  # [Int] -> [String] : Show the values in hexadecimal.
+                                 "text",  # [Int] -> [String] : Convert the values to UTF-8 characters.
+                                 "map",  # [X] -> [Y] : Transliterate using the supplied file(s). The Nth time this filter is used, the Nth file is used.
+                                 "pack",  # [String] -> [String] : Strip away whitespace.
+                                 "table",  # [String] -> String : Display the results in a table.
                                 ],
                         help="Apply processing rules to the out-encoded stream.")
     parser.add_argument('--width', '-w', type=int, default=0, help="Number of columns in the output.")

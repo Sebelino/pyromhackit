@@ -59,16 +59,29 @@ def convert(infile, inencoding, pipeline, width, transliterationfiles):
         try:
             mapfile = next(mapfiles)
         except StopIteration:
-            (a, b) = (len([p for p in pipeline if p == "map"]), len(transliterationfiles))
-            raise Exception("Supplied %s MAPs but only %s file." % (a, b))
+            n = len([p for p in pipeline if p == "map"])
+            raise Exception("Supplied too few MAPs (%s)." % n)
         map = read_yaml(mapfile)
         return [ord(map[b]) if b in map else b for b in stream]
+    def replace(s):
+        try:
+            mapfile = next(mapfiles)
+        except StopIteration:
+            n = len([p for p in pipeline if p == "replace"])
+            raise Exception("Supplied too few REPLACEs (%s)." % n)
+        map = read_yaml(mapfile)
+        newstr = s
+        for k in map:
+            newstr = newstr.replace(k, map[k])
+        return newstr
     pipe = {
         "hex": ([int], [str], lambda lst: [("0"+hex(n)[2:])[-2:].upper() for n in lst]),
         "text": ([int], [str], lambda lst: [chr(n) for n in lst]),
         "odd": (None, None, lambda lst: lst[::2]),
         "pack": ([str], str, pack),
         "map": (None, None, lambda lst: transliterate(lst)),
+        "replace": (str, str, lambda s: replace(s)),
+        "join": ([str], str, lambda lst: "".join(lst)),
         "table": (None, str, lambda lst: tabulate(lst, width)),
     }
     for filter in pipeline:
@@ -77,8 +90,7 @@ def convert(infile, inencoding, pipeline, width, transliterationfiles):
             raise Exception("Filter %s expected type %s, got %s" % (filter, inputtype, contenttype))
         contents = operation(contents)
         if outputtype is not None: contenttype = outputtype
-    if isinstance(contents, list):  # If still a list, make it into a string
-        contents = compact(contents, width)
+    contents = compact(contents, width)
     return contents
     
 if __name__ == '__main__':
@@ -92,7 +104,9 @@ if __name__ == '__main__':
                                  "hex",  # [Int] -> [String] : Show the values in hexadecimal.
                                  "text",  # [Int] -> [String] : Convert the values to UTF-8 characters.
                                  "map",  # [X] -> [Y] : Transliterate using the supplied file(s). The Nth time this filter is used, the Nth file is used.
+                                 "replace",  # String -> String : Search/replace using the supplied file(s). The Nth time this filter is used, the Nth file is used.
                                  "pack",  # [String] -> [String] : Strip away whitespace.
+                                 "join",  # [String] -> String : Join all the strings into one.
                                  "table",  # [String] -> String : Display the results in a table.
                                 ],
                         help="Apply processing rules to the out-encoded stream.")

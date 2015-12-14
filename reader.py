@@ -49,7 +49,7 @@ def pack(stream):
     whitespace = string.whitespace.replace("\n", "").replace("\r", "")
     output = [e for e in stream if e not in whitespace]
     return output
-
+    
 def convert(infile, inencoding, pipeline, width, transliterationfiles):
     """ Uses the inencoding to read the infile, does some transliteration and applies a sequence of additional processing filters. """
     contents = readbin(infile)
@@ -74,6 +74,8 @@ def convert(infile, inencoding, pipeline, width, transliterationfiles):
         for k in map:
             newstr = newstr.replace(k, map[k])
         return newstr
+    def label(stream):
+        return [("%06x: " % i).upper()+stream[i] if i % width == 0 else stream[i] for i in range(len(stream))]
     pipe = {
         "hex": ([int], [str], lambda lst: [("0"+hex(n)[2:])[-2:].upper() for n in lst]),
         "text": ([int], [str], lambda lst: [chr(n) for n in lst]),
@@ -83,14 +85,18 @@ def convert(infile, inencoding, pipeline, width, transliterationfiles):
         "replace": (str, str, lambda s: replace(s)),
         "join": ([str], str, lambda lst: "".join(lst)),
         "table": (None, str, lambda lst: tabulate(lst, width)),
+        "label": ([str], [str], lambda lst: label(lst)),
     }
+    labelingoffset = 0
     for filter in pipeline:
+        if filter == "label":
+            labelingoffset = 8
         (inputtype, outputtype, operation) = pipe[filter]
         if inputtype not in [None, contenttype]:
             raise Exception("Filter %s expected type %s, got %s" % (filter, inputtype, contenttype))
         contents = operation(contents)
         if outputtype is not None: contenttype = outputtype
-    contents = compact(contents, width)
+    contents = compact(contents, width+labelingoffset)
     return contents
     
 if __name__ == '__main__':
@@ -108,6 +114,7 @@ if __name__ == '__main__':
                                  "pack",  # [String] -> [String] : Strip away whitespace.
                                  "join",  # [String] -> String : Join all the strings into one.
                                  "table",  # [String] -> String : Display the results in a table.
+                                 "label",  # [String] -> [String] : Label each row with the address of its first element.
                                 ],
                         help="Apply processing rules to the out-encoded stream.")
     parser.add_argument('--width', '-w', type=int, default=0, help="Number of columns in the output.")

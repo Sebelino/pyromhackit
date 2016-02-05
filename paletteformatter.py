@@ -20,6 +20,10 @@ def validate(palette, fmt, strictness):
     Validates the palette of the given format with the given level of strictness.
     Raises an exception if it does not meet up to the standards.
     """
+    # Regardless of strictness, the types should be what you'd expect.
+    assert isinstance(palette, bytes), "palette is not a bytestring!"
+    assert isinstance(fmt, str), "fmt is not a string!"
+    assert isinstance(strictness, str), "strictness is not a string!"
     lax = strictness == "lax"
     lenient = strictness == "lenient"
     pragmatic = strictness == "pragmatic"
@@ -70,10 +74,10 @@ def validate(palette, fmt, strictness):
             for h in hexes:
                 assert 0 <= int(h, 16) <= 255
         if nazi:
-            assert 'x' not in palette.lower(), "'0xFF' SHOULD BE 'FF', DUMKOPF!"
+            assert b'x' not in palette.lower(), "'0xFF' SHOULD BE 'FF', DUMKOPF!"
             assert palette == palette.upper(), "MAKE IT '1E'! NOT '1e', DUMKOPF!"
-            for i in range(0, len(palette), 3):
-                assert palette[i+2:i+3] == b" ", "SIE SEPARATOR SHOULD BE A SINGLE REGULAR SPACE! NOZING ELSE, DUMKOPF!"
+            for i in range(2, len(palette), 3):
+                assert palette[i:i+1] == b" ", "SIE SEPARATOR SHOULD BE A SINGLE REGULAR SPACE! NOZING ELSE, DUMKOPF!"
     
 def rgb24bpp2rgb24bpphex(palette):
     """ b'abc' -> b'61 62 63' """

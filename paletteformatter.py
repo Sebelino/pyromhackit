@@ -3,54 +3,15 @@
 import argparse
 import os.path
 
-def threebppresource(resource):
-    """ True if the argument is either a string containing the palette data, or a path to said data. """
-    try:
-        convert(resource)
-        return True
-    except ValueError:
-        return False
-
-def rgb24bpp(palette):
-    """
-    Bytestring containing the palette in the form b"RRGGBBRRGGBB...RRGGBB"
-    where 0 <= x <= 255 for each x in {R, G, B}.
-    """
-    pbytes = [tuple(int(p, 16).to_bytes(1, "big") for p in c) for c in palette]
-    pstring = b"".join(b"".join(c) for c in pbytes)
-    return pstring
-
-def bgr15bpp(palette):
-    """
-    Bytestring containing the palette in the form b"XYXYXY...XY"
-    where each XY in binary is 0bbbbbgggggrrrrr.
-    """
-    merged = [((b & 0b11111) << 10)+((g & 0b11111) << 5)+(r & 0b11111) for (r, g, b) in palette]
-    pstring = b"".join(c.to_bytes(2, "big") for c in merged)
-    return pstring
-    
-def riffpal2rgb(palette):
-    payload = palette[24:]
-    colors = [[payload[i+j] for j in range(4)] for i in range(0, len(payload), 4)]
-    if validate:
-        palette[0:4] == b"RIFF"
-        palette[4:12] == b"PAL data"
-        palette[8:]
-    return colors
-    
-def guessformat(input):
-    if len(input) >= 3 and input[0:3] == b"TLP":
-        return tlp
-    
 def readfile(path):
     with open(path, "rb") as f:
         contents = f.read()
         return contents
     
 def guessformat(palette):
-    if palette[0:3] == "TLP":
+    if len(palette) >= 3 and palette[0:3] == "TLP":
         return "tlp"
-    if palette[0:4] == "RIFF":
+    if len(palette) >= 4 and palette[0:4] == "RIFF":
         return "riffpal"
     raise Exception("I was too dumb to guess the format. Please use the --outformat option if you can.")
     
@@ -204,6 +165,12 @@ Converts a palette file of one format to another.
     Like that British peer reviewer who reads a full paper written in American English and does not consider there to be anything wrong with that.
     nazi: Complain about things in the input that do not agree with one certain interpretation of the format specification.
     Like that British grammar nazi who reprimands you for spelling "fuelling" with one L.
+    """
+    """
+    bgr15bpp: Bytestring containing the palette in the form b"XYXYXY...XY"
+    where each XY in binary is 0bbbbbgggggrrrrr.
+    rgb24bpp: Bytestring containing the palette in the form b"RRGGBBRRGGBB...RRGGBB"
+    where 0 <= x <= 255 for each x in {R, G, B}.
     """
     args = parser.parse_args()
     

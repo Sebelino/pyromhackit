@@ -24,12 +24,12 @@ def validate(palette, fmt, strictness):
     assert isinstance(palette, bytes), "palette is not a bytestring!"
     assert isinstance(fmt, str), "fmt is not a string!"
     assert isinstance(strictness, str), "strictness is not a string!"
-    lax = strictness == "lax"
-    lenient = strictness == "lenient"
-    pragmatic = strictness == "pragmatic"
-    pedantic = strictness == "pedantic"
     nazi = strictness == "nazi"
-    if lax:
+    atleastpedantic = nazi or strictness == "pedantic"
+    atleastpragmatic = atleastpedantic or strictness == "pragmatic"
+    atleastlenient = atleastpragmatic or strictness == "lenient"
+    assert strictness == "lax" or atleastlenient
+    if strictness == "lax":
         return
     if fmt == "rgb24bpp":
         assert len(palette) >= 3
@@ -37,10 +37,9 @@ def validate(palette, fmt, strictness):
     elif fmt == "bgr15bpp":
         assert len(palette) >= 2
         assert len(palette) % 2 == 0
-        if pedantic or nazi:
-            for bitindex in range(0, 8*len(palette), 5):
-                byteindex = int(bitindex/8)
-                bit = palette[byteindex] & (0x80 >> (bitindex % 8))
+        if atleastpragmatic:
+            for byteindex in range(0, len(palette), 2):
+                bit = (palette[byteindex] & 0x80) >> 7
                 assert bit == 0
     elif fmt == "tlp":  # TODO: BGR 15 BPP is not the only TLP payload format
         signature = b"TLP"
@@ -48,29 +47,39 @@ def validate(palette, fmt, strictness):
         hdrsize = len(signature+flag)
         colorcount = 16
         bytespercolor = 2
-        payload = pattern[hdrsize:hdrsize+colorcount*bytespercolor]
+        assert len(palette) >= hdrsize+colorcount*bytespercolor
+        payload = palette[hdrsize:hdrsize+colorcount*bytespercolor]
         payloadfmt = "bgr15bpp"
         validate(payload, payloadfmt, strictness)
         extracrap = palette[hdrsize+colorcount*bytespercolor:]
-        if pedantic or nazi:
+        if atleastpedantic:
             assert palette[0:3] == signature
             assert palette[3:4] == flag  # Should be relaxed to checking 0=RGB, 1=NES, 2=SNES/GBC/GBA
     elif fmt == "riffpal":
+        assert len(palette) >= 24+4
         signature = b"RIFF"
         datasig = b"PAL data"
         version = (3).to_bytes(2, byteorder="big")
         payload = palette[24:]
-        flength = (len(payload)-8).to_bytes(2, byteorder="little")
-        dlength = (len(payload)-28).to_bytes(2, byteorder="little")
+        dlength = (len(payload)+4).to_bytes(4, byteorder="little")
+        flength = (len(payload)+16).to_bytes(4, byteorder="little")
         colorcount = (int(len(payload)/4)).to_bytes(2, byteorder="little")
-        if pedantic or nazi:
+        if atleastpragmatic:
             for i in range(0, len(payload), 4):
                 byteflag = payload[i+3]
                 assert byteflag == 0
+        elif atleastpedantic:
+            assert palette[0:4] == signature
+            assert palette[4:8] == flength
+            assert palette[8:16] == datasig
+            assert palette[16:20] == dlength
+            assert palette[20:22] == version
+            assert palette[22:24] == colorcount
     elif fmt == "rgb24bpphex":
         hexes = palette.split()
+        assert len(hexes) >= 3
         assert len(hexes) % 3 == 0
-        if pragmatic or pedantic or nazi:
+        if atleastpragmatic:
             for h in hexes:
                 assert 0 <= int(h, 16) <= 255
         if nazi:
@@ -159,11 +168,12 @@ Converts a palette file of one format to another.
     parser.add_argument("--outfile", "-o", help="Path to the file to be created. If unspecified, print each byte to the console as space-separated hex.")
     parser.add_argument("--strictness", "-s", default="pedantic", choices=["lax", "lenient", "pedantic", "nazi"], help="Level of strictness when validating the input.")
     """
-    lax: Never raise an exception, regardless of how much the input complies to the format. This assumes that the file exists and is readable.
-    Like that conspiracist who expects to find Illuminati references in anything he reads.
-    lenient: Read only the necessary portions of the file, but complain if reading fails.
+    The strictness levels are totally ordered, so all validity checks associated with level X are included in level X+1.
+    lax: Never raise an exception, regardless of how little the input complies to the format. This assumes that the file exists and is readable.
+    Like that conspiracist who expects to find Illuminati references in anything he reads, even in a blank page.
+    lenient: Read only the bytes needed, but complain if reading fails.
     Like that lazy student who attempts to copypaste the top paragraph of what he assumes to be a Wikipedia article into his essay, only to find out the article is empty.
-    pragmatic: Read and validate only the relevant portions of the file.
+    pragmatic: Read and validate only the bytes needed.
     Like that unskeptical student who reads the conclusion of a paper and deems it to make sense without reading the full paper.
     pedantic: Validate all data. In case the specification for a format can be interpreted in several ways, complain only if there is no interpretation under which the input is considered valid.
     Like that British peer reviewer who reads a full paper written in American English and does not consider there to be anything wrong with that.

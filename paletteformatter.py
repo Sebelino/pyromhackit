@@ -2,6 +2,74 @@
 
 import argparse
 import os.path
+from contracts import contract
+
+nes2rgb = {
+    0x00: (112, 112, 112),
+    0x01: (32, 24, 136),
+    0x02: (0, 0, 168),
+    0x03: (64, 0, 152),
+    0x04: (136, 0, 112),
+    0x05: (168, 0, 16),
+    0x06: (160, 0, 0),
+    0x07: (120, 8, 0),
+    0x08: (64, 40, 0),
+    0x09: (0, 64, 0),
+    0x0A: (0, 80, 0),
+    0x0B: (0, 56, 16),
+    0x0C: (24, 56, 88),
+    0x0D: (0, 0, 0),
+    0x0E: (0, 0, 0),
+    0x0F: (0, 0, 0),
+    0x10: (184, 184, 184),
+    0x11: (0, 112, 232),
+    0x12: (32, 56, 232),
+    0x13: (128, 0, 240),
+    0x14: (184, 0, 184),
+    0x15: (224, 0, 88),
+    0x16: (216, 40, 0),
+    0x17: (200, 72, 8),
+    0x18: (136, 112, 0),
+    0x19: (0, 144, 0),
+    0x1A: (0, 168, 0),
+    0x1B: (0, 144, 56),
+    0x1C: (0, 128, 136),
+    0x1D: (0, 0, 0),
+    0x1E: (0, 0, 0),
+    0x1F: (0, 0, 0),
+    0x20: (248, 248, 248),
+    0x21: (56, 184, 248),
+    0x22: (88, 144, 248),
+    0x23: (160, 136, 248),
+    0x24: (240, 120, 248),
+    0x25: (248, 112, 176),
+    0x26: (248, 112, 96),
+    0x27: (248, 152, 56),
+    0x28: (240, 184, 56),
+    0x29: (128, 208, 16),
+    0x2A: (72, 216, 72),
+    0x2B: (88, 248, 152),
+    0x2C: (0, 232, 216),
+    0x2D: (0, 0, 0),
+    0x2E: (0, 0, 0),
+    0x2F: (0, 0, 0),
+    0x30: (248, 248, 248),
+    0x31: (168, 224, 248),
+    0x32: (192, 208, 248),
+    0x33: (208, 200, 248),
+    0x34: (248, 192, 248),
+    0x35: (248, 192, 216),
+    0x36: (248, 184, 176),
+    0x37: (248, 216, 168),
+    0x38: (248, 224, 160),
+    0x39: (224, 248, 160),
+    0x3A: (168, 240, 184),
+    0x3B: (176, 248, 200),
+    0x3C: (152, 248, 240),
+    0x3D: (0, 0, 0),
+    0x3E: (0, 0, 0),
+    0x3F: (0, 0, 0),
+}
 
 def readfile(path):
     with open(path, "rb") as f:
@@ -13,17 +81,14 @@ def guessformat(palette):
         return "tlp"
     if len(palette) >= 4 and palette[0:4] == "RIFF":
         return "riffpal"
-    raise Exception("I was too dumb to guess the format. Please use the --outformat option if you can.")
+    raise Exception("I am too dumb to guess the format. Please use the --outformat option if possible.")
     
+@contract(palette=bytes, fmt=str, strictness=str)
 def validate(palette, fmt, strictness):
     """
     Validates the palette of the given format with the given level of strictness.
     Raises an exception if it does not meet up to the standards.
     """
-    # Regardless of strictness, the types should be what you'd expect.
-    assert isinstance(palette, bytes), "palette is not a bytestring!"
-    assert isinstance(fmt, str), "fmt is not a string!"
-    assert isinstance(strictness, str), "strictness is not a string!"
     nazi = strictness == "nazi"
     atleastpedantic = nazi or strictness == "pedantic"
     atleastpragmatic = atleastpedantic or strictness == "pragmatic"
@@ -31,30 +96,62 @@ def validate(palette, fmt, strictness):
     assert strictness == "lax" or atleastlenient
     if strictness == "lax":
         return
+    def enumer(step=1):
+        if step == 1: return list(palette)
+        if step == 2: return [2**8*palette[i]+palette[i+1] for i in range(0, len(palette)-1, 2)]
+        if step == 3: return [2**16*palette[i]+2**8*palette[i+1]+palette[i+2] for i in range(0, len(palette)-2, 3)]
+    duplicatemsg = "SIE PALETTE KONTAINS DUPLIKATE KOLORS, DUMKOPF!"
     if fmt == "rgb24bpp":
         assert len(palette) >= 3
         assert len(palette) % 3 == 0
+        if nazi:
+            enumeration = enumer(3)
+            assert len(enumeration) == len(set(enumeration)), duplicatemsg
+            assert enumeration == sorted(enumeration), "SIE PALETTE IS A MESS! SORT YOUR KOLORS, DUMKOPF! LEAST RED KOLORS IN FRONT! THEN LEAST GREEN! THEN LEAST BLUE!"
     elif fmt == "bgr15bpp":
         assert len(palette) >= 2
         assert len(palette) % 2 == 0
         if atleastpragmatic:
-            for byteindex in range(0, len(palette), 2):
+            for byteindex in range(1, len(palette), 2):
                 bit = (palette[byteindex] & 0x80) >> 7
                 assert bit == 0
-    elif fmt == "tlp":  # TODO: BGR 15 BPP is not the only TLP payload format
-        signature = b"TLP"
-        flag = b"\x02"
-        hdrsize = len(signature+flag)
+        if nazi:
+            enumeration = enumer(2)
+            assert len(enumeration) == len(set(enumeration)), duplicatemsg
+            assert enumeration == sorted(enumeration), "SIE PALETTE IS A MESS! SORT YOUR KOLORS, DUMKOPF! LEAST BLUE KOLORS IN FRONT! THEN LEAST GREEN! THEN LEAST RED!"
+    elif fmt == "nes":
+        assert len(palette) >= 1
+        if atleastpragmatic:
+            assert all(b in nes2rgb for b in palette)
+        if nazi:
+            enumeration = enumer()
+            assert len(enumeration) == len(set(enumeration)), duplicatemsg
+            assert enumeration == sorted(enumeration), "SIE PALETTE IS A MESS! SORT YOUR KOLORS, DUMKOPF! LOW BYTE VALUES IN FRONT!"
+    elif fmt == "tpl":
+        signature = b"TPL"
+        hdrsize = len(signature)+1
+        fmtbyte = palette[3]
+        if fmtbyte & 0b10:
+            payloadfmt = "bgr15bpp"
+            bytespercolor = 2
+        elif fmtbyte & 0b01:
+            payloadfmt = "nes"
+            bytespercolor = 1
+        else:
+            payloadfmt = "rgb24bpp"
+            bytespercolor = 3
         colorcount = 16
-        bytespercolor = 2
         assert len(palette) >= hdrsize+colorcount*bytespercolor
         payload = palette[hdrsize:hdrsize+colorcount*bytespercolor]
-        payloadfmt = "bgr15bpp"
         validate(payload, payloadfmt, strictness)
-        extracrap = palette[hdrsize+colorcount*bytespercolor:]
+        extrapalettes = palette[hdrsize+colorcount*bytespercolor:]
+        if atleastpragmatic:
+            assert fmtbyte in {0, 1, 2}
         if atleastpedantic:
             assert palette[0:3] == signature
-            assert palette[3:4] == flag  # Should be relaxed to checking 0=RGB, 1=NES, 2=SNES/GBC/GBA
+            assert 16+len(extrapalettes) in {16, 32, 64, 128, 256}
+        if nazi:
+            assert len(extrapalettes) == 0, "LEBENSRAUM! ELIMINATE SIE EXTRA PALETTES, DUMKOPF! IN TILE LAYER PRO, SET Palette -> Entries -> 16!"
     elif fmt == "riffpal":
         assert len(palette) >= 24+4
         signature = b"RIFF"
@@ -86,11 +183,14 @@ def validate(palette, fmt, strictness):
             assert b'x' not in palette.lower(), "'0xFF' SHOULD BE 'FF', DUMKOPF!"
             assert palette == palette.upper(), "MAKE IT '1E'! NOT '1e', DUMKOPF!"
             for i in range(2, len(palette), 3):
-                assert palette[i:i+1] == b" ", "SIE SEPARATOR SHOULD BE A SINGLE REGULAR SPACE! NOZING ELSE, DUMKOPF!"
+                assert palette[i:i+1] == b" ", "SIE SEPARATOR SHOULD BE A SINGLE SPACE KARAKTER! NOZING ELSE, DUMKOPF!"
+            enumeration = enumer(3)
+            assert len(enumeration) == len(set(enumeration)), duplicatemsg
+            assert enumeration == sorted(enumeration), "SIE PALETTE IS A MESS! SORT YOUR KOLORS, DUMKOPF! LEAST RED KOLORS IN FRONT! THEN LEAST GREEN! THEN LEAST BLUE!"
     
 def rgb24bpp2rgb24bpphex(palette):
     """ b'abc' -> b'61 62 63' """
-    hexes = [hex(b)[2:].upper().encode("utf8") for b in palette]
+    hexes = ["{:02x}".format(b).upper().encode("utf8") for b in palette]
     return b" ".join(hexes)
     
 def format2rgb24bpp(palette, fmt):
@@ -102,16 +202,29 @@ def format2rgb24bpp(palette, fmt):
     if fmt == "bgr15bpp":
         newpalette = b""
         for i in range(0, len(palette), 2):
-            blue = palette[i] >> 2
-            green = ((palette[i] & 0b11) << 5) | (palette[i+1] >> 5)
-            red = palette[i+1] & 0b00011111
+            blue = palette[i+1] >> 2
+            green = ((palette[i+1] & 0b11) << 3) | (palette[i] >> 5)
+            red = palette[i] & 0b00011111
+            # Scale values
+            blue = 8*blue
+            green = 8*green
+            red = 8*red
             color = bytes([red, green, blue])
             newpalette = newpalette+color
         return newpalette
     if fmt == "riffpal":
         raise NotImplementedError
-    if fmt == "tlp":
-        raise NotImplementedError
+    if fmt == "tpl":  # "Tile Layer Palette." Curiously, the extension is TPL, not TLP.
+        payloadfmt = palette[3]
+        if payloadfmt == 0:
+            return palette[4:]
+        if payloadfmt == 1:
+            return b"".join(bytes(nes2rgb(b)) for b in palette[4:])
+        if payloadfmt == 2:
+            return format2rgb24bpp(palette[4:], "bgr15bpp")
+        else:
+            raise NotImplementedError
+    raise ValueError("Unrecognized format: {}".format(fmt))
         
 def rgb24bpp2format(palette, fmt):
     """ Changes the format of the RGB 24 BPP formatted input into fmt. """
@@ -122,14 +235,17 @@ def rgb24bpp2format(palette, fmt):
     if fmt == "bgr15bpp":
         newpalette = b""
         for i in range(0, len(palette), 3):
-            b = (palette[i] & 0b00011111) << 10
-            g = (palette[i+1] & 0b00011111) << 5
-            r = palette[i+2] & 0b00011111
+            r = (palette[i] & 0b11111000) >> 3
+            g = (palette[i+1] & 0b11111000) << 5-3
+            b = (palette[i+2] & 0b11111000) << 10-3
             colornum = b | g | r
-            newpalette = newpalette+colornum.to_bytes(2, byteorder='big')
+            newpalette = newpalette+colornum.to_bytes(2, byteorder='little')
         return newpalette
+    if fmt == "tpl":  # TODO Distinguish TPL bgr15bpp from other subformats
+        return b"TPL\x02"+rgb24bpp2format(palette, "bgr15bpp")
     if fmt == "riffpal":
         raise NotImplementedError
+    raise ValueError("Unrecognized format: {}".format(fmt))
     
 def formatconvert(path, informat=None, outformat=None, outfile=None, strictness="pedantic"):
     print("Attempting to read file...")
@@ -166,23 +282,23 @@ Converts a palette file of one format to another.
     parser.add_argument("--informat", "-a", choices=inputformats, help="Format of the input file. If left unspecified, the program will attempt to guess the format.")
     parser.add_argument("--outformat", "-b", choices=outputformats, help="Format of the output file. If left unspecified, the format does not change.")
     parser.add_argument("--outfile", "-o", help="Path to the file to be created. If unspecified, print each byte to the console as space-separated hex.")
-    parser.add_argument("--strictness", "-s", default="pedantic", choices=["lax", "lenient", "pedantic", "nazi"], help="Level of strictness when validating the input.")
+    parser.add_argument("--strictness", "-s", default="pedantic", choices=["lax", "lenient", "pragmatic", "pedantic", "nazi"], help="Level of strictness when validating the input.")
     """
-    The strictness levels are totally ordered, so all validity checks associated with level X are included in level X+1.
+    The strictness levels are totally ordered, so all validity checks associated with level X are included in level X+1, where lax < lenient < pragmatic < pedantic < nazi.
     lax: Never raise an exception, regardless of how little the input complies to the format. This assumes that the file exists and is readable.
     Like that conspiracist who expects to find Illuminati references in anything he reads, even in a blank page.
-    lenient: Read only the bytes needed, but complain if reading fails.
+    lenient: Read the minimum amount of bits needed, but complain if reading fails because of missing data.
     Like that lazy student who attempts to copypaste the top paragraph of what he assumes to be a Wikipedia article into his essay, only to find out the article is empty.
-    pragmatic: Read and validate only the bytes needed.
+    pragmatic: Read and validate the minimum amount of bytes needed.
     Like that unskeptical student who reads the conclusion of a paper and deems it to make sense without reading the full paper.
     pedantic: Validate all data. In case the specification for a format can be interpreted in several ways, complain only if there is no interpretation under which the input is considered valid.
     Like that British peer reviewer who reads a full paper written in American English and does not consider there to be anything wrong with that.
-    nazi: Complain about things in the input that do not agree with one certain interpretation of the format specification.
+    nazi: Complain if the input does not comply to one certain interpretation of the format specification, or if the input differs from the "canonical" way of representing the palette.
     Like that British grammar nazi who reprimands you for spelling "fuelling" with one L.
     """
     """
     bgr15bpp: Bytestring containing the palette in the form b"XYXYXY...XY"
-    where each XY in binary is 0bbbbbgggggrrrrr.
+    where each XY in binary is gggrrrrr0bbbbbgg.
     rgb24bpp: Bytestring containing the palette in the form b"RRGGBBRRGGBB...RRGGBB"
     where 0 <= x <= 255 for each x in {R, G, B}.
     """

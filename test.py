@@ -1,20 +1,22 @@
 #!/usr/bin/env python
 
-from paletteformatter import formatconvert, validate
+from paletteformatter import formatconvert, validate, format2rgb24bpp, rgb24bpp2format
 from nose.tools import assert_equals, assert_not_equals, assert_raises
 from os.path import isfile
 import os
 
-RGB24BPPPATH = "./testsuite/sample.rgb24bpp"
-RGB24BPPHEXPATH = "./testsuite/sample.rgb24bpphex"
-TBLPATH = "./testsuite/sample.TBL"
-
 def setUp():
-    assert isfile(RGB24BPPPATH)
+    pass
+
+def assert_equals_bytes(returned, expected):
+    retstr = ",".join("{:3}".format(c) for c in returned)
+    expstr = ",".join("{:3}".format(c) for c in expected)
+    msg = "Bytestrings not equal:\nbytes({})\nbytes({})".format(retstr, expstr)
+    assert_equals(returned, expected, msg)
 
 def test_validate():
     positives = {
-        "nazi": {
+        "pedantic": {
             "rgb24bpp": [
                 b"\x00\x00\x00",
                 bytes([49, 23, 255]),
@@ -23,11 +25,12 @@ def test_validate():
             "rgb24bpphex": [
                 b"00 00 00",
                 b"AA AA AA",
+                b"11 33 22 11 22 33",
             ],
             "bgr15bpp": [
                 b"\x00\x00",
-                b"\x7F\xFF",
-                b"\x7F\xFF\x7F\xA5",
+                b"\xFF\x7F",
+                b"\xFF\x7F\xA5\x7F",
             ],
             "tlp": [
                 b"TLP\x02"+bytes([0, 0, 0, 0]*16)
@@ -43,26 +46,31 @@ def test_validate():
             for palette in positives[strictness][fmt]:
                 yield validate, palette, fmt, strictness
     negatives = {
-        "nazi": {
+        "pedantic": {
             "rgb24bpp": [
                 b"",
                 b"\x00",
                 b"\x00\x00",
                 b"\x00\x00\x00\x00",
-                "\x00\x00\x00"
             ],
             "rgb24bpphex": [
                 b"",
                 b"00",
                 b"00 11",
                 b"00 11 22 33",
-                b"aa aa aa",
             ],
             "bgr15bpp": [
                 b"",
                 b"\x7F",
-                b"\x7F\xFF\x7F",
-                b"\x80\x00",
+                b"\xFF\x7F\x7F",
+                b"\x00\x80",
+            ],
+        },
+        "nazi": {
+            "rgb24bpphex": [
+                b"aa aa aa",
+                b"11 33 22 11 22 33",
+                b"AA BB CC AA BB CC",
             ],
         },
     }
@@ -71,5 +79,76 @@ def test_validate():
             for palette in negatives[strictness][fmt]:
                 yield assert_raises, AssertionError, validate, palette, fmt, strictness
 
+def test_format2rgb24bpp():
+    positives = [
+        ("tpl",
+         b"TPL\x02"+\
+         bytes([0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0]),
+         bytes([0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0])),
+        ("tpl",
+         b"TPL\x02"+\
+         bytes([
+            0b00000000,0b00000001, 0b00000010,0b00000011, 0b00000100,0b00000101, 0b00000110,0b00000111,
+            0b00001000,0b00001001, 0b00001010,0b00001011, 0b00001100,0b00001101, 0b00001110,0b00001111,
+            0b00010000,0b00010001, 0b00010010,0b00010011, 0b00010100,0b00010101, 0b00010110,0b00010111,
+            0b00011000,0b00011001, 0b00011010,0b00011011, 0b00011100,0b00011101, 0b00011110,0b00011111,
+         ]),
+         bytes([
+            0,  64,0,              16, 192,0,             32, 64,8,              48, 192,8,
+            64, 64,16,             80, 192,16,            96, 64,24,             112,192,24,
+            128,64,32,             144,192,32,            160,64,40,             176,192,40,
+            192,64,48,             208,192,48,            224,64,56,             240,192,56,
+         ])),
+    ]
+    for fmt, input, expected in positives:
+        returned = format2rgb24bpp(input, fmt)
+        yield assert_equals_bytes, returned, expected
+
+def test_format2rgb24bpp():
+    positives = [
+        ("tpl",
+         bytes([0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0]),
+         b"TPL\x02"+\
+         bytes([0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0])),
+        ("tpl",
+         bytes([
+            0,  64,0,              16, 192,0,             32, 64,8,              48, 192,8,
+            64, 64,16,             80, 192,16,            96, 64,24,             112,192,24,
+            128,64,32,             144,192,32,            160,64,40,             176,192,40,
+            192,64,48,             208,192,48,            224,64,56,             240,192,56,
+         ]),
+         b"TPL\x02"+\
+         bytes([
+            0b00000000,0b00000001, 0b00000010,0b00000011, 0b00000100,0b00000101, 0b00000110,0b00000111,
+            0b00001000,0b00001001, 0b00001010,0b00001011, 0b00001100,0b00001101, 0b00001110,0b00001111,
+            0b00010000,0b00010001, 0b00010010,0b00010011, 0b00010100,0b00010101, 0b00010110,0b00010111,
+            0b00011000,0b00011001, 0b00011010,0b00011011, 0b00011100,0b00011101, 0b00011110,0b00011111,
+         ])),
+    ]
+    for fmt, input, expected in positives:
+        returned = rgb24bpp2format(input, fmt)
+        yield assert_equals_bytes, returned, expected
+
+def test_formatconvert_files():
+    translations = [
+        ("./testsuite/onlyblack", "rgb24bpp", "rgb24bpphex"),
+        ("./testsuite/onlyblack", "rgb24bpphex", "rgb24bpp"),
+        ("./testsuite/blackwhite", "rgb24bpp", "rgb24bpphex"),
+        ("./testsuite/blackwhite", "rgb24bpphex", "rgb24bpp"),
+        ("./testsuite/increasing16", "tpl", "rgb24bpp"),
+        ("./testsuite/increasing16step8", "tpl", "rgb24bpp"),
+    ]
+    for (prefix, f1, f2) in translations:
+        inpath = "{}.{}".format(prefix, f1)
+        outpath = "{}.{}".format(prefix, f2)
+        formatconvert(inpath, f1, f2, "sample.dat")
+        with open("sample.dat", "rb") as file1, open(outpath, "rb") as file2:
+            returned = file1.read()
+            expected = file2.read()
+            yield assert_equals, returned.strip(), expected.strip()
+
 def teardown():
-    pass
+    try:
+        os.remove("./sample.dat")
+    except FileNotFoundError:
+        pass

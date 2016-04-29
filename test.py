@@ -1,18 +1,26 @@
 #!/usr/bin/env python
 
-from paletteformatter import Strictness, formatconvert, validate, format2rgb24bpp, rgb24bpp2format
-from nose.tools import assert_equals, assert_not_equals, assert_raises
-from os.path import isfile
+from paletteformatter import (
+    Strictness,
+    formatconvert,
+    validate,
+    format2rgb24bpp,
+    rgb24bpp2format
+)
+from nose.tools import assert_equals, assert_raises
 import os
+
 
 def setUp():
     pass
+
 
 def assert_equals_bytes(returned, expected):
     retstr = ",".join("{:3}".format(c) for c in returned)
     expstr = ",".join("{:3}".format(c) for c in expected)
     msg = "Bytestrings not equal:\nbytes({})\nbytes({})".format(retstr, expstr)
     assert_equals(returned, expected, msg)
+
 
 def test_validate():
     positives = {
@@ -36,8 +44,11 @@ def test_validate():
                 b"TPL\x02"+bytes([0, 0, 0, 0]*16)
             ],
             "riffpal": [
-                b"RIFF"+b"\x14\0\0\0"+b"PAL data"+b"\x08\0\0\0"+b"\0\x03"+b"\x01\0"+b"\0\0\0\0",
-                b'RIFF(\x00\x00\x00PAL data\x1c\x00\x00\x00\x00\x03\x06\x00\x00\x00\x00\x00\xff\x00\x00\x00\x00\xff\x00\x00\x00\x00\xff\x00\xff\xff\x00\x00\xff\xff\xff\x00',
+                b"RIFF"+b"\x14\0\0\0"+b"PAL data"+b"\x08\0\0\0"+b"\0\x03"
+                b"\x01\0"+b"\0\0\0\0",
+                b"RIFF(\x00\x00\x00PAL data\x1c\x00\x00\x00\x00\x03\x06\x00"
+                "\x00\x00\x00\x00\xff\x00\x00\x00\x00\xff\x00\x00\x00\x00\xff"
+                "\x00\xff\xff\x00\x00\xff\xff\xff\x00",
             ],
         },
     }
@@ -77,7 +88,9 @@ def test_validate():
     for strictness in negatives:
         for fmt in negatives[strictness]:
             for palette in negatives[strictness][fmt]:
-                yield assert_raises, AssertionError, validate, palette, fmt, strictness
+                yield assert_raises, AssertionError, validate, palette, fmt,
+                strictness
+
 
 def test_format2rgb24bpp():
     # TODO Test cases for uppercased file extensions?
@@ -105,7 +118,8 @@ def test_format2rgb24bpp():
         returned = format2rgb24bpp(input, fmt)
         yield assert_equals_bytes, returned, expected
 
-def test_format2rgb24bpp():
+
+def test_rgb24bpp2format():
     positives = [
         ("tpl",
          bytes([0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0]),
@@ -130,6 +144,7 @@ def test_format2rgb24bpp():
         returned = rgb24bpp2format(input, fmt)
         yield assert_equals_bytes, returned, expected
 
+
 def test_formatconvert_files():
     translations = [
         ("./testsuite/onlyblack", "rgb24bpp", "rgb24bpphex"),
@@ -148,8 +163,9 @@ def test_formatconvert_files():
             expected = file2.read()
             yield assert_equals, returned.strip(), expected.strip()
 
+
 def teardown():
     try:
         os.remove("./sample.dat")
-    except FileNotFoundError:
+    except OSError:  # FileNotFoundError
         pass

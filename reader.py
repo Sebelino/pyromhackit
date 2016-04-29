@@ -12,7 +12,7 @@ def filecontents(path):
     with open(path, 'r', encoding='utf8') as f:
         content = f.readlines()
         return content
-		
+
 def read_yaml(path):
     """ YAML -> Dictionary. """
     stream = open(path, 'r', encoding='utf8')
@@ -43,13 +43,13 @@ def compact(stream, cols):
             output.append('\n')
         output.append(stream[i])
     return "".join(output).strip()
-    
+
 def pack(stream):
     """ Removes all whitespace. """
     whitespace = string.whitespace.replace("\n", "").replace("\r", "")
     output = [e for e in stream if e not in whitespace]
     return output
-    
+
 def convert(infile, inencoding, pipeline, width, transliterationfiles):
     """ Uses the inencoding to read the infile, does some transliteration and applies a sequence of additional processing filters. """
     contents = readbin(infile)
@@ -98,7 +98,7 @@ def convert(infile, inencoding, pipeline, width, transliterationfiles):
         if outputtype is not None: contenttype = outputtype
     contents = compact(contents, width+labelingoffset)
     return contents
-    
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Translate one format to another format.")
     parser.add_argument('infile', help="Path to the file containing the hex.")

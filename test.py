@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from paletteformatter import formatconvert, validate, format2rgb24bpp, rgb24bpp2format
+from paletteformatter import Strictness, formatconvert, validate, format2rgb24bpp, rgb24bpp2format
 from nose.tools import assert_equals, assert_not_equals, assert_raises
 from os.path import isfile
 import os
@@ -16,7 +16,7 @@ def assert_equals_bytes(returned, expected):
 
 def test_validate():
     positives = {
-        "pedantic": {
+        Strictness.pedantic: {
             "rgb24bpp": [
                 b"\x00\x00\x00",
                 bytes([49, 23, 255]),
@@ -32,8 +32,8 @@ def test_validate():
                 b"\xFF\x7F",
                 b"\xFF\x7F\xA5\x7F",
             ],
-            "tlp": [
-                b"TLP\x02"+bytes([0, 0, 0, 0]*16)
+            "tpl": [
+                b"TPL\x02"+bytes([0, 0, 0, 0]*16)
             ],
             "riffpal": [
                 b"RIFF"+b"\x14\0\0\0"+b"PAL data"+b"\x08\0\0\0"+b"\0\x03"+b"\x01\0"+b"\0\0\0\0",
@@ -46,7 +46,7 @@ def test_validate():
             for palette in positives[strictness][fmt]:
                 yield validate, palette, fmt, strictness
     negatives = {
-        "pedantic": {
+        Strictness.pedantic: {
             "rgb24bpp": [
                 b"",
                 b"\x00",
@@ -66,7 +66,7 @@ def test_validate():
                 b"\x00\x80",
             ],
         },
-        "nazi": {
+        Strictness.nazi: {
             "rgb24bpphex": [
                 b"aa aa aa",
                 b"11 33 22 11 22 33",
@@ -80,6 +80,7 @@ def test_validate():
                 yield assert_raises, AssertionError, validate, palette, fmt, strictness
 
 def test_format2rgb24bpp():
+    # TODO Test cases for uppercased file extensions?
     positives = [
         ("tpl",
          b"TPL\x02"+\

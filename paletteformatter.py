@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 import argparse
-import os.path
 from contracts import contract
+from enum import IntEnum
 
 nes2rgb = {
     0x00: (112, 112, 112),
@@ -71,128 +71,193 @@ nes2rgb = {
     0x3F: (0, 0, 0),
 }
 
+
+class Strictness(IntEnum):
+    lax = 0
+    lenient = 1
+    pragmatic = 2
+    pedantic = 3
+    nazi = 4
+
+
 def readfile(path):
     with open(path, "rb") as f:
         contents = f.read()
         return contents
-    
+
+
 def guessformat(palette):
     if len(palette) >= 3 and palette[0:3] == "TLP":
         return "tlp"
     if len(palette) >= 4 and palette[0:4] == "RIFF":
         return "riffpal"
-    raise Exception("I am too dumb to guess the format. Please use the --outformat option if possible.")
-    
-@contract(palette=bytes, fmt=str, strictness=str)
-def validate(palette, fmt, strictness):
-    """
-    Validates the palette of the given format with the given level of strictness.
-    Raises an exception if it does not meet up to the standards.
-    """
-    nazi = strictness == "nazi"
-    atleastpedantic = nazi or strictness == "pedantic"
-    atleastpragmatic = atleastpedantic or strictness == "pragmatic"
-    atleastlenient = atleastpragmatic or strictness == "lenient"
-    assert strictness == "lax" or atleastlenient
-    if strictness == "lax":
-        return
-    def enumer(step=1):
-        if step == 1: return list(palette)
-        if step == 2: return [2**8*palette[i]+palette[i+1] for i in range(0, len(palette)-1, 2)]
-        if step == 3: return [2**16*palette[i]+2**8*palette[i+1]+palette[i+2] for i in range(0, len(palette)-2, 3)]
-    duplicatemsg = "SIE PALETTE KONTAINS DUPLIKATE KOLORS, DUMKOPF!"
-    if fmt == "rgb24bpp":
-        assert len(palette) >= 3
-        assert len(palette) % 3 == 0
-        if nazi:
-            enumeration = enumer(3)
-            assert len(enumeration) == len(set(enumeration)), duplicatemsg
-            assert enumeration == sorted(enumeration), "SIE PALETTE IS A MESS! SORT YOUR KOLORS, DUMKOPF! LEAST RED KOLORS IN FRONT! THEN LEAST GREEN! THEN LEAST BLUE!"
-    elif fmt == "bgr15bpp":
+    raise Exception("I am too dumb to guess the format. Please use the"
+                    " --outformat option if possible.")
+
+
+def enumer(bytestring, step=1):
+    """ bytes -> [int] where step signifies the number of bytes used to
+    represent each number in the output list """
+    dct = {
+        1: list(bytestring),
+        2: [2**8*bytestring[i]+bytestring[i+1]
+            for i in range(0, len(bytestring)-1, 2)],
+        3: [2**16*bytestring[i]+2**8*bytestring[i+1]+bytestring[i+2]
+            for i in range(0, len(bytestring)-2, 3)]
+    }
+    return dct[step]
+
+
+def validate_rgb24bpp(palette, strictness):
+    assert len(palette) >= 3
+    assert len(palette) % 3 == 0
+    if strictness == Strictness.nazi:
+        enumeration = enumer(palette, 3)
+        duplicatemsg = "SIE PALETTE KONTAINS DUPLIKATE KOLORS, DUMKOPF!"
+        assert len(enumeration) == len(set(enumeration)), duplicatemsg
+        assert enumeration == sorted(enumeration), (
+            "SIE PALETTE IS A MESS! SORT YOUR KOLORS, DUMKOPF! "
+            "LEAST RED KOLORS IN FRONT! THEN LEAST GREEN! THEN LEAST BLUE!"
+        )
+
+
+def validate_bgr15bpp(palette, strictness):
         assert len(palette) >= 2
         assert len(palette) % 2 == 0
-        if atleastpragmatic:
+        duplicatemsg = "SIE PALETTE KONTAINS DUPLIKATE KOLORS, DUMKOPF!"
+        if strictness >= Strictness.pragmatic:
             for byteindex in range(1, len(palette), 2):
                 bit = (palette[byteindex] & 0x80) >> 7
                 assert bit == 0
-        if nazi:
-            enumeration = enumer(2)
+        if strictness == Strictness.nazi:
+            enumeration = enumer(palette, 2)
             assert len(enumeration) == len(set(enumeration)), duplicatemsg
-            assert enumeration == sorted(enumeration), "SIE PALETTE IS A MESS! SORT YOUR KOLORS, DUMKOPF! LEAST BLUE KOLORS IN FRONT! THEN LEAST GREEN! THEN LEAST RED!"
-    elif fmt == "nes":
-        assert len(palette) >= 1
-        if atleastpragmatic:
-            assert all(b in nes2rgb for b in palette)
-        if nazi:
-            enumeration = enumer()
-            assert len(enumeration) == len(set(enumeration)), duplicatemsg
-            assert enumeration == sorted(enumeration), "SIE PALETTE IS A MESS! SORT YOUR KOLORS, DUMKOPF! LOW BYTE VALUES IN FRONT!"
-    elif fmt == "tpl":
-        signature = b"TPL"
-        hdrsize = len(signature)+1
-        fmtbyte = palette[3]
-        if fmtbyte & 0b10:
-            payloadfmt = "bgr15bpp"
-            bytespercolor = 2
-        elif fmtbyte & 0b01:
-            payloadfmt = "nes"
-            bytespercolor = 1
-        else:
-            payloadfmt = "rgb24bpp"
-            bytespercolor = 3
-        colorcount = 16
-        assert len(palette) >= hdrsize+colorcount*bytespercolor
-        payload = palette[hdrsize:hdrsize+colorcount*bytespercolor]
-        validate(payload, payloadfmt, strictness)
-        extrapalettes = palette[hdrsize+colorcount*bytespercolor:]
-        if atleastpragmatic:
-            assert fmtbyte in {0, 1, 2}
-        if atleastpedantic:
-            assert palette[0:3] == signature
-            assert 16+len(extrapalettes) in {16, 32, 64, 128, 256}
-        if nazi:
-            assert len(extrapalettes) == 0, "LEBENSRAUM! ELIMINATE SIE EXTRA PALETTES, DUMKOPF! IN TILE LAYER PRO, SET Palette -> Entries -> 16!"
-    elif fmt == "riffpal":
-        assert len(palette) >= 24+4
-        signature = b"RIFF"
-        datasig = b"PAL data"
-        version = (3).to_bytes(2, byteorder="big")
-        payload = palette[24:]
-        dlength = (len(payload)+4).to_bytes(4, byteorder="little")
-        flength = (len(payload)+16).to_bytes(4, byteorder="little")
-        colorcount = (int(len(payload)/4)).to_bytes(2, byteorder="little")
-        if atleastpragmatic:
-            for i in range(0, len(payload), 4):
-                byteflag = payload[i+3]
-                assert byteflag == 0
-        elif atleastpedantic:
-            assert palette[0:4] == signature
-            assert palette[4:8] == flength
-            assert palette[8:16] == datasig
-            assert palette[16:20] == dlength
-            assert palette[20:22] == version
-            assert palette[22:24] == colorcount
-    elif fmt == "rgb24bpphex":
-        hexes = palette.split()
-        assert len(hexes) >= 3
-        assert len(hexes) % 3 == 0
-        if atleastpragmatic:
-            for h in hexes:
-                assert 0 <= int(h, 16) <= 255
-        if nazi:
-            assert b'x' not in palette.lower(), "'0xFF' SHOULD BE 'FF', DUMKOPF!"
-            assert palette == palette.upper(), "MAKE IT '1E'! NOT '1e', DUMKOPF!"
-            for i in range(2, len(palette), 3):
-                assert palette[i:i+1] == b" ", "SIE SEPARATOR SHOULD BE A SINGLE SPACE KARAKTER! NOZING ELSE, DUMKOPF!"
-            enumeration = enumer(3)
-            assert len(enumeration) == len(set(enumeration)), duplicatemsg
-            assert enumeration == sorted(enumeration), "SIE PALETTE IS A MESS! SORT YOUR KOLORS, DUMKOPF! LEAST RED KOLORS IN FRONT! THEN LEAST GREEN! THEN LEAST BLUE!"
-    
+            assert enumeration == sorted(enumeration), (
+                "SIE PALETTE IS A MESS! SORT YOUR KOLORS, DUMKOPF! LEAST BLUE"
+                "KOLORS IN FRONT! THEN LEAST GREEN! THEN LEAST RED!"
+            )
+
+
+def validate_nes(palette, strictness):
+    assert len(palette) >= 1
+    if strictness >= Strictness.pragmatic:
+        assert all(b in nes2rgb for b in palette)
+    duplicatemsg = "SIE PALETTE KONTAINS DUPLIKATE KOLORS, DUMKOPF!"
+    if strictness == Strictness.nazi:
+        enumeration = enumer(palette)
+        assert len(enumeration) == len(set(enumeration)), duplicatemsg
+        assert enumeration == sorted(enumeration), (
+            "SIE PALETTE IS A MESS! SORT YOUR KOLORS, DUMKOPF! LOW BYTE "
+            "VALUES IN FRONT!"
+        )
+
+
+def validate_tpl(palette, strictness):
+    signature = b"TPL"
+    hdrsize = len(signature)+1
+    fmtbyte = palette[3]
+    if fmtbyte & 0b10:
+        payloadfmt = "bgr15bpp"
+        bytespercolor = 2
+    elif fmtbyte & 0b01:
+        payloadfmt = "nes"
+        bytespercolor = 1
+    else:
+        payloadfmt = "rgb24bpp"
+        bytespercolor = 3
+    colorcount = 16
+    assert len(palette) >= hdrsize+colorcount*bytespercolor
+    payload = palette[hdrsize:hdrsize+colorcount*bytespercolor]
+    validate(payload, payloadfmt, strictness)
+    extrapalettes = palette[hdrsize+colorcount*bytespercolor:]
+    if strictness >= Strictness.pragmatic:
+        assert fmtbyte in {0, 1, 2}
+    if strictness >= Strictness.pedantic:
+        assert palette[0:3] == signature
+        assert 16+len(extrapalettes) in {16, 32, 64, 128, 256}
+    if strictness == Strictness.nazi:
+        assert len(extrapalettes) == 0, (
+            "LEBENSRAUM! ELIMINATE SIE EXTRA PALETTES, DUMKOPF! "
+            "IN TILE LAYER PRO, SET Palette -> Entries -> 16!"
+        )
+
+
+def validate_riffpal(palette, strictness):
+    assert len(palette) >= 24+4
+    signature = b"RIFF"
+    datasig = b"PAL data"
+    version = (3).to_bytes(2, byteorder="big")
+    payload = palette[24:]
+    dlength = (len(payload)+4).to_bytes(4, byteorder="little")
+    flength = (len(payload)+16).to_bytes(4, byteorder="little")
+    colorcount = (int(len(payload)/4)).to_bytes(2, byteorder="little")
+    if strictness >= Strictness.pragmatic:
+        for i in range(0, len(payload), 4):
+            byteflag = payload[i+3]
+            assert byteflag == 0
+    elif strictness >= Strictness.pedantic:
+        assert palette[0:4] == signature
+        assert palette[4:8] == flength
+        assert palette[8:16] == datasig
+        assert palette[16:20] == dlength
+        assert palette[20:22] == version
+        assert palette[22:24] == colorcount
+
+
+def validate_rgb24bpphex(palette, strictness):
+    hexes = palette.split()
+    assert len(hexes) >= 3
+    assert len(hexes) % 3 == 0
+    if strictness >= Strictness.pragmatic:
+        for h in hexes:
+            assert 0 <= int(h, 16) <= 255
+    if strictness == Strictness.nazi:
+        assert b'x' not in palette.lower(), (
+            "'0xFF' SHOULD BE 'FF', DUMKOPF!"
+        )
+        assert palette == palette.upper(), (
+            "MAKE IT '1E'! NOT '1e', DUMKOPF!"
+        )
+        for i in range(2, len(palette), 3):
+            assert palette[i:i+1] == b" ", (
+                "SIE SEPARATOR SHOULD BE A SINGLE SPACE KARAKTER! "
+                "NOZING ELSE, DUMKOPF!"
+            )
+        enumeration = enumer(palette, 3)
+        duplicatemsg = "SIE PALETTE KONTAINS DUPLIKATE KOLORS, DUMKOPF!"
+        assert len(enumeration) == len(set(enumeration)), duplicatemsg
+        assert enumeration == sorted(enumeration), (
+            "SIE PALETTE IS A MESS! SORT YOUR KOLORS, DUMKOPF! LEAST RED "
+            "KOLORS IN FRONT! THEN LEAST GREEN! THEN LEAST BLUE!"
+        )
+
+
+@contract(palette=bytes, fmt=str, strictness=Strictness)
+def validate(palette, fmt, strictness):
+    """
+    Validates the palette of the given format with the given level of
+    strictness. Raises an exception if it does not meet up to the standards.
+    """
+    if strictness == Strictness.lax:
+        return
+    validationmap = {
+        "rgb24bpp": validate_rgb24bpp,
+        "bgr15bpp": validate_bgr15bpp,
+        "nes": validate_nes,
+        "tpl": validate_tpl,
+        "riffpal": validate_riffpal,
+        "rgb24bpphex": validate_rgb24bpphex,
+    }
+    validator = validationmap[fmt]
+    validator(palette, strictness)
+
+
 def rgb24bpp2rgb24bpphex(palette):
     """ b'abc' -> b'61 62 63' """
     hexes = ["{:02x}".format(b).upper().encode("utf8") for b in palette]
     return b" ".join(hexes)
-    
+
+
 def format2rgb24bpp(palette, fmt):
     """ Changes the format of the fmt-formatted input into RGB 24 BPP. """
     if fmt == "rgb24bpp":
@@ -214,7 +279,8 @@ def format2rgb24bpp(palette, fmt):
         return newpalette
     if fmt == "riffpal":
         raise NotImplementedError
-    if fmt == "tpl":  # "Tile Layer Palette." Curiously, the extension is TPL, not TLP.
+    if fmt == "tpl":
+        # TPL = Tile Layer Palette. Curiously, the extension is TPL, not TLP.
         payloadfmt = palette[3]
         if payloadfmt == 0:
             return palette[4:]
@@ -225,7 +291,8 @@ def format2rgb24bpp(palette, fmt):
         else:
             raise NotImplementedError
     raise ValueError("Unrecognized format: {}".format(fmt))
-        
+
+
 def rgb24bpp2format(palette, fmt):
     """ Changes the format of the RGB 24 BPP formatted input into fmt. """
     if fmt == "rgb24bpp":
@@ -246,8 +313,10 @@ def rgb24bpp2format(palette, fmt):
     if fmt == "riffpal":
         raise NotImplementedError
     raise ValueError("Unrecognized format: {}".format(fmt))
-    
-def formatconvert(path, informat=None, outformat=None, outfile=None, strictness="pedantic"):
+
+
+def formatconvert(path, informat=None, outformat=None, outfile=None,
+                  strictness=Strictness.pedantic):
     print("Attempting to read file...")
     contents = readfile(path)
     infmt = informat
@@ -270,7 +339,7 @@ def formatconvert(path, informat=None, outformat=None, outfile=None, strictness=
         print("Printing output...")
         hexstr = rgb24bpp2rgb24bpphex(contents)
         print(hexstr.decode("latin1"))
-    
+
 if __name__ == "__main__":
     descr = """
 Converts a palette file of one format to another.
@@ -279,31 +348,54 @@ Converts a palette file of one format to another.
     inputformats = outputformats+["tlp"]
     parser = argparse.ArgumentParser(description=descr)
     parser.add_argument("path", help="Path to the file storing the palette.")
-    parser.add_argument("--informat", "-a", choices=inputformats, help="Format of the input file. If left unspecified, the program will attempt to guess the format.")
-    parser.add_argument("--outformat", "-b", choices=outputformats, help="Format of the output file. If left unspecified, the format does not change.")
-    parser.add_argument("--outfile", "-o", help="Path to the file to be created. If unspecified, print each byte to the console as space-separated hex.")
-    parser.add_argument("--strictness", "-s", default="pedantic", choices=["lax", "lenient", "pragmatic", "pedantic", "nazi"], help="Level of strictness when validating the input.")
+    parser.add_argument("--informat", "-a", choices=inputformats,
+                        help="Format of the input file. If left unspecified, "
+                        "the program will attempt to guess the format.")
+    parser.add_argument("--outformat", "-b", choices=outputformats,
+                        help="Format of the output file. If left unspecified, "
+                        "the format does not change.")
+    parser.add_argument("--outfile", "-o", help="Path to the file to be "
+                        "created. If unspecified, print each byte to the "
+                        "console as space-separated hex.")
+    parser.add_argument("--strictness", "-s", default="pedantic",
+                        choices=["lax", "lenient", "pragmatic", "pedantic",
+                                 "nazi"],
+                        help="Level of strictness when validating the input.")
     """
-    The strictness levels are totally ordered, so all validity checks associated with level X are included in level X+1, where lax < lenient < pragmatic < pedantic < nazi.
-    lax: Never raise an exception, regardless of how little the input complies to the format. This assumes that the file exists and is readable.
-    Like that conspiracist who expects to find Illuminati references in anything he reads, even in a blank page.
-    lenient: Read the minimum amount of bits needed, but complain if reading fails because of missing data.
-    Like that lazy student who attempts to copypaste the top paragraph of what he assumes to be a Wikipedia article into his essay, only to find out the article is empty.
+    The strictness levels are totally ordered, so all validity checks associated
+    with level X are included in level X+1, where
+    lax < lenient < pragmatic < pedantic < nazi.
+    lax: Never raise an exception, regardless of how little the input complies
+    to the format. This assumes that the file exists and is readable.
+    Like that conspiracist who expects to find Illuminati references in anything
+    he reads, even in a blank page.
+    lenient: Read the minimum amount of bits needed, but complain if reading
+    fails because of missing data.
+    Like that lazy student who attempts to copypaste the top paragraph of what
+    he assumes to be a Wikipedia article into his essay, only to find out the
+    article is empty.
     pragmatic: Read and validate the minimum amount of bytes needed.
-    Like that unskeptical student who reads the conclusion of a paper and deems it to make sense without reading the full paper.
-    pedantic: Validate all data. In case the specification for a format can be interpreted in several ways, complain only if there is no interpretation under which the input is considered valid.
-    Like that British peer reviewer who reads a full paper written in American English and does not consider there to be anything wrong with that.
-    nazi: Complain if the input does not comply to one certain interpretation of the format specification, or if the input differs from the "canonical" way of representing the palette.
-    Like that British grammar nazi who reprimands you for spelling "fuelling" with one L.
+    Like that unskeptical student who reads the conclusion of a paper and deems
+    it to make sense without reading the full paper.
+    pedantic: Validate all data. In case the specification for a format can be
+    interpreted in several ways, complain only if there is no interpretation
+    under which the input is considered valid.
+    Like that British peer reviewer who reads a full paper written in American
+    English and does not consider there to be anything wrong with that.
+    nazi: Complain if the input does not comply to one certain interpretation of
+    the format specification, or if the input differs from the "canonical" way
+    of representing the palette.
+    Like that British grammar nazi who reprimands you for spelling "fuelling"
+    with one L.
     """
     """
     bgr15bpp: Bytestring containing the palette in the form b"XYXYXY...XY"
     where each XY in binary is gggrrrrr0bbbbbgg.
-    rgb24bpp: Bytestring containing the palette in the form b"RRGGBBRRGGBB...RRGGBB"
+    rgb24bpp: Bytestring containing the palette in the form
+    b"RRGGBBRRGGBB...RRGGBB"
     where 0 <= x <= 255 for each x in {R, G, B}.
     """
     args = parser.parse_args()
-    
-    formatconvert(args.path, args.informat, args.outformat, args.outfile, args.strictness)
-    
-    
+
+    formatconvert(args.path, args.informat, args.outformat, args.outfile,
+                  args.strictness)

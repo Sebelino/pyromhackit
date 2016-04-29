@@ -174,7 +174,7 @@ def validate_tpl(palette, strictness):
         assert fmtbyte in {0, 1, 2}
     if strictness >= Strictness.pedantic:
         assert palette[0:3] == signature
-        assert 16+len(extrapalettes) in {16, 32, 64, 128, 256}
+        assert len(palette[4:])/bytespercolor in {16, 32, 64, 128, 256}
     if strictness == Strictness.nazi:
         assert len(extrapalettes) == 0, (
             "LEBENSRAUM! ELIMINATE SIE EXTRA PALETTES, DUMKOPF! "

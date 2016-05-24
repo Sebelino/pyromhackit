@@ -1,4 +1,8 @@
-﻿ROM:
+Some of the script:
+Shift_JIS: http://shindds.main.jp/dds/sidel/mazin/2story.htm
+UTF8: http://www.mai-net.net/bbs/sst/sst.php?act=dump&cate=tiraura&all=22653&n=1
+
+ROM:
 3 MiB.
 
 $00/0040: MAJINTENSEI2
@@ -6,6 +10,8 @@ $00/0040: MAJINTENSEI2
 $00/0200: At the Atlus startup screen, the animation will pause for this many time units. The first word is the number of "seconds"; the second number is the number of "minutes".
 
 Analysis of the textified ROM:
+THISGAMEPAKISNOTDESIGINEDFORYOURSUPERFAMICOMORSUPERNESATLUS
+ATTENTIONCHAPTER:OPERATIONCLEARINFORMATIONRESULTTOTALTURN:WIN:LOSE:DESTINATION
 52188: INFORMATION
 52194: DATA ANALSYS [sic!]
 52201: LOCK ON OK?
@@ -31,9 +37,12 @@ MEGALOPOLIS
 HELIOS
 SPIRALNEMESIS
 ABCDEFGHIJKLMNOPQRSTUVWXYZ
-ATLUSPRESENTS
+2F02B2: ATLUSPRESENTS (Intro text)
 YUICHIIWATA
 CONGRATULATIONSALLMAPCLEARTHISISYOURHISTORY
+15126 w 100: よくiてくれた (cutscene text)
+"393" = Protagonist's name
+" 23" = Line feed?
 
 RAM:
 $7E/00F0: MAJINTENSEI2
@@ -50,6 +59,8 @@ $7E/2030[12]: If < 26, Karen will call you ナオキ ("Naoki"), otherwise she wi
 VRAM:
 $00/7000-8000: BG#4. Japanese & English characters at the naming screen.
 $00/7940-794F: Letters A B C D.
+$00/B800: BG3 cutscene text
+
 
 BF 01 0B 01 BF 01 0C 01 BF 01 0D 01 BF 01 0E 01
 
@@ -81,3 +92,5 @@ $C0/7BC0 22 73 13 C0 JSL $C01373[$C0:1373]   A:0001 X:6000 Y:8008 P:envmxdIzc
 $C0/7BC0 22 73 13 C0 JSL $C01373[$C0:1373]   A:0001 X:6000 Y:800A P:envmxdIzc
 $C0/7BC0 22 73 13 C0 JSL $C01373[$C0:1373]   A:0001 X:6000 Y:800C P:envmxdIzc
 
+
+Translate title screen logo? Get someone to design English logo.

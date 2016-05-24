@@ -1,9 +1,0 @@
-= Extract the script of the game =
-
-1. Find the location of the game's script, e.g. by using Geiger's debugger and studying what instructions are run when Karen speaks.
-
-2. The script should consist of a sequence of identifiers for letters (unless the script is compressed). Take note of the identifier for each letter.
-
-3. Write a Python program that reads the script portions of the ROM and outputs them to the terminal.
-
-4. Modify the program so that it outputs the corresponding letters instead of the identifiers. If all goes well, you should now be able to spot a semi-garbled script.

@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 """
 Contains a bunch of atomic hacks in the form of functions, e.g.:
 * "remove the Japanese from the naming screen"

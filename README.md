@@ -7,4 +7,4 @@ I am making a patch for translating Majin Tensei II for the Super Famicom into E
 Todo.
 
 # License
-The software is licensed under GPLv2. See LICENSE.md for details.
+The software is licensed under GPLv3. See LICENSE.md for details.

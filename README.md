@@ -11,7 +11,7 @@ TODO
 
 Install the dependencies like so:
 ```bash
-$ pip install -r requirements.txt;
+$ pip install -r requirements.txt
 ```
 
 # Usage
@@ -43,7 +43,7 @@ optional arguments:
                         Output to file instead of to console.
 ```
 
-# Testing
+## Testing
 ```bash
 $ nosetests
 ```

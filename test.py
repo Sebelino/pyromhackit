@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from nose.tools import assert_equals, assert_not_equals
+from nose.tools import assert_equal, assert_not_equal
 from reader import ROM
 from os.path import isfile
 import os
@@ -25,18 +25,18 @@ def test_init2():
 
 def test_repr():
     r = ROM(b'abc')
-    assert_equals(r.__repr__(), "ROM(b'abc')")
+    assert_equal(r.__repr__(), "ROM(b'abc')")
 
 
 def test_len():
     r = ROM(b'abc')
-    assert_equals(len(r), 3)
+    assert_equal(len(r), 3)
 
 
 def test_eq():
     r = ROM(b'abc')
-    yield assert_equals, r, ROM(b'abc')
-    yield assert_not_equals, r, b'abc'
+    yield assert_equal, r, ROM(b'abc')
+    yield assert_not_equal, r, b'abc'
 
 
 def test_subscripting():
@@ -49,12 +49,12 @@ def test_subscripting():
         (r[:], r),
     ]
     for (returned, expected) in paramlist:
-        yield assert_equals, returned, expected
+        yield assert_equal, returned, expected
 
 
 def test_str():
     r = ROM(b'abc')
-    assert_equals(str(r), "61 62 63")
+    assert_equal(str(r), "61 62 63")
 
 
 #def test_table():
@@ -65,7 +65,8 @@ def test_str():
 #        ((3, False, ROM.latin1), "a b 63\n64 65 66\n67"),
 #    ]
 #    for (params, expected) in paramlist:
-#        yield assert_equals, returned, expected
+#        yield assert_equal, returned, expected
+
 
 def test_execute():
     table = """\
@@ -92,8 +93,8 @@ def test_execute():
         f = ROM.execute(filter)
         returned = f(stream)
         print("Returned\n[{}]".format(returned))
-        print("Expected\n[{}]".format(returned))
-        yield assert_equals, returned, expected
+        print("Expected\n[{}]".format(expected))
+        yield assert_equal, returned, expected
 
 
 def test_pipe():
@@ -106,7 +107,7 @@ def test_pipe():
     ]
     for (pipeline, expected) in paramlist1:
         returned = r1.pipe(*pipeline)
-        yield assert_equals, returned, expected
+        yield assert_equal, returned, expected
     offset = 0x2f0280+50
     r2 = ROM(path=ROMPATH)[offset:offset+10]
     paramlist2 = [
@@ -114,7 +115,7 @@ def test_pipe():
     ]
     for (pipeline, expected) in paramlist2:
         returned = r2.pipe(*pipeline)
-        yield assert_equals, returned, expected
+        yield assert_equal, returned, expected
 
 
 def test_outfile():
@@ -124,13 +125,13 @@ def test_outfile():
     with open(OUTPATH, 'rb') as f:
         returned = f.read()
         expected = r.content
-        assert_equals(returned, expected)
+        assert_equal(returned, expected)
     os.remove(OUTPATH)
     r.pipe("map {} | save {}".format(MAPPATH, OUTPATH))
     with open(OUTPATH, 'r', encoding="utf8") as f:
         returned = f.read()
         expected = r.pipe("map {}".format(MAPPATH))
-        assert_equals(returned, expected)
+        assert_equal(returned, expected)
     os.remove(OUTPATH)
 
 

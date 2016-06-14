@@ -16,11 +16,11 @@ def setUp():
 
 
 def test_init1():
-    r = ROM(b'abc')
+    ROM(b'abc')
 
 
 def test_init2():
-    r = ROM(path=ROMPATH)
+    ROM(path=ROMPATH)
 
 
 def test_repr():
@@ -138,5 +138,5 @@ def test_outfile():
 def teardown():
     try:
         os.remove(OUTPATH)
-    except FileNotFoundError:
+    except IOError:
         pass

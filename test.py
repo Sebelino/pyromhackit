@@ -9,28 +9,35 @@ ROMPATH = "./majin-tensei-ii/mt2.sfc"
 MAPPATH = "./majin-tensei-ii/hexmap.yaml"
 OUTPATH = "./romtexttest.txt"
 
+
 def setUp():
     assert isfile(ROMPATH)
     assert isfile(MAPPATH)
 
+
 def test_init1():
     r = ROM(b'abc')
 
+
 def test_init2():
     r = ROM(path=ROMPATH)
+
 
 def test_repr():
     r = ROM(b'abc')
     assert_equals(r.__repr__(), "ROM(b'abc')")
 
+
 def test_len():
     r = ROM(b'abc')
     assert_equals(len(r), 3)
+
 
 def test_eq():
     r = ROM(b'abc')
     yield assert_equals, r, ROM(b'abc')
     yield assert_not_equals, r, b'abc'
+
 
 def test_subscripting():
     r = ROM(b'abcde')
@@ -88,6 +95,7 @@ def test_execute():
         print("Expected\n[{}]".format(returned))
         yield assert_equals, returned, expected
 
+
 def test_pipe():
     r1 = ROM(b'abc')
     paramlist1 = [
@@ -107,6 +115,7 @@ def test_pipe():
     for (pipeline, expected) in paramlist2:
         returned = r2.pipe(*pipeline)
         yield assert_equals, returned, expected
+
 
 def test_outfile():
     offset = 0x2f0200

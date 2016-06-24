@@ -1,7 +1,7 @@
 Python ROM Hacking Toolkit (pyromhackit)
 =========================================
-This is a little Python utility providing my tools for doing ROM hacks.
-This is still largely a work in progress.
+This is a little Python utility providing my tools for doing ROM hacks, primarily geared towards
+script replacement. This is still largely a work in progress.
 
 # Install
 TODO
@@ -50,8 +50,13 @@ $ nosetests
 
 Features
 ========
+Functional requirements:
 * Palette formatter
 * ROM file reader module providing a pipeline interface to the ROM file.
+
+Quality requirements:
+* Platform independence
+* Free license
 
 Status
 ======

@@ -67,6 +67,12 @@ def test_str():
 #    for (params, expected) in paramlist:
 #        yield assert_equal, returned, expected
 
+def assert_equal2(returned, expected):
+    assert returned == expected, ("""
+Returned:\n[{}]
+Expected:\n[{}]
+    """.format(returned, expected))
+
 
 def test_execute():
     table = """\
@@ -94,7 +100,7 @@ def test_execute():
         returned = f(stream)
         print("Returned\n[{}]".format(returned))
         print("Expected\n[{}]".format(expected))
-        yield assert_equal, returned, expected
+        yield assert_equal2, returned, expected
 
 
 def test_pipe():

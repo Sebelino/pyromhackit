@@ -69,8 +69,6 @@ Romhacks I am considering or lightly working on at the moment:
 * Majin Tensei II translation. Aeon Genesis has called dibs on this one, but progress on the prequel
 has been stuck at 40 % since forever.
 * Actraiser 2 retranslation/decensoring. Decent warmup project.
-* Shin Megami Tensei II retranslation of spell names, etc. Orden made one for SMT I but I haven't
-found one for SMT II.
 * Devil Summoner translation. A script exists but development with hacking the ISO appears to be
 stuck in limbo.
 * Persona (PSP) soundtrack patch. There exists one, but it is far from perfect.

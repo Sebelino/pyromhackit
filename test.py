@@ -57,16 +57,6 @@ def test_str():
     assert_equal(str(r), "61 62 63")
 
 
-#def test_table():
-#    r = ROM(b'abcdefg')
-#    paramlist = [
-#        ((0, False, ROM.hex), "61 62 63 64 65 66 67"),
-#        ((3, False, ROM.hex), "61 62 63\n64 65 66\n67"),
-#        ((3, False, ROM.latin1), "a b 63\n64 65 66\n67"),
-#    ]
-#    for (params, expected) in paramlist:
-#        yield assert_equal, returned, expected
-
 def assert_equal2(returned, expected):
     assert returned == expected, ("""
 Returned:\n[{}]

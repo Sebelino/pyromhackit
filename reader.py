@@ -154,14 +154,20 @@ class ROM:
         return "\n".join(" ".join(lst) for lst in ltbl)
 
     @staticmethod
-    def tabulate(stream, cols, label=False, border=False):
+    def tabulate(stream, cols, label=False, border=False, padding=0):
         """ Display the stream of characters in a table. """
-        table = PrettyTable(header=False, border=border, padding_width=0)
+        table = PrettyTable(header=False, border=border, padding_width=padding)
+        labelwidth = len(str(len(stream)))
         for i in range(0, len(stream), cols):
             segment = stream[i:i+cols]
-            row = segment+" "*max(0, cols-len(segment))
-            table.add_row(row)
-        return str(table)
+            segment = segment+" "*max(0, cols-len(segment))
+            segment = list(segment)
+            if label:
+                fmtstr = "{:>"+str(labelwidth)+"}: "
+                segment = [fmtstr.format(i)]+segment
+            table.add_row(segment)
+        tablestr = str(table)
+        return tablestr
 
     @staticmethod
     def execute(execstr):
@@ -192,7 +198,8 @@ class ROM:
             cols = int(positionals[1])
             label = {"--label", "-l"}.intersection(positionals[2:]) != set()
             border = {"--border", "-b"}.intersection(positionals[2:]) != set()
-            return lambda s: ROM.tabulate(s, cols, label, border)
+            padding = {"--padding", "-p"}.intersection(positionals[2:]) != set()
+            return lambda s: ROM.tabulate(s, cols, label, border, padding)
         elif positionals[0] == "save":
             path = positionals[1]
             return lambda s: write(s.content, path) if isinstance(s, ROM) else write(s, path)

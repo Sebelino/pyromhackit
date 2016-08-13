@@ -75,12 +75,20 @@ Expected:\n[{}]
 
 
 def test_execute():
-    table = """\
+    tables = [
+        """\
++-+-+-+
+|a|b|c|
+|d|e|f|
+|g| | |
++-+-+-+""",
+        """\
 +---+---+---+
 | a | b | c |
 | d | e | f |
 | g |   |   |
-+---+---+---+"""
++---+---+---+""",
+    ]
     paramlist = [
         (b"abc", "latin1", "abc"),
         (b"abc", "hex", ["61", "62", "63"]),
@@ -91,16 +99,22 @@ def test_execute():
         (b"\x0b\x00\x1e\x00\x16\x00\x1f\x00\x1d\x00",
          "map {}".format(MAPPATH), "A T L U S "),
         ("abcdefg", "tabulate 3", "abc\ndef\ng  "),
-        ("abcdefg", "tabulate 3 --label", "0: abc\n3: def\n6: g"),
-#        ("abcdefg", "tabulate 3 -l", "0: abc\n3: def\n6: g"),
-#        ("abcdefg", "tabulate 3 --border", table),
-#        ("abcdefg", "tabulate 3 -b", table),
+        ("abcdefg", "tabulate 3 --label", "0: abc\n3: def\n6: g  "),
+        ("abcdefg", "tabulate 3 -l",      "0: abc\n3: def\n6: g  "),
+        ("abcdefghijklmn", "tabulate 3 -l", """\
+ 0: abc
+ 3: def
+ 6: ghi
+ 9: jkl
+12: mn """),
+        ("abcdefg", "tabulate 3 --border", tables[0]),
+        ("abcdefg", "tabulate 3 -b", tables[0]),
+        ("abcdefg", "tabulate 3 -b --padding 1", tables[1]),
+        ("abcdefg", "tabulate 3 -b -p 1", tables[1]),
     ]
     for (stream, filter, expected) in paramlist:
         f = ROM.execute(filter)
         returned = f(stream)
-        print("Returned\n[{}]".format(returned))
-        print("Expected\n[{}]".format(expected))
         yield assert_equal2, returned, expected
 
 

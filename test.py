@@ -64,7 +64,7 @@ def test_subscripting():
 def test_bytes():
     """ Bytestring representation """
     rom = ROM(b'abc')
-    assert_equal(str(rom), "61 62 63")
+    assert_equal(bytes(rom), b"abc")
 
 
 def test_str():

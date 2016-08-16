@@ -5,6 +5,7 @@
 from reader import ROM
 import os
 from os.path import isfile
+from unittest import TestCase
 from nose.tools import assert_equal, assert_not_equal
 
 ROMPATH = "./majin-tensei-ii/mt2.sfc"
@@ -28,16 +29,28 @@ def test_init2():
     ROM(path=ROMPATH)
 
 
-def test_repr():
-    """ Call __repr__ """
-    rom = ROM(b'abc')
-    assert_equal(rom.__repr__(), "ROM(b'abc')")
+class TestBuiltins(TestCase):
+    """ Test common built-in methods """
 
+    def setUp(self):
+        """ Construct a sample short ROM """
+        self.rom = ROM(b'abc')
 
-def test_len():
-    """ Call len(...) on ROM instance """
-    rom = ROM(b'abc')
-    assert_equal(len(rom), 3)
+    def test_repr(self):
+        """ Call __repr__ """
+        assert_equal(self.rom.__repr__(), "ROM(b'abc')")
+
+    def test_bytes(self):
+        """ Bytestring representation """
+        assert_equal(bytes(self.rom), b"abc")
+
+    def test_str(self):
+        """ Unicode string representation """
+        assert_equal(str(self.rom), "61 62 63")
+
+    def test_len(self):
+        """ Call len(...) on ROM instance """
+        assert_equal(len(self.rom), 3)
 
 
 def test_eq():
@@ -59,18 +72,6 @@ def test_subscripting():
     ]
     for (returned, expected) in paramlist:
         yield assert_equal, returned, expected
-
-
-def test_bytes():
-    """ Bytestring representation """
-    rom = ROM(b'abc')
-    assert_equal(bytes(rom), b"abc")
-
-
-def test_str():
-    """ Unicode string representation """
-    rom = ROM(b'abc')
-    assert_equal(str(rom), "61 62 63")
 
 
 def assert_equal2(returned, expected):

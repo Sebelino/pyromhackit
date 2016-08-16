@@ -5,10 +5,9 @@ import yaml
 import sys
 import string
 from prettytable import PrettyTable
-from pdb import set_trace
-from enum import Enum
 import re
 from ast import literal_eval
+
 
 def filecontents(path):
     """ List of lines in a file specified by path. """
@@ -16,11 +15,13 @@ def filecontents(path):
         content = f.readlines()
         return content
 
+
 def read_yaml(path):
     """ YAML -> Dictionary. """
     stream = open(path, 'r', encoding='utf8')
     dct = yaml.load(stream)
     return dct
+
 
 def readbin(path):
     """ Read the specified file into a byte array (integers). """
@@ -30,8 +31,8 @@ def readbin(path):
 
 
 def compact(stream, cols):
-    """ Output every character with nothing in-between, making a line break every cols characters.
-        If cols = 0, output everything on one line. """
+    """ Output every character with nothing in-between, making a line break
+    every cols characters.  If cols = 0, output everything on one line. """
     output = []
     for i in range(len(stream)):
         if cols > 0 and i % cols == 0:
@@ -39,17 +40,21 @@ def compact(stream, cols):
         output.append(stream[i])
     return "".join(output).strip()
 
+
 def pack(stream):
     """ Removes all whitespace. """
     whitespace = string.whitespace.replace("\n", "").replace("\r", "")
     output = [e for e in stream if e not in whitespace]
     return output
 
+
 def convert(infile, inencoding, pipeline, width, transliterationfiles):
-    """ Uses the inencoding to read the infile, does some transliteration and applies a sequence of additional processing filters. """
+    """ Uses the inencoding to read the infile, does some transliteration and
+    applies a sequence of additional processing filters. """
     contents = readbin(infile)
     contenttype = [int]
     mapfiles = iter(transliterationfiles) if transliterationfiles else iter([])
+
     def transliterate(stream):
         try:
             mapfile = next(mapfiles)
@@ -58,6 +63,7 @@ def convert(infile, inencoding, pipeline, width, transliterationfiles):
             raise Exception("Supplied too few MAPs (%s)." % n)
         map = read_yaml(mapfile)
         return [ord(map[b]) if b in map else b for b in stream]
+
     def replace(s):
         try:
             mapfile = next(mapfiles)
@@ -69,10 +75,13 @@ def convert(infile, inencoding, pipeline, width, transliterationfiles):
         for k in map:
             newstr = newstr.replace(k, map[k])
         return newstr
+
     def label(stream):
-        return [("%06x: " % i).upper()+stream[i] if i % width == 0 else stream[i] for i in range(len(stream))]
+        return [("%06x: " % i).upper()+stream[i]
+                if i % width == 0 else stream[i] for i in range(len(stream))]
     pipe = {
-        "hex": ([int], [str], lambda lst: [("0"+hex(n)[2:])[-2:].upper() for n in lst]),
+        "hex": ([int], [str], lambda lst: [("0"+hex(n)[2:])[-2:].upper()
+                                           for n in lst]),
         "text": ([int], [str], lambda lst: [chr(n) for n in lst]),
         "odd": (None, None, lambda lst: lst[::2]),
         "pack": ([str], str, pack),
@@ -88,11 +97,14 @@ def convert(infile, inencoding, pipeline, width, transliterationfiles):
             labelingoffset = 8
         (inputtype, outputtype, operation) = pipe[filter]
         if inputtype not in [None, contenttype]:
-            raise Exception("Filter %s expected type %s, got %s" % (filter, inputtype, contenttype))
+            raise Exception("Filter %s expected type %s, got %s"
+                            % (filter, inputtype, contenttype))
         contents = operation(contents)
-        if outputtype is not None: contenttype = outputtype
+        if outputtype is not None:
+            contenttype = outputtype
     contents = compact(contents, width+labelingoffset)
     return contents
+
 
 def write(content, path):
     """ Helper method for writing a bytestring or UTF-8 string to file """
@@ -105,6 +117,7 @@ def write(content, path):
             f.write(content)
             return
     raise Exception("Illegal type: {}".format(type(content)))
+
 
 class ROM:
     def __init__(self, *args, **kwargs):
@@ -119,7 +132,8 @@ class ROM:
         """ List of bytestring lines with the specified width """
         if width:
             w = width
-            tbl = [self.content[i*w:(i+1)*w] for i in range(int(len(self)/w)+1)]
+            tbl = [self.content[i*w:(i+1)*w]
+                   for i in range(int(len(self)/w)+1)]
             if tbl[-1] == b'':
                 return tbl[:-1]
             return tbl
@@ -130,7 +144,8 @@ class ROM:
     def labeltable(tbl):
         """ [[String]] (NxM) -> [[String]] (NxM+1) """
         width = len(tbl[0])
-        return [[("%06x:" % (i*width)).upper()]+tbl[i] for i in range(len(tbl))]
+        return [[("%06x:" % (i*width)).upper()]+tbl[i]
+                for i in range(len(tbl))]
 
     @staticmethod
     def hex(bytestr):
@@ -143,11 +158,12 @@ class ROM:
         if isinstance(mapdata, str):
             path = mapdata
             dct = read_yaml(path)
-        return "".join(dct[byte] if byte in dct else chr(byte) for byte in self)
+        return "".join(dct[byte] if byte in dct else chr(byte)
+                       for byte in self)
 
     def table(self, width=0, labeling=False, encoding=hex):
         """ (Labeled?) table where each cell corresponds to a byte """
-        #encoded = self.encoding
+        # encoded = self.encoding
         lines = self.lines(width)
         tbl = [[encoding(b) for b in row] for row in lines]
         ltbl = labeltable(tbl) if labeling else tbl
@@ -198,11 +214,13 @@ class ROM:
             cols = int(positionals[1])
             label = {"--label", "-l"}.intersection(positionals[2:]) != set()
             border = {"--border", "-b"}.intersection(positionals[2:]) != set()
-            padding = {"--padding", "-p"}.intersection(positionals[2:]) != set()
+            padding = {"--padding",
+                       "-p"}.intersection(positionals[2:]) != set()
             return lambda s: ROM.tabulate(s, cols, label, border, padding)
         elif positionals[0] == "save":
             path = positionals[1]
-            return lambda s: write(s.content, path) if isinstance(s, ROM) else write(s, path)
+            return lambda s: write(s.content, path) if \
+                isinstance(s, ROM) else write(s, path)
         raise Exception("Could not execute: {}".format(execstr))
 
     def pipe(self, *pipeline):
@@ -265,26 +283,37 @@ $ ./reader.py mt2.sfc wrap 64 hexify label out hexdump.txt
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Read a ROM and process it.")
     parser.add_argument('infile', help="Path to the file to be read.")
-    """ Encoding: The appearance of the characters themselves (hexadecimal, ASCII, etc.) """
-    parser.add_argument('inencoding', choices=["bin", "hex"], help="Encoding of the read file.")
-    parser.add_argument('--transliteration', '-t', nargs='+', help="YAML file mapping a set of symbols to another set of symbols.")
-    parser.add_argument('process', nargs='*',
-                        choices=["odd",  # [X] -> [X] : Strip away the 2nd, 4th, 6th... character.
-                                 "hex",  # [Int] -> [String] : Show the values in hexadecimal.
-                                 "text",  # [Int] -> [String] : Convert the values to UTF-8 characters.
-                                 "map",  # [X] -> [Y] : Transliterate using the supplied file(s). The Nth time this filter is used, the Nth file is used.
-                                 "replace",  # String -> String : Search/replace using the supplied file(s). The Nth time this filter is used, the Nth file is used.
-                                 "pack",  # [String] -> [String] : Strip away whitespace.
-                                 "join",  # [String] -> String : Join all the strings into one.
-                                 "table",  # [String] -> String : Display the results in a table.
-                                 "label",  # [String] -> [String] : Label each row with the address of its first element.
-                                ],
-                        help="Apply processing rules to the out-encoded stream.")
-    parser.add_argument('--width', '-w', type=int, default=0, help="Number of columns in the output.")
-    parser.add_argument('--outfile', '-o', help="Output to file instead of to console.")
+    """ Encoding: The appearance of the characters themselves (hexadecimal,
+    ASCII, etc.) """
+    parser.add_argument('inencoding', choices=["bin", "hex"],
+                        help="Encoding of the read file.")
+    parser.add_argument('--transliteration', '-t', nargs='+',
+                        help="YAML file mapping a set of symbols to another"
+                        " set of symbols.")
+    parser.add_argument('process', nargs='*', choices=[
+        "odd",  # [X] -> [X] : Strip away the 2nd, 4th, 6th... character.
+        "hex",  # [Int] -> [String] : Show the values in hexadecimal.
+        "text",  # [Int] -> [String] : Convert the values to UTF-8 characters.
+        "map",  # [X] -> [Y] : Transliterate using the supplied file(s).
+                # The Nth time this filter is used, the Nth file is used.
+        "replace",  # String -> String : Search/replace using the supplied
+                    # file(s). The Nth time this filter is used, the Nth file
+                    # is used.
+        "pack",  # [String] -> [String] : Strip away whitespace.
+        "join",  # [String] -> String : Join all the strings into one.
+        "table",  # [String] -> String : Display the results in a table.
+        "label",  # [String] -> [String] : Label each row with the address of
+                  # its first element.
+        ],
+        help="Apply processing rules to the out-encoded stream.")
+    parser.add_argument('--width', '-w', type=int, default=0,
+                        help="Number of columns in the output.")
+    parser.add_argument('--outfile', '-o',
+                        help="Output to file instead of to console.")
 
     args = parser.parse_args()
-    out = convert(args.infile, args.inencoding, args.process, args.width, args.transliteration)
+    out = convert(args.infile, args.inencoding, args.process, args.width,
+                  args.transliteration)
     f = sys.stdout
     if args.outfile:
         f = open(args.outfile, 'w', encoding="utf8")

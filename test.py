@@ -61,6 +61,12 @@ def test_subscripting():
         yield assert_equal, returned, expected
 
 
+def test_bytes():
+    """ Bytestring representation """
+    rom = ROM(b'abc')
+    assert_equal(str(rom), "61 62 63")
+
+
 def test_str():
     """ Unicode string representation """
     rom = ROM(b'abc')

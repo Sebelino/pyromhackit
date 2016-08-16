@@ -62,7 +62,7 @@ class TestBuiltins(TestCase):
 
 
 def test_subscripting():
-    """ Subscripting support, similar to a bytestring """
+    """ Subscripting support should be isomorphic to bytestrings """
     rom = ROM(b'abcde')
     paramlist = [
         (rom[0], 97),

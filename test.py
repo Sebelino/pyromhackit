@@ -52,12 +52,13 @@ class TestBuiltins(TestCase):
         """ Call len(...) on ROM instance """
         assert_equal(len(self.rom), 3)
 
+    def test_eq(self):
+        """ Two ROMs constructed from the same bytestring are equal """
+        assert_equal(self.rom, ROM(b'abc'))
 
-def test_eq():
-    """ ROM instance equality """
-    rom = ROM(b'abc')
-    yield assert_equal, rom, ROM(b'abc')
-    yield assert_not_equal, rom, b'abc'
+    def test_neq(self):
+        """ ROM =/= bytestring """
+        assert_not_equal(self.rom, b'abc')
 
 
 def test_subscripting():

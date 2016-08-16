@@ -1,63 +1,74 @@
 #!/usr/bin/env python
 
-from nose.tools import assert_equal, assert_not_equal
+""" Test suite for ROM class. """
+
 from reader import ROM
-from os.path import isfile
 import os
+from os.path import isfile
+from nose.tools import assert_equal, assert_not_equal
 
 ROMPATH = "./majin-tensei-ii/mt2.sfc"
 MAPPATH = "./majin-tensei-ii/hexmap.yaml"
 OUTPATH = "./romtexttest.txt"
 
 
-def setUp():
+def set_up():
+    """ Assert that certain files are present for testing """
     assert isfile(ROMPATH)
     assert isfile(MAPPATH)
 
 
 def test_init1():
+    """ Call constructor with sample data """
     ROM(b'abc')
 
 
 def test_init2():
+    """ Call constructor with sample path """
     ROM(path=ROMPATH)
 
 
 def test_repr():
-    r = ROM(b'abc')
-    assert_equal(r.__repr__(), "ROM(b'abc')")
+    """ Call __repr__ """
+    rom = ROM(b'abc')
+    assert_equal(rom.__repr__(), "ROM(b'abc')")
 
 
 def test_len():
-    r = ROM(b'abc')
-    assert_equal(len(r), 3)
+    """ Call len(...) on ROM instance """
+    rom = ROM(b'abc')
+    assert_equal(len(rom), 3)
 
 
 def test_eq():
-    r = ROM(b'abc')
-    yield assert_equal, r, ROM(b'abc')
-    yield assert_not_equal, r, b'abc'
+    """ ROM instance equality """
+    rom = ROM(b'abc')
+    yield assert_equal, rom, ROM(b'abc')
+    yield assert_not_equal, rom, b'abc'
 
 
 def test_subscripting():
-    r = ROM(b'abcde')
+    """ Subscripting support, similar to a bytestring """
+    rom = ROM(b'abcde')
     paramlist = [
-        (r[0], 97),
-        (r[1:1], ROM(b'')),
-        (r[:1], ROM(b'a')),
-        (r[1:4], ROM(b'bcd')),
-        (r[:], r),
+        (rom[0], 97),
+        (rom[1:1], ROM(b'')),
+        (rom[:1], ROM(b'a')),
+        (rom[1:4], ROM(b'bcd')),
+        (rom[:], rom),
     ]
     for (returned, expected) in paramlist:
         yield assert_equal, returned, expected
 
 
 def test_str():
-    r = ROM(b'abc')
-    assert_equal(str(r), "61 62 63")
+    """ Unicode string representation """
+    rom = ROM(b'abc')
+    assert_equal(str(rom), "61 62 63")
 
 
 def assert_equal2(returned, expected):
+    """ Clearer assert function """
     assert returned == expected, ("""
 Returned:\n[{}]
 Expected:\n[{}]
@@ -65,6 +76,7 @@ Expected:\n[{}]
 
 
 def test_execute():
+    """ Test ROM.execute(execstr) expected output """
     tables = [
         """\
 +-+-+-+
@@ -90,7 +102,7 @@ def test_execute():
          "map {}".format(MAPPATH), "A T L U S "),
         ("abcdefg", "tabulate 3", "abc\ndef\ng  "),
         ("abcdefg", "tabulate 3 --label", "0: abc\n3: def\n6: g  "),
-        ("abcdefg", "tabulate 3 -l",      "0: abc\n3: def\n6: g  "),
+        ("abcdefg", "tabulate 3 -l", "0: abc\n3: def\n6: g  "),
         ("abcdefghijklmn", "tabulate 3 -l", """\
  0: abc
  3: def
@@ -102,14 +114,15 @@ def test_execute():
         ("abcdefg", "tabulate 3 -b --padding 1", tables[1]),
         ("abcdefg", "tabulate 3 -b -p 1", tables[1]),
     ]
-    for (stream, filter, expected) in paramlist:
-        f = ROM.execute(filter)
-        returned = f(stream)
+    for (stream, filterstr, expected) in paramlist:
+        filtr = ROM.execute(filterstr)
+        returned = filtr(stream)
         yield assert_equal2, returned, expected
 
 
 def test_pipe():
-    r1 = ROM(b'abc')
+    """ Test ROM:rom.pipe(...) expected output """
+    rom1 = ROM(b'abc')
     paramlist1 = [
         ([lambda x: x], ROM(b"abc")),
         (["hex"], ["61", "62", "63"]),
@@ -117,36 +130,38 @@ def test_pipe():
         (["hex", "join ' '"], "61 62 63"),
     ]
     for (pipeline, expected) in paramlist1:
-        returned = r1.pipe(*pipeline)
+        returned = rom1.pipe(*pipeline)
         yield assert_equal, returned, expected
     offset = 0x2f0280+50
-    r2 = ROM(path=ROMPATH)[offset:offset+10]
+    rom2 = ROM(path=ROMPATH)[offset:offset+10]
     paramlist2 = [
         (["map {}".format(MAPPATH)], "A T L U S "),
     ]
     for (pipeline, expected) in paramlist2:
-        returned = r2.pipe(*pipeline)
+        returned = rom2.pipe(*pipeline)
         yield assert_equal, returned, expected
 
 
 def test_outfile():
+    """ Test loading a ROM from a file and write it to another """
     offset = 0x2f0200
-    r = ROM(path=ROMPATH)[offset:offset+0x100]
-    r.pipe("save {}".format(OUTPATH))
-    with open(OUTPATH, 'rb') as f:
-        returned = f.read()
-        expected = r.content
+    rom = ROM(path=ROMPATH)[offset:offset+0x100]
+    rom.pipe("save {}".format(OUTPATH))
+    with open(OUTPATH, 'rb') as outfile:
+        returned = outfile.read()
+        expected = rom.content
         assert_equal(returned, expected)
     os.remove(OUTPATH)
-    r.pipe("map {} | save {}".format(MAPPATH, OUTPATH))
-    with open(OUTPATH, 'r', encoding="utf8") as f:
-        returned = f.read()
-        expected = r.pipe("map {}".format(MAPPATH))
+    rom.pipe("map {} | save {}".format(MAPPATH, OUTPATH))
+    with open(OUTPATH, 'r', encoding="utf8") as outfile:
+        returned = outfile.read()
+        expected = rom.pipe("map {}".format(MAPPATH))
         assert_equal(returned, expected)
     os.remove(OUTPATH)
 
 
 def teardown():
+    """ Remove leftover files """
     try:
         os.remove(OUTPATH)
     except IOError:

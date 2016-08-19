@@ -1,5 +1,9 @@
 .PHONY: clean
 
+coverage:
+	@nosetests -vs --with-coverage \
+	               --cover-package=reader \
+
 venv: venv/bin/activate
 
 venv/bin/activate: requirements.txt

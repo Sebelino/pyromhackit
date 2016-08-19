@@ -119,6 +119,11 @@ def write(content, path):
     raise Exception("Illegal type: {}".format(type(content)))
 
 
+def bytes2hex(bytestr):
+    """ Bytestring -> [String] """
+    return [("0"+hex(b)[2:])[-2:].upper() for b in bytestr]
+
+
 class ROM:
     def __init__(self, *args, **kwargs):
         if 'path' in kwargs:
@@ -147,11 +152,6 @@ class ROM:
         return [[("%06x:" % (i*width)).upper()]+tbl[i]
                 for i in range(len(tbl))]
 
-    @staticmethod
-    def hex(bytestr):
-        """ Bytestring -> [String] """
-        return [("0"+hex(b)[2:])[-2:].upper() for b in bytestr]
-
     def map(self, mapdata):
         if isinstance(mapdata, dict):
             dct = mapdata
@@ -161,12 +161,12 @@ class ROM:
         return "".join(dct[byte] if byte in dct else chr(byte)
                        for byte in self)
 
-    def table(self, width=0, labeling=False, encoding=hex):
+    def table(self, width=0, labeling=False, encoding=bytes2hex):
         """ (Labeled?) table where each cell corresponds to a byte """
         # encoded = self.encoding
         lines = self.lines(width)
         tbl = [[encoding(b) for b in row] for row in lines]
-        ltbl = labeltable(tbl) if labeling else tbl
+        ltbl = ROM.labeltable(tbl) if labeling else tbl
         return "\n".join(" ".join(lst) for lst in ltbl)
 
     @staticmethod
@@ -192,7 +192,7 @@ class ROM:
         if positionals[0] == "latin1":
             return lambda s: s.decode("latin1")
         elif positionals[0] == "hex":
-            return lambda s: ROM.hex(s)
+            return lambda s: bytes2hex(s)
         elif positionals[0] == "odd":
             return lambda s: s[::2]
         elif positionals[0] == "join":

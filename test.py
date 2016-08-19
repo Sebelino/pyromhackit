@@ -29,8 +29,8 @@ def test_init2():
     ROM(path=ROMPATH)
 
 
-class TestBuiltins(TestCase):
-    """ Test common built-in methods """
+class TestTinyROM(TestCase):
+    """ Test methods for an explicitly given tiny ROM """
 
     def setUp(self):
         """ Construct a sample short ROM """
@@ -59,6 +59,19 @@ class TestBuiltins(TestCase):
     def test_neq(self):
         """ ROM =/= bytestring """
         assert_not_equal(self.rom, b'abc')
+
+    def test_lines(self):
+        """ ROM:rom.lines(width) """
+        paramlist = [
+            ([0], [b'abc']),
+            ([1], [b'a', b'b', b'c']),
+            ([2], [b'ab', b'c']),
+            ([3], [b'abc']),
+            ([4], [b'abc']),
+        ]
+        for (args, expected) in paramlist:
+            returned = self.rom.lines(*args)
+            yield assert_equal, returned, expected
 
 
 def test_subscripting():

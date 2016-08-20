@@ -208,8 +208,9 @@ class ROM:
             return lambda s: sep.join(s)
         elif positionals[0] == "map":
             path = positionals[1]
-            map = read_yaml(path)
-            return lambda s: "".join(map[b] for b in s)
+            hexmap = read_yaml(path)
+            return lambda s: "".join(hexmap[b] if b in hexmap.keys()
+                                     else chr(b) for b in s)
         elif positionals[0] == "tabulate":
             cols = int(positionals[1])
             label = {"--label", "-l"}.intersection(positionals[2:]) != set()

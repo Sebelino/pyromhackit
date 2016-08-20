@@ -8,9 +8,9 @@ from os.path import isfile
 from unittest import TestCase
 from nose.tools import assert_equal, assert_not_equal
 
-ROMPATH = "./majin-tensei-ii/mt2.sfc"
-MAPPATH = "./majin-tensei-ii/hexmap.yaml"
-OUTPATH = "./romtexttest.txt"
+ROMPATH = "./loremipsum.rom"
+MAPPATH = "./loremipsum.yml"
+OUTPATH = "./loremipsum.txt"
 
 
 def set_up():
@@ -119,8 +119,8 @@ def test_execute():
         (["a", "bb", "c"], "join", "abbc"),
         (["a", "bb", "c"], "join ' '", "a bb c"),
         (["a", "bb", "c"], "join __", "a__bb__c"),
-        (b"\x0b\x00\x1e\x00\x16\x00\x1f\x00\x1d\x00",
-         "map {}".format(MAPPATH), "A T L U S "),
+        (b"01234 56784",
+         "map {}".format(MAPPATH), "Lorem ipsum"),
         ("abcdefg", "tabulate 3", "abc\ndef\ng  "),
         ("abcdefg", "tabulate 3 --label", "0: abc\n3: def\n6: g  "),
         ("abcdefg", "tabulate 3 -l", "0: abc\n3: def\n6: g  "),
@@ -153,10 +153,10 @@ def test_pipe():
     for (pipeline, expected) in paramlist1:
         returned = rom1.pipe(*pipeline)
         yield assert_equal, returned, expected
-    offset = 0x2f0280+50
-    rom2 = ROM(path=ROMPATH)[offset:offset+10]
+    offset = 257
+    rom2 = ROM(path=ROMPATH)[offset:offset+13]
     paramlist2 = [
-        (["map {}".format(MAPPATH)], "A T L U S "),
+        (["map {}".format(MAPPATH)], "reprehenderit"),
     ]
     for (pipeline, expected) in paramlist2:
         returned = rom2.pipe(*pipeline)
@@ -165,8 +165,8 @@ def test_pipe():
 
 def test_outfile():
     """ Test loading a ROM from a file and write it to another """
-    offset = 0x2f0200
-    rom = ROM(path=ROMPATH)[offset:offset+0x100]
+    offset = 257
+    rom = ROM(path=ROMPATH)[offset:offset+13]
     rom.pipe("save {}".format(OUTPATH))
     with open(OUTPATH, 'rb') as outfile:
         returned = outfile.read()

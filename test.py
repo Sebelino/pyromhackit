@@ -178,7 +178,6 @@ def test_outfile():
         returned = outfile.read()
         expected = rom.pipe("map {}".format(MAPPATH))
         assert_equal(returned, expected)
-    os.remove(OUTPATH)
 
 
 def teardown():

@@ -1,4 +1,5 @@
 Some of the script:
+Script dump: http://bmky.net/data/m2/data/scenario/
 Shift_JIS: http://shindds.main.jp/dds/sidel/mazin/2story.htm
 UTF8: http://www.mai-net.net/bbs/sst/sst.php?act=dump&cate=tiraura&all=22653&n=1
 

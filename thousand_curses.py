@@ -22,24 +22,30 @@ class Editor:
 
         width = 16
         height = 10
-        self.srcwindow = curses.newwin(height, width, 2, 2)
-        self.dstwindow = curses.newwin(height, width, 1, width + 1)
+        self.windows = {
+            'src': curses.newwin(height, width, 1, 1),
+            'dst': curses.newwin(height, width, 1, width + 2),
+        }
 
     def __enter__(self):
         return self
 
-    def fill(self):
-        h, w = self.srcwindow.getmaxyx()
+    def fill(self, window):
+        h, w = self.windows[window].getmaxyx()
         for y in range(0, h):
             for x in range(0, w):
                 try:
-                    self.srcwindow.addstr(y, x, chr(ord('a') + (w*y+x) % 26),
-                                          curses.color_pair(1))
+                    self.windows[window].addstr(y, x, chr(ord('a') + (w*y+x) %
+                                                          26),
+                                                curses.color_pair(1))
                 except curses.error:
                     pass
-        self.srcwindow.addstr(3, 4, 'å', curses.color_pair(2))
-        self.srcwindow.addstr(5, 6, 'あ', curses.color_pair(2))
-        self.srcwindow.refresh()
+        self.windows[window].addstr(3, 4, 'å', curses.color_pair(2))
+        self.windows[window].addstr(5, 6, 'あ', curses.color_pair(2))
+
+    def refresh(self):
+        for w in self.windows:
+            self.windows[w].refresh()
 
     def sleep(self, seconds):
         time.sleep(seconds)
@@ -54,7 +60,9 @@ class Editor:
 def main(stdscr):
     stdscr.clear()
     with Editor() as editor:
-        editor.fill()
+        editor.fill('src')
+        editor.fill('dst')
+        editor.refresh()
     stdscr.refresh()
     stdscr.getkey()
 

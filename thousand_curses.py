@@ -18,24 +18,25 @@ class Editor:
         curses.noecho()
         curses.cbreak()
         self.stdscr.keypad(1)
+        curses.curs_set(False)
+
+        self.srcwindow = curses.newwin(10, 16, 1, 1)
+        self.srcpad = curses.newpad(12, 20)
 
     def __enter__(self):
         return self
 
-    def make_window(self):
-        self.win = curses.newwin(10, 16, 1, 1)
-        self.pad = curses.newpad(12, 20)
-        curses.curs_set(False)
+    def fill(self):
         for y in range(0, 12):
             for x in range(0, 20):
                 try:
-                    self.pad.addstr(y, x, chr(ord('a') + (20*y+x) % 26),
-                                    curses.color_pair(1))
+                    self.srcpad.addstr(y, x, chr(ord('a') + (20*y+x) % 26),
+                                       curses.color_pair(1))
                 except curses.error:
                     pass
-        self.pad.addstr(3, 4, 'å', curses.color_pair(2))
-        self.pad.addstr(5, 6, 'あ', curses.color_pair(2))
-        self.pad.refresh(0, 0, 2, 3, 10, 15)
+        self.srcpad.addstr(3, 4, 'å', curses.color_pair(2))
+        self.srcpad.addstr(5, 6, 'あ', curses.color_pair(2))
+        self.srcpad.refresh(0, 0, 2, 3, 10, 15)
 
     def sleep(self, seconds):
         time.sleep(seconds)
@@ -50,7 +51,7 @@ class Editor:
 def main(stdscr):
     stdscr.clear()
     with Editor() as editor:
-        editor.make_window()
+        editor.fill()
     stdscr.refresh()
     stdscr.getkey()
 

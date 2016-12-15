@@ -20,23 +20,26 @@ class Editor:
         self.stdscr.keypad(1)
         curses.curs_set(False)
 
-        self.srcwindow = curses.newwin(10, 16, 1, 1)
-        self.srcpad = curses.newpad(12, 20)
+        width = 16
+        height = 10
+        self.srcwindow = curses.newwin(height, width, 2, 2)
+        self.dstwindow = curses.newwin(height, width, 1, width + 1)
 
     def __enter__(self):
         return self
 
     def fill(self):
-        for y in range(0, 12):
-            for x in range(0, 20):
+        h, w = self.srcwindow.getmaxyx()
+        for y in range(0, h):
+            for x in range(0, w):
                 try:
-                    self.srcpad.addstr(y, x, chr(ord('a') + (20*y+x) % 26),
-                                       curses.color_pair(1))
+                    self.srcwindow.addstr(y, x, chr(ord('a') + (w*y+x) % 26),
+                                          curses.color_pair(1))
                 except curses.error:
                     pass
-        self.srcpad.addstr(3, 4, 'å', curses.color_pair(2))
-        self.srcpad.addstr(5, 6, 'あ', curses.color_pair(2))
-        self.srcpad.refresh(0, 0, 2, 3, 10, 15)
+        self.srcwindow.addstr(3, 4, 'å', curses.color_pair(2))
+        self.srcwindow.addstr(5, 6, 'あ', curses.color_pair(2))
+        self.srcwindow.refresh()
 
     def sleep(self, seconds):
         time.sleep(seconds)

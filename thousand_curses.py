@@ -3,6 +3,7 @@
 """ Ncurses ROM editor """
 
 import curses
+import curses.textpad
 import time
 
 
@@ -14,11 +15,12 @@ class Editor:
         curses.use_default_colors()
         curses.init_pair(1, curses.COLOR_CYAN, curses.COLOR_RED)
         curses.init_pair(2, curses.COLOR_BLUE, curses.COLOR_YELLOW)
+        curses.init_pair(3, curses.COLOR_BLACK, curses.COLOR_BLUE)
 
         curses.noecho()
         curses.cbreak()
         self.stdscr.keypad(1)
-        curses.curs_set(False)
+        curses.curs_set(True)
 
         width = 16
         height = 10
@@ -26,6 +28,10 @@ class Editor:
             'src': curses.newwin(height, width, 1, 1),
             'dst': curses.newwin(height, width, 1, width + 2),
         }
+        self.textbox = curses.textpad.Textbox(self.windows['dst'],
+                                              insert_mode=True)
+        self.windows['dst'].addstr(0, 0, "XYYY", curses.color_pair(3))
+        self.windows['dst'].putwin(open('yooo', 'wb'))
 
     def __enter__(self):
         return self
@@ -43,6 +49,9 @@ class Editor:
         self.windows[window].addstr(3, 4, 'å', curses.color_pair(2))
         self.windows[window].addstr(5, 6, 'あ', curses.color_pair(2))
 
+    def edit(self):
+        return self.textbox.edit()
+
     def refresh(self):
         for w in self.windows:
             self.windows[w].refresh()
@@ -58,13 +67,15 @@ class Editor:
 
 
 def main(stdscr):
+    global text
     stdscr.clear()
     with Editor() as editor:
         editor.fill('src')
-        editor.fill('dst')
         editor.refresh()
+        text = editor.edit()
+        print(text, file=open('hey', 'w'))
     stdscr.refresh()
-    stdscr.getkey()
+    #stdscr.getkey()
 
 
 if __name__ == '__main__':

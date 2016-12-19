@@ -8,12 +8,15 @@ import time
 import argparse
 
 
-def hexify(lst):
-    return "".join(("0"+hex(n)[2:])[-2:].upper() for n in lst)
+def hexify(bytestr):
+    return "".join(("0"+hex(n)[2:])[-2:].upper() for n in bytestr)
 
 
-def readable(bytestr):
-    return "X"
+def decode(bytestr):
+    """ To decode is to convert data from one format to another in a way such
+    that its meaning becomes clearer. """
+    alphabet = ["å", "ä", "ö"]
+    return "".join(alphabet[b % 3] for b in bytestr)
 
 
 class Editor:
@@ -42,7 +45,7 @@ class Editor:
         self.raw = romfile.read()
         print(self.raw, file=open('hoy', 'w'))
         self.windows['src'].addstr(0, 0, hexify(self.raw))
-        self.windows['dst'].addstr(0, 0, self.raw, curses.color_pair(3))
+        self.windows['dst'].addstr(0, 0, decode(self.raw))
         self.textboxes = {
             'src': curses.textpad.Textbox(self.windows['src'],
                                           insert_mode=False),

@@ -5,11 +5,20 @@
 import curses
 import curses.textpad
 import time
+import argparse
+
+
+def hex(lst):
+    return [("0"+hex(n)[2:])[-2:].upper() for n in lst]
+
+
+def readable(bytestr):
+    return bytestr
 
 
 class Editor:
     """ The complete Ncurses editor """
-    def __init__(self):
+    def __init__(self, romfile):
         self.stdscr = curses.initscr()
         curses.start_color()
         curses.use_default_colors()
@@ -28,9 +37,15 @@ class Editor:
             'src': curses.newwin(height, width, 1, 1),
             'dst': curses.newwin(height, width, 1, width + 2),
         }
-        self.textbox = curses.textpad.Textbox(self.windows['dst'],
-                                              insert_mode=True)
-        self.windows['dst'].addstr(0, 0, "XYYY", curses.color_pair(3))
+        self.windows['dst'].bkgd(' ', curses.color_pair(3))
+        self.raw = romfile.read()
+        self.windows['dst'].addstr(0, 0, self.raw, curses.color_pair(3))
+        self.textboxes = {
+            'src': curses.textpad.Textbox(self.windows['src'],
+                                          insert_mode=False),
+            'dst': curses.textpad.Textbox(self.windows['dst'],
+                                          insert_mode=True),
+        }
         self.windows['dst'].putwin(open('yooo', 'wb'))
 
     def __enter__(self):
@@ -41,16 +56,18 @@ class Editor:
         for y in range(0, h):
             for x in range(0, w):
                 try:
-                    self.windows[window].addstr(y, x, chr(ord('a') + (w*y+x) %
-                                                          26),
-                                                curses.color_pair(1))
+                    ch = chr(ord('a') + (w*y+x) % 26)
+                    self.windows[window].addstr(y, x, ch, curses.color_pair(1))
                 except curses.error:
                     pass
         self.windows[window].addstr(3, 4, 'å', curses.color_pair(2))
         self.windows[window].addstr(5, 6, 'あ', curses.color_pair(2))
 
+    def _sync(self):
+        """ Sync dst window to src window """
+
     def edit(self):
-        return self.textbox.edit()
+        return self.textboxes['dst'].edit()
 
     def refresh(self):
         for w in self.windows:
@@ -66,10 +83,9 @@ class Editor:
         curses.endwin()
 
 
-def main(stdscr):
-    global text
+def main(stdscr, rom):
     stdscr.clear()
-    with Editor() as editor:
+    with Editor(rom) as editor:
         editor.fill('src')
         editor.refresh()
         text = editor.edit()
@@ -79,4 +95,11 @@ def main(stdscr):
 
 
 if __name__ == '__main__':
-    curses.wrapper(main)
+    parser = argparse.ArgumentParser(
+        description="ncurses-based ROM viewer and editor"
+    )
+    parser.add_argument("romfile", help="Path to your ROM file.")
+    # TODO Validate rom_file is a path to an existing file (not dir)
+    # TODO backup file
+    args = parser.parse_args()
+    curses.wrapper(main, open(args.romfile, 'rb'))

@@ -8,12 +8,12 @@ import time
 import argparse
 
 
-def hex(lst):
-    return [("0"+hex(n)[2:])[-2:].upper() for n in lst]
+def hexify(lst):
+    return "".join(("0"+hex(n)[2:])[-2:].upper() for n in lst)
 
 
 def readable(bytestr):
-    return bytestr
+    return "X"
 
 
 class Editor:
@@ -22,7 +22,7 @@ class Editor:
         self.stdscr = curses.initscr()
         curses.start_color()
         curses.use_default_colors()
-        curses.init_pair(1, curses.COLOR_CYAN, curses.COLOR_RED)
+        curses.init_pair(1, curses.COLOR_CYAN, curses.COLOR_MAGENTA)
         curses.init_pair(2, curses.COLOR_BLUE, curses.COLOR_YELLOW)
         curses.init_pair(3, curses.COLOR_BLACK, curses.COLOR_BLUE)
 
@@ -37,8 +37,11 @@ class Editor:
             'src': curses.newwin(height, width, 1, 1),
             'dst': curses.newwin(height, width, 1, width + 2),
         }
+        self.windows['src'].bkgd(' ', curses.color_pair(1))
         self.windows['dst'].bkgd(' ', curses.color_pair(3))
         self.raw = romfile.read()
+        print(self.raw, file=open('hoy', 'w'))
+        self.windows['src'].addstr(0, 0, hexify(self.raw))
         self.windows['dst'].addstr(0, 0, self.raw, curses.color_pair(3))
         self.textboxes = {
             'src': curses.textpad.Textbox(self.windows['src'],
@@ -86,7 +89,6 @@ class Editor:
 def main(stdscr, rom):
     stdscr.clear()
     with Editor(rom) as editor:
-        editor.fill('src')
         editor.refresh()
         text = editor.edit()
         print(text, file=open('hey', 'w'))

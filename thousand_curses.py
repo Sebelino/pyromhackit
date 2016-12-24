@@ -7,17 +7,7 @@ import curses.textpad
 import time
 import argparse
 import shutil
-
-
-def hexify(bytestr):
-    return "".join(("0"+hex(n)[2:])[-2:].upper() for n in bytestr)
-
-
-def decode(bytestr):
-    """ To decode is to convert data from one format to another in a way such
-    that its meaning becomes clearer. """
-    alphabet = ["å", "ä", "ö"]
-    return "".join(alphabet[b % 3] for b in bytestr)
+import codec
 
 
 class Editor:
@@ -44,8 +34,8 @@ class Editor:
         self.windows['src'].bkgd(' ', curses.color_pair(1))
         self.windows['dst'].bkgd(' ', curses.color_pair(3))
         self.raw = romfile.read()
-        self.windows['src'].addstr(0, 0, hexify(self.raw))
-        self.windows['dst'].addstr(0, 0, decode(self.raw))
+        self.windows['src'].addstr(0, 0, codec.hexify(self.raw))
+        self.windows['dst'].addstr(0, 0, codec.lame_decode(self.raw))
         self.textboxes = {
             'src': curses.textpad.Textbox(self.windows['src'],
                                           insert_mode=False),

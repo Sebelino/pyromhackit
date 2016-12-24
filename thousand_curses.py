@@ -6,6 +6,7 @@ import curses
 import curses.textpad
 import time
 import argparse
+import shutil
 
 
 def hexify(bytestr):
@@ -43,7 +44,6 @@ class Editor:
         self.windows['src'].bkgd(' ', curses.color_pair(1))
         self.windows['dst'].bkgd(' ', curses.color_pair(3))
         self.raw = romfile.read()
-        print(self.raw, file=open('hoy', 'w'))
         self.windows['src'].addstr(0, 0, hexify(self.raw))
         self.windows['dst'].addstr(0, 0, decode(self.raw))
         self.textboxes = {
@@ -52,7 +52,7 @@ class Editor:
             'dst': curses.textpad.Textbox(self.windows['dst'],
                                           insert_mode=True),
         }
-        self.windows['dst'].putwin(open('yooo', 'wb'))
+        self.windows['dst'].putwin(open('dst.out', 'wb'))
 
     def __enter__(self):
         return self
@@ -94,7 +94,7 @@ def main(stdscr, rom):
     with Editor(rom) as editor:
         editor.refresh()
         text = editor.edit()
-        print(text, file=open('hey', 'w'))
+        print(text, file=open('editor_edit.out', 'w'))
     stdscr.refresh()
     #stdscr.getkey()
 
@@ -105,6 +105,6 @@ if __name__ == '__main__':
     )
     parser.add_argument("romfile", help="Path to your ROM file.")
     # TODO Validate rom_file is a path to an existing file (not dir)
-    # TODO backup file
     args = parser.parse_args()
+    shutil.copy(args.romfile, "{}.bak".format(args.romfile))
     curses.wrapper(main, open(args.romfile, 'rb'))

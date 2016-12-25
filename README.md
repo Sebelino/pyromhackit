@@ -17,7 +17,7 @@ $ pip install -r requirements.txt
 # Usage
 **reader.py** provides a kind of pipeline interface for processing a ROM. More information to come...
 ```bash
-$ reader.py -h
+$ ./reader.py -h
 usage: reader.py [-h]
                  [--transliteration TRANSLITERATION [TRANSLITERATION ...]]
                  [--width WIDTH] [--outfile OUTFILE]
@@ -43,6 +43,11 @@ optional arguments:
                         Output to file instead of to console.
 ```
 
+## Examples
+```
+$ ./reader.py majin-tensei-ii/mt2.sfc bin map text -t majin-tensei-ii/hexmap.yaml -o out.txt
+```
+
 ## Testing
 ```bash
 $ nosetests
@@ -56,7 +61,7 @@ Functional requirements:
 
 Quality requirements:
 * Platform independence
-* Free license
+* Free software license
 
 Status
 ======

@@ -22,21 +22,25 @@ class Editor(object):
         self.height = height
         self.pad = {
             'src': codec.Hexify.decode(self.raw),
-#            'dst': codec.Mt2GarbageTextPair.decode(self.raw),
             'dst': codec.ASCII.decode(self.raw),
         }
         self.topline = 1
         self.refresh()
 
     def scroll(self, number_of_lines, window):
+        if self.topline+number_of_lines < 1:
+            return
+        if self.topline+number_of_lines > len(self.raw)/self.width:
+            return
         self.topline = self.topline+number_of_lines
         self.refresh()
 
     def refresh(self):
-        w = self.width
+        a = (self.topline-1)*self.width
+        b = (self.topline-1)*self.width+int(self.width*self.height/2)
         self.windows = {
-            'src': self.pad['src'][(self.topline-1)*w:int(w*self.height/2)],
-            'dst': self.pad['dst'][(self.topline-1)*w:int(w*self.height/2)],
+            'src': self.pad['src'][a:b],
+            'dst': self.pad['dst'][a:b],
         }
 
 
@@ -72,11 +76,16 @@ class ThousandCurses(object):
             'dst': curses.textpad.Textbox(self.windows['dst'],
                                           insert_mode=True),
         }
+        self.textboxes['src'].stripspaces = 0
+        self.textboxes['dst'].stripspaces = 0
         self.windows['dst'].putwin(open('dst.out', 'wb'))
 
     def do_command(self, ch):
         if ch == curses.ascii.BEL:
             return ch
+        elif ch == curses.KEY_UP:
+            self.editor.scroll(-1, 'src')
+            self.refresh()
         elif ch == curses.KEY_DOWN:
             self.editor.scroll(1, 'src')
             self.refresh()

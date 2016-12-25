@@ -31,11 +31,15 @@ class Hexify(Codec):
         return "".join(("0"+hex(n)[2:])[-2:].upper() for n in bytestr)
 
 
-class Sample(Codec):
+class MajinTenseiII(Codec):
     def encode(bytestr):
         raise NotImplementedError
 
     def decode(bytestr):
-        idx = ord("あ")
-        alphabet = [chr(i) for i in range(idx, idx+2**8)]
-        return "".join(alphabet[b] for b in bytestr)
+        idx = ord("0")
+        garbage = [chr(i) for i in range(idx, idx+2**8)]
+        jpidx = ord("あ")
+        japanese = [chr(i) for i in range(jpidx, jpidx+2**8)]
+        head = "".join(garbage[b] for b in bytestr[1::2])
+        tail = "".join(japanese[b] for b in bytestr[::2])
+        return head+tail

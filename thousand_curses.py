@@ -6,42 +6,14 @@ import curses
 import curses.textpad
 import argparse
 import shutil
-import codec
+
+from editor import Editor
 
 
 def dump(text):
+    """ Useful for quick and dirty ncurses debugging. """
     with open("debug.out", 'w') as f:
         f.write(str(text))
-
-
-class Editor(object):
-    """ The elements of the editor which do not depend on ncurses. """
-    def __init__(self, romfile, width, height):
-        self.raw = romfile.read()
-        self.width = width
-        self.height = height
-        self.pad = {
-            'src': codec.Hexify.decode(self.raw),
-            'dst': codec.MonospaceASCIISeq.decode(self.raw),
-        }
-        self.topline = 1
-        self.refresh()
-
-    def scroll(self, number_of_lines, window):
-        if self.topline+number_of_lines < 1:
-            return
-        if self.topline+number_of_lines > len(self.raw)/self.width:
-            return
-        self.topline = self.topline+number_of_lines
-        self.refresh()
-
-    def refresh(self):
-        a = (self.topline-1)*self.width
-        b = (self.topline-1)*self.width+int(self.width*self.height/2)
-        self.windows = {
-            'src': self.pad['src'][a:b],
-            'dst': self.pad['dst'][a:b],
-        }
 
 
 class ThousandCurses(object):
@@ -81,6 +53,7 @@ class ThousandCurses(object):
         self.windows['dst'].putwin(open('dst.out', 'wb'))
 
     def do_command(self, ch):
+        """ :param ch: Input character. """
         if ch == curses.ascii.BEL:
             return ch
         elif ch == curses.KEY_UP:
@@ -94,6 +67,7 @@ class ThousandCurses(object):
         return self
 
     def fill(self, window):
+        """ Fill the window with random gibberish. """
         h, w = self.windows[window].getmaxyx()
         for y in range(0, h):
             for x in range(0, w):

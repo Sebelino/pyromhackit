@@ -2,18 +2,23 @@
 
 """ Ncurses ROM editor """
 
+import sys
+import inspect
 import codec
 
 
 class Editor(object):
     """ The elements of the editor which do not depend on ncurses. """
-    def __init__(self, romfile, width, height):
+    def __init__(self, romfile, width, height, cdc):
         self.raw = romfile.read()
         self.width = width
         self.height = height
+
+        cdc_class = [c for n, c in inspect.getmembers(sys.modules['codec']) if
+                     inspect.isclass(c) and n == cdc][0]
         self.pad = {
             'src': codec.Hexify.decode(self.raw),
-            'dst': codec.Mt2GarbageTextPair.decode(self.raw),
+            'dst': cdc_class.decode(self.raw),
         }
         self.topline = 1
         self.refresh()

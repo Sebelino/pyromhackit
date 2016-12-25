@@ -18,7 +18,7 @@ def dump(text):
 
 class ThousandCurses(object):
     """ The ncurses UI for the editor. """
-    def __init__(self, romfile):
+    def __init__(self, romfile, cdc):
         self.stdscr = curses.initscr()
         curses.start_color()
         curses.use_default_colors()
@@ -31,7 +31,7 @@ class ThousandCurses(object):
         self.stdscr.keypad(1)
         curses.curs_set(True)
 
-        self.editor = Editor(romfile, 32, 40)
+        self.editor = Editor(romfile, 32, 40, cdc)
         self.width = self.editor.width    # Convenient alias
         self.height = self.editor.height  # Convenient alias
         self.windows = {
@@ -101,9 +101,9 @@ class ThousandCurses(object):
         curses.endwin()
 
 
-def main(stdscr, rom):
+def main(stdscr, rom, cdc):
     stdscr.clear()
-    with ThousandCurses(rom) as tcurses:
+    with ThousandCurses(rom, cdc) as tcurses:
         tcurses.refresh()
         text = tcurses.edit()
         print(text, file=open('editor_edit.out', 'w'))
@@ -115,7 +115,8 @@ if __name__ == '__main__':
         description="ncurses-based ROM viewer and editor"
     )
     parser.add_argument("romfile", help="Path to your ROM file.")
+    parser.add_argument("codec", help="Name of the codec used. Check codec.py.")
     # TODO Validate rom_file is a path to an existing file (not dir)
     args = parser.parse_args()
     shutil.copy(args.romfile, "{}.bak".format(args.romfile))
-    curses.wrapper(main, open(args.romfile, 'rb'))
+    curses.wrapper(main, open(args.romfile, 'rb'), args.codec)

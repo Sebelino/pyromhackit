@@ -22,7 +22,7 @@ class Editor(object):
         self.height = height
         self.pad = {
             'src': codec.Hexify.decode(self.raw),
-            'dst': codec.ASCII.decode(self.raw),
+            'dst': codec.MonospaceASCIISeq.decode(self.raw),
         }
         self.topline = 1
         self.refresh()
@@ -59,7 +59,7 @@ class ThousandCurses(object):
         self.stdscr.keypad(1)
         curses.curs_set(True)
 
-        self.editor = Editor(romfile, 16, 20)
+        self.editor = Editor(romfile, 32, 40)
         self.width = self.editor.width    # Convenient alias
         self.height = self.editor.height  # Convenient alias
         self.windows = {

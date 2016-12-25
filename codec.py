@@ -48,6 +48,28 @@ class ASCII(Codec):
         return "".join(chr(b) for b in bytestr)
 
 
+class MonospaceASCII(Codec):
+    """ Like ASCII, but replaces any unprintable and non-monospace character
+    with some other (non-ascii) monospace character. """
+    def encode(string):
+        raise NotImplementedError
+
+    def decode(bytestr):
+        b = bytestr[0]
+        replacements = list(range(2**8, 2**9))
+        if not chr(b).isprintable():
+            return chr(replacements[b])
+        return chr(b)
+
+
+class MonospaceASCIISeq(Codec):
+    def encode(string):
+        raise NotImplementedError
+
+    def decode(bytestr):
+        return "".join(MonospaceASCII.decode(bytes([b])) for b in bytestr)
+
+
 class MajinTenseiII(Codec):
     """ Bytestrings of length 1 """
 

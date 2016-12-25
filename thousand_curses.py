@@ -15,7 +15,33 @@ def dump(text):
 
 
 class Editor(object):
-    """ The complete Ncurses editor """
+    """ The elements of the editor which do not depend on ncurses. """
+    def __init__(self, romfile, width, height):
+        self.raw = romfile.read()
+        self.width = width
+        self.height = height
+        self.pad = {
+            'src': codec.Hexify.decode(self.raw),
+#            'dst': codec.Mt2GarbageTextPair.decode(self.raw),
+            'dst': codec.ASCII.decode(self.raw),
+        }
+        self.topline = 1
+        self.refresh()
+
+    def scroll(self, number_of_lines, window):
+        self.topline = self.topline+number_of_lines
+        self.refresh()
+
+    def refresh(self):
+        w = self.width
+        self.windows = {
+            'src': self.pad['src'][(self.topline-1)*w:int(w*self.height/2)],
+            'dst': self.pad['dst'][(self.topline-1)*w:int(w*self.height/2)],
+        }
+
+
+class ThousandCurses(object):
+    """ The ncurses UI for the editor. """
     def __init__(self, romfile):
         self.stdscr = curses.initscr()
         curses.start_color()
@@ -29,18 +55,17 @@ class Editor(object):
         self.stdscr.keypad(1)
         curses.curs_set(True)
 
-        width = 16
-        height = 10
+        self.editor = Editor(romfile, 16, 20)
+        self.width = self.editor.width    # Convenient alias
+        self.height = self.editor.height  # Convenient alias
         self.windows = {
-            'src': curses.newwin(height, width, 1, 1),
-            'dst': curses.newwin(height, width, 1, width + 2),
+            'src': curses.newwin(self.height, self.width, 1, 1),
+            'dst': curses.newwin(self.height, self.width, 1, self.width + 2),
         }
         self.windows['src'].bkgd(' ', curses.color_pair(1))
         self.windows['dst'].bkgd(' ', curses.color_pair(3))
-        self.raw = romfile.read()
-        self.windows['src'].addstr(0, 0, codec.Hexify.decode(self.raw))
-        self.windows['dst'].addstr(0, 0,
-                                   codec.Mt2GarbageTextPair.decode(self.raw))
+        self.windows['src'].addstr(0, 0, self.editor.windows['src'])
+        self.windows['dst'].addstr(0, 0, self.editor.windows['dst'])
         self.textboxes = {
             'src': curses.textpad.Textbox(self.windows['src'],
                                           insert_mode=False),
@@ -48,6 +73,13 @@ class Editor(object):
                                           insert_mode=True),
         }
         self.windows['dst'].putwin(open('dst.out', 'wb'))
+
+    def do_command(self, ch):
+        if ch == curses.ascii.BEL:
+            return ch
+        elif ch == curses.KEY_DOWN:
+            self.editor.scroll(1, 'src')
+            self.refresh()
 
     def __enter__(self):
         return self
@@ -68,11 +100,16 @@ class Editor(object):
         """ Sync dst window to src window """
 
     def edit(self):
-        return self.textboxes['dst'].edit()
+        return self.textboxes['dst'].edit(self.do_command)
 
     def refresh(self):
+        content = self.editor.windows['dst']
+        self.windows['dst'].addstr(0, 0, content)
         for w in self.windows:
             self.windows[w].refresh()
+
+    def exit(self):
+        self.__exit__(None, None, None)
 
     def __exit__(self, exec_type, exec_value, traceback):
         curses.nocbreak()
@@ -83,9 +120,9 @@ class Editor(object):
 
 def main(stdscr, rom):
     stdscr.clear()
-    with Editor(rom) as editor:
-        editor.refresh()
-        text = editor.edit()
+    with ThousandCurses(rom) as tcurses:
+        tcurses.refresh()
+        text = tcurses.edit()
         print(text, file=open('editor_edit.out', 'w'))
     stdscr.refresh()
 

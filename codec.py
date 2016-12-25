@@ -33,7 +33,7 @@ class Codec(ABC):
 
 
 class Hexify(Codec):
-    def encode(bytestr):
+    def encode(string):
         raise NotImplementedError
 
     def decode(bytestr):
@@ -41,11 +41,23 @@ class Hexify(Codec):
 
 
 class MajinTenseiII(Codec):
-    def encode(bytestr):
+    """ Bytestrings of length 1 """
+
+    transliter = read_yaml("hexmap.yaml")
+
+    def encode(string):
         raise NotImplementedError
 
     def decode(bytestr):
-        transliteration = read_yaml("hexmap.yaml")
-        garbage = "".join(transliteration[b] for b in bytestr[1::2])
-        text = "".join(transliteration[b] for b in bytestr[::2])
+        return MajinTenseiII.transliter[bytestr[0]]
+
+
+class Mt2GarbageTextPair(Codec):
+    def encode(string):
+        raise NotImplementedError
+
+    def decode(bytestr):
+        garbage = "".join(MajinTenseiII.decode(bytes([b])) for b in
+                          bytestr[1::2])
+        text = "".join(MajinTenseiII.decode(bytes([b])) for b in bytestr[::2])
         return garbage+text

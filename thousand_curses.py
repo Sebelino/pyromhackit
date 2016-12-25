@@ -35,7 +35,8 @@ class Editor:
         self.windows['dst'].bkgd(' ', curses.color_pair(3))
         self.raw = romfile.read()
         self.windows['src'].addstr(0, 0, codec.Hexify.decode(self.raw))
-        self.windows['dst'].addstr(0, 0, codec.MajinTenseiII.decode(self.raw))
+        self.windows['dst'].addstr(0, 0,
+                                   codec.Mt2GarbageTextPair.decode(self.raw))
         self.textboxes = {
             'src': curses.textpad.Textbox(self.windows['src'],
                                           insert_mode=False),

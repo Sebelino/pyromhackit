@@ -4,7 +4,6 @@
 
 import curses
 import curses.textpad
-import time
 import argparse
 import shutil
 import codec
@@ -74,9 +73,6 @@ class Editor(object):
     def refresh(self):
         for w in self.windows:
             self.windows[w].refresh()
-
-    def sleep(self, seconds):
-        time.sleep(seconds)
 
     def __exit__(self, exec_type, exec_value, traceback):
         curses.nocbreak()

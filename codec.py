@@ -11,6 +11,15 @@ and vice versa.
 """
 
 from abc import ABC, abstractmethod
+import yaml
+
+
+def read_yaml(path):
+    """ YAML -> Dictionary. """
+    # TODO duplicate in pyromhackit
+    stream = open(path, 'r', encoding='utf8')
+    dct = yaml.load(stream)
+    return dct
 
 
 class Codec(ABC):
@@ -36,10 +45,7 @@ class MajinTenseiII(Codec):
         raise NotImplementedError
 
     def decode(bytestr):
-        idx = ord("0")
-        garbage = [chr(i) for i in range(idx, idx+2**8)]
-        jpidx = ord("あ")
-        japanese = [chr(i) for i in range(jpidx, jpidx+2**8)]
-        head = "".join(garbage[b] for b in bytestr[1::2])
-        tail = "".join(japanese[b] for b in bytestr[::2])
-        return head+tail
+        transliteration = read_yaml("hexmap.yaml")
+        garbage = "".join(transliteration[b] for b in bytestr[1::2])
+        text = "".join(transliteration[b] for b in bytestr[::2])
+        return garbage+text

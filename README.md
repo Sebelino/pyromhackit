@@ -1,5 +1,5 @@
 # Thousand Curses
-Python- and ncurses-based editor geared towards editing ROM (Read-only memory) files containing text stored in arbitrarily complex encodings.
+Python- and ncurses-based editor geared towards editing ROM (Read-only memory) files containing text stored in arbitrarily complex formats.
 
 The editor consists of two windows side-by-side: one displaying the ROM in hexadecimal decoding and one displaying the ROM in whatever decoding you choose to specify. The available codecs can be found in `codec.py`.
 

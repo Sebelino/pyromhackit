@@ -10,7 +10,12 @@ import shutil
 import codec
 
 
-class Editor:
+def dump(text):
+    with open("debug.out", 'w') as f:
+        f.write(str(text))
+
+
+class Editor(object):
     """ The complete Ncurses editor """
     def __init__(self, romfile):
         self.stdscr = curses.initscr()
@@ -87,7 +92,6 @@ def main(stdscr, rom):
         text = editor.edit()
         print(text, file=open('editor_edit.out', 'w'))
     stdscr.refresh()
-    #stdscr.getkey()
 
 
 if __name__ == '__main__':

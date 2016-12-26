@@ -18,6 +18,7 @@ def filecontents(path):
 
 def read_yaml(path):
     """ YAML -> Dictionary. """
+    # TODO duplicate in thousand-curses
     stream = open(path, 'r', encoding='utf8')
     dct = yaml.load(stream)
     return dct

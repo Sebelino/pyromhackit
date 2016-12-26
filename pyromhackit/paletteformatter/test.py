@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from paletteformatter import (
+from .paletteformatter import (
     Strictness,
     formatconvert,
     validate,

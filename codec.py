@@ -10,8 +10,18 @@ Encoders/decoders are bijective -- each encoder has a inverse decoder function,
 and vice versa.
 """
 
-from abc import ABC, abstractmethod
+import os
 import yaml
+from abc import ABC, abstractmethod
+
+
+def resource2abspath(path):
+    """ Returns absolute path from a path relative to this script. """
+    current_script = os.path.realpath(__file__)
+    current_dir = os.path.dirname(current_script)
+    resource_dir = os.path.join(current_dir, 'resources')
+    resource_path = os.path.join(resource_dir, path)
+    return resource_path
 
 
 def read_yaml(path):
@@ -73,7 +83,7 @@ class MonospaceASCIISeq(Codec):
 class MajinTenseiII(Codec):
     """ Bytestrings of length 1 """
 
-    transliter = read_yaml("hexmap.yaml")
+    transliter = read_yaml(resource2abspath("hexmap.yaml"))
 
     def encode(string):
         raise NotImplementedError

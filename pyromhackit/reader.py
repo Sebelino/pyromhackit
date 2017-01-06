@@ -125,7 +125,7 @@ def bytes2hex(bytestr):
     return [("0"+hex(b)[2:])[-2:].upper() for b in bytestr]
 
 
-class ROM:
+class ROM(object):
     def __init__(self, *args, **kwargs):
         if 'path' in kwargs:
             path = kwargs['path']

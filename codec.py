@@ -97,7 +97,7 @@ class Mt2GarbageTextPair(Codec):
         raise NotImplementedError
 
     def decode(bytestr):
-        garbage = "".join(MajinTenseiII.decode(bytes([b])) for b in
+        garbage = "".join(MonospaceASCII.decode(bytes([b])) for b in
                           bytestr[1::2])
         text = "".join(MajinTenseiII.decode(bytes([b])) for b in bytestr[::2])
         return garbage+text

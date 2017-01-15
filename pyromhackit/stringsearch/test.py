@@ -4,7 +4,7 @@ from nose.tools import assert_equals
 
 
 def locations(content):
-    return content.index(b"HELLO")
+    return [(content.index(b"HELLO"), len("HELLO"))]
 
 
 def test_findscript():

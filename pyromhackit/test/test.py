@@ -62,6 +62,18 @@ class TestTinyROM(TestCase):
         """ ROM =/= bytestring """
         assert_not_equal(self.rom, b'abc')
 
+    def test_subscripting(self):
+        """ Subscripting support is isomorphic to bytestrings """
+        paramlist = [
+            (self.rom[0], 97),
+            (self.rom[1:1], ROM(b'')),
+            (self.rom[:1], ROM(b'a')),
+            (self.rom[1:3], ROM(b'bc')),
+            (self.rom[:], self.rom),
+        ]
+        for (returned, expected) in paramlist:
+            yield assert_equal, returned, expected
+
     def test_lines(self):
         """ ROM:rom.lines(width) """
         paramlist = [
@@ -74,20 +86,6 @@ class TestTinyROM(TestCase):
         for (args, expected) in paramlist:
             returned = self.rom.lines(*args)
             yield assert_equal, returned, expected
-
-
-def test_subscripting():
-    """ Subscripting support should be isomorphic to bytestrings """
-    rom = ROM(b'abcde')
-    paramlist = [
-        (rom[0], 97),
-        (rom[1:1], ROM(b'')),
-        (rom[:1], ROM(b'a')),
-        (rom[1:4], ROM(b'bcd')),
-        (rom[:], rom),
-    ]
-    for (returned, expected) in paramlist:
-        yield assert_equal, returned, expected
 
 
 def assert_equal2(returned, expected):

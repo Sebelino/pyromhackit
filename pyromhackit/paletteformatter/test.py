@@ -7,8 +7,11 @@ from .paletteformatter import (
     format2rgb24bpp,
     rgb24bpp2format
 )
+
 from nose.tools import assert_equals, assert_raises
 import os
+
+package_dir = os.path.dirname(os.path.abspath(__file__))
 
 
 def setUp():
@@ -154,8 +157,8 @@ def test_formatconvert_files():
         ("./testsuite/increasing16step8", "tpl", "rgb24bpp"),
     ]
     for (prefix, f1, f2) in translations:
-        inpath = "{}.{}".format(prefix, f1)
-        outpath = "{}.{}".format(prefix, f2)
+        inpath = os.path.join(package_dir, "{}.{}".format(prefix, f1))
+        outpath = os.path.join(package_dir,"{}.{}".format(prefix, f2))
         formatconvert(inpath, f1, f2, "sample.dat")
         with open("sample.dat", "rb") as file1, open(outpath, "rb") as file2:
             returned = file1.read()

@@ -2,7 +2,7 @@
 
 """ Test suite for ROM class. """
 
-from ..reader import ROM
+from ..rom import ROM
 import os
 from os.path import isfile
 from unittest import TestCase

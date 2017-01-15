@@ -2,7 +2,10 @@
 
 coverage:
 	@nosetests -vs --with-coverage \
-	               --cover-package=reader \
+	               --cover-package=pyromhackit.reader \
+	               --cover-package=pyromhackit.paletteformatter.paletteformatter \
+	               --cover-package=pyromhackit.thousandcurses.codec \
+	               --cover-html
 
 venv: venv/bin/activate
 

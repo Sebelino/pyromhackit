@@ -8,6 +8,8 @@ from prettytable import PrettyTable
 import re
 from ast import literal_eval
 
+from .thousandcurses.codec import read_yaml
+
 """
 Command-line interface for operating on ROMs.
 """
@@ -18,14 +20,6 @@ def filecontents(path):
     with open(path, 'r', encoding='utf8') as f:
         content = f.readlines()
         return content
-
-
-def read_yaml(path):
-    """ YAML -> Dictionary. """
-    # TODO duplicate in thousand-curses
-    stream = open(path, 'r', encoding='utf8')
-    dct = yaml.load(stream)
-    return dct
 
 
 def readbin(path):

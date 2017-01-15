@@ -8,6 +8,10 @@ from prettytable import PrettyTable
 import re
 from ast import literal_eval
 
+"""
+Command-line interface for operating on ROMs.
+"""
+
 
 def filecontents(path):
     """ List of lines in a file specified by path. """

@@ -11,6 +11,10 @@ from ast import literal_eval
 from .reader import bytes2hex, write
 from .thousandcurses.codec import read_yaml
 
+"""
+Class representing a ROM.
+"""
+
 
 class ROM(object):
     def __init__(self, *args, **kwargs):

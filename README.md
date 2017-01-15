@@ -3,6 +3,9 @@ Python ROM Hacking Toolkit (pyromhackit)
 This is a little Python utility providing my tools for doing ROM hacks, primarily geared towards
 script replacement. This is still largely a work in progress.
 
+[![Build Status](https://travis-ci.org/Sebelino/pyromhackit.svg?branch=master)](https://travis-ci.org/Sebelino/pyromhackit)
+[![Code Health](https://landscape.io/github/Sebelino/pyromhackit/master/landscape.svg?style=flat)](https://landscape.io/github/Sebelino/pyromhackit/master)
+
 # Install
 TODO
 

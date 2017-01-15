@@ -88,8 +88,7 @@ def test_validate():
     for strictness in negatives:
         for fmt in negatives[strictness]:
             for palette in negatives[strictness][fmt]:
-                yield assert_raises, AssertionError, validate, palette, fmt,
-                strictness
+                yield assert_raises, AssertionError, validate, palette, fmt, strictness
 
 
 def test_format2rgb24bpp():

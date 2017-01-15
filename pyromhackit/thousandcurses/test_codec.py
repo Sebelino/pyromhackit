@@ -5,7 +5,7 @@ Tests for checking the bijective property of codecs.
 """
 
 from nose.tools import assert_equal
-from codec import MonospaceASCII
+from .codec import MonospaceASCII
 
 
 def test_bijection():

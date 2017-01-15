@@ -8,9 +8,11 @@ from os.path import isfile
 from unittest import TestCase
 from nose.tools import assert_equal, assert_not_equal
 
-ROMPATH = "./loremipsum.rom"
-MAPPATH = "./loremipsum.yml"
-OUTPATH = "./loremipsum.txt"
+package_dir = os.path.dirname(os.path.abspath(__file__))
+
+ROMPATH = os.path.join(package_dir, "./loremipsum.rom")
+MAPPATH = os.path.join(package_dir, "./loremipsum.yml")
+OUTPATH = os.path.join(package_dir, "./loremipsum.txt")
 
 
 def set_up():

@@ -15,6 +15,14 @@ MAPPATH = os.path.join(package_dir, "./loremipsum.yml")
 OUTPATH = os.path.join(package_dir, "./loremipsum.txt")
 
 
+def assert_equal2(returned, expected):
+    """ Clearer assert function """
+    assert returned == expected, ("""
+Returned:\n[{}]
+Expected:\n[{}]
+    """.format(returned, expected))
+
+
 def set_up():
     """ Assert that certain files are present for testing """
     assert isfile(ROMPATH)
@@ -88,12 +96,43 @@ class TestTinyROM(TestCase):
             yield assert_equal, returned, expected
 
 
-def assert_equal2(returned, expected):
-    """ Clearer assert function """
-    assert returned == expected, ("""
-Returned:\n[{}]
-Expected:\n[{}]
-    """.format(returned, expected))
+def test_pipe():
+    """ Test ROM:rom.pipe(...) expected output """
+    rom1 = ROM(b'abc')
+    paramlist1 = [
+        ([lambda x: x], ROM(b"abc")),
+        (["hex"], ["61", "62", "63"]),
+        (["hex | join ' '"], "61 62 63"),
+        (["hex", "join ' '"], "61 62 63"),
+    ]
+    for (pipeline, expected) in paramlist1:
+        returned = rom1.pipe(*pipeline)
+        yield assert_equal, returned, expected
+    offset = 257
+    rom2 = ROM(path=ROMPATH)[offset:offset+13]
+    paramlist2 = [
+        (["map {}".format(MAPPATH)], "reprehenderit"),
+    ]
+    for (pipeline, expected) in paramlist2:
+        returned = rom2.pipe(*pipeline)
+        yield assert_equal, returned, expected
+
+
+def test_outfile():
+    """ Test loading a ROM from a file and write it to another """
+    offset = 257
+    rom = ROM(path=ROMPATH)[offset:offset+13]
+    rom.pipe("save {}".format(OUTPATH))
+    with open(OUTPATH, 'rb') as outfile:
+        returned = outfile.read()
+        expected = rom.content
+        assert_equal(returned, expected)
+    os.remove(OUTPATH)
+    rom.pipe("map {} | save {}".format(MAPPATH, OUTPATH))
+    with open(OUTPATH, 'r', encoding="utf8") as outfile:
+        returned = outfile.read()
+        expected = rom.pipe("map {}".format(MAPPATH))
+        assert_equal(returned, expected)
 
 
 def test_execute():
@@ -139,45 +178,6 @@ def test_execute():
         filtr = ROM.execute(filterstr)
         returned = filtr(stream)
         yield assert_equal2, returned, expected
-
-
-def test_pipe():
-    """ Test ROM:rom.pipe(...) expected output """
-    rom1 = ROM(b'abc')
-    paramlist1 = [
-        ([lambda x: x], ROM(b"abc")),
-        (["hex"], ["61", "62", "63"]),
-        (["hex | join ' '"], "61 62 63"),
-        (["hex", "join ' '"], "61 62 63"),
-    ]
-    for (pipeline, expected) in paramlist1:
-        returned = rom1.pipe(*pipeline)
-        yield assert_equal, returned, expected
-    offset = 257
-    rom2 = ROM(path=ROMPATH)[offset:offset+13]
-    paramlist2 = [
-        (["map {}".format(MAPPATH)], "reprehenderit"),
-    ]
-    for (pipeline, expected) in paramlist2:
-        returned = rom2.pipe(*pipeline)
-        yield assert_equal, returned, expected
-
-
-def test_outfile():
-    """ Test loading a ROM from a file and write it to another """
-    offset = 257
-    rom = ROM(path=ROMPATH)[offset:offset+13]
-    rom.pipe("save {}".format(OUTPATH))
-    with open(OUTPATH, 'rb') as outfile:
-        returned = outfile.read()
-        expected = rom.content
-        assert_equal(returned, expected)
-    os.remove(OUTPATH)
-    rom.pipe("map {} | save {}".format(MAPPATH, OUTPATH))
-    with open(OUTPATH, 'r', encoding="utf8") as outfile:
-        returned = outfile.read()
-        expected = rom.pipe("map {}".format(MAPPATH))
-        assert_equal(returned, expected)
 
 
 def teardown():

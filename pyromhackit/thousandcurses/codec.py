@@ -26,7 +26,6 @@ def resource2abspath(path):
 
 def read_yaml(path):
     """ YAML -> Dictionary. """
-    # TODO duplicate in pyromhackit
     stream = open(path, 'r', encoding='utf8')
     dct = yaml.load(stream)
     return dct

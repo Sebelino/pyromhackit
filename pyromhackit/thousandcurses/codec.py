@@ -49,6 +49,14 @@ class Hexify(Codec):
         return "".join(("0"+hex(n)[2:])[-2:].upper() for n in bytestr)
 
 
+class HexifySpaces(Codec):
+    def encode(string):
+        raise NotImplementedError
+
+    def decode(bytestr):
+        return " ".join(Hexify.decode(bytes([n])) for n in bytestr)
+
+
 class ASCII(Codec):
     def encode(string):
         raise NotImplementedError

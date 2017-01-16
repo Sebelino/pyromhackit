@@ -118,11 +118,6 @@ def write(content, path):
     raise Exception("Illegal type: {}".format(type(content)))
 
 
-def bytes2hex(bytestr):
-    """ Bytestring -> [String] """
-    return [("0"+hex(b)[2:])[-2:].upper() for b in bytestr]
-
-
 """
 Make a copy:
 $ ./reader.py mt2.sfc out copy.sfc

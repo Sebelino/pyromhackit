@@ -8,7 +8,8 @@ from prettytable import PrettyTable
 import re
 from ast import literal_eval
 
-from .reader import bytes2hex, write
+from .reader import write
+from .thousandcurses import codec
 from .thousandcurses.codec import read_yaml
 
 """
@@ -56,7 +57,7 @@ class ROM(object):
         return "".join(dct[byte] if byte in dct else chr(byte)
                        for byte in self)
 
-    def table(self, width=0, labeling=False, encoding=bytes2hex):
+    def table(self, width=0, labeling=False, encoding=codec.HexifySpaces.decode):
         """ (Labeled?) table where each cell corresponds to a byte """
         # encoded = self.encoding
         lines = self.lines(width)
@@ -87,7 +88,7 @@ class ROM(object):
         if positionals[0] == "latin1":
             return lambda s: s.decode("latin1")
         elif positionals[0] == "hex":
-            return lambda s: bytes2hex(s)
+            return lambda s: codec.HexifySpaces.decode(s).split()
         elif positionals[0] == "odd":
             return lambda s: s[::2]
         elif positionals[0] == "join":

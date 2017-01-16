@@ -154,4 +154,7 @@ class ROM(object):
         return self.pipe("hex | join ' '")
 
     def __repr__(self):
-        return "ROM({})".format(self.content)
+        if len(self) <= 30:
+            return "ROM({})".format(self.content)
+        return "ROM({}{}{})".format(self.content[:20],
+                "...", self.content[len(self.content)-7:])

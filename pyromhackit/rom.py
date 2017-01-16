@@ -25,6 +25,9 @@ class ROM(object):
         else:
             self.content = bytes(*args)
 
+    def index(self, bstring):
+        return self.content.index(bstring)
+
     def lines(self, width):
         """ List of bytestring lines with the specified width """
         if width:

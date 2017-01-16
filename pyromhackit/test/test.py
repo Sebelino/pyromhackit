@@ -70,6 +70,10 @@ class TestTinyROM(TestCase):
         """ ROM =/= bytestring """
         assert_not_equal(self.rom, b'abc')
 
+    def test_index(self):
+        """ Find bytestring in ROM """
+        assert_equal(self.rom.index(b'b'), 1)
+
     def test_subscripting(self):
         """ Subscripting support is isomorphic to bytestrings """
         paramlist = [

@@ -28,11 +28,11 @@ def read_yaml(path):
 class Codec(ABC):
     @abstractmethod
     def encode(bytestr):
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     def decode(string):
-        pass
+        raise NotImplementedError
 
 
 class Hexify(Codec):

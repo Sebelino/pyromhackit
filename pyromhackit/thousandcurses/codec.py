@@ -103,3 +103,14 @@ class Mt2GarbageTextPair(Codec):
                           bytestr[1::2])
         text = "".join(MajinTenseiII.decode(bytes([b])) for b in bytestr[::2])
         return garbage+text
+
+
+names = {
+    "Hexify": Hexify,
+    "HexifySpaces": HexifySpaces,
+    "ASCII": ASCII,
+    "MonospaceASCII": MonospaceASCII,
+    "MonospaceASCIISeq": MonospaceASCIISeq,
+    "MajinTenseiII": MajinTenseiII,
+    "Mt2GarbageTextPair": Mt2GarbageTextPair,
+}

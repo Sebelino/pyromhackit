@@ -48,6 +48,10 @@ class ROM(object):
         return [[("%06x:" % (i*width)).upper()]+tbl[i]
                 for i in range(len(tbl))]
 
+    def decode(self, codec_name):
+        c = codec.names[codec_name]
+        return c.decode(self)
+
     def map(self, mapdata):
         if isinstance(mapdata, dict):
             dct = mapdata

@@ -39,55 +39,56 @@ def test_init2():
     ROM(path=ROMPATH)
 
 
-class TestTinyROM(TestCase):
+class TestTinyROM(object):
     """ Test methods for an explicitly given tiny ROM """
 
-    def setUp(self):
+    @classmethod
+    def setup_class(cls):
         """ Construct a sample short ROM """
-        self.rom = ROM(b'abc')
+        cls.rom = ROM(b'abc')
 
-    def test_repr(self):
+    def test_repr(cls):
         """ Call __repr__ """
-        assert_equal(self.rom.__repr__(), "ROM(b'abc')")
+        assert_equal(cls.rom.__repr__(), "ROM(b'abc')")
 
-    def test_bytes(self):
+    def test_bytes(cls):
         """ Bytestring representation """
-        assert_equal(bytes(self.rom), b"abc")
+        assert_equal(bytes(cls.rom), b"abc")
 
-    def test_str(self):
+    def test_str(cls):
         """ Unicode string representation """
-        assert_equal(str(self.rom), "61 62 63")
+        assert_equal(str(cls.rom), "61 62 63")
 
-    def test_len(self):
+    def test_len(cls):
         """ Call len(...) on ROM instance """
-        assert_equal(len(self.rom), 3)
+        assert_equal(len(cls.rom), 3)
 
-    def test_eq(self):
+    def test_eq(cls):
         """ Two ROMs constructed from the same bytestring are equal """
-        assert_equal(self.rom, ROM(b'abc'))
+        assert_equal(cls.rom, ROM(b'abc'))
 
-    def test_neq(self):
+    def test_neq(cls):
         """ ROM =/= bytestring """
-        assert_not_equal(self.rom, b'abc')
+        assert_not_equal(cls.rom, b'abc')
 
-    def test_index(self):
+    def test_index(cls):
         """ Find bytestring in ROM """
-        assert_equal(self.rom.index(b'b'), 1)
+        assert_equal(cls.rom.index(b'b'), 1)
 
-    def test_subscripting(self):
+    def test_subscripting(cls):
         """ Subscripting support is isomorphic to bytestrings """
         paramlist = [
-            (self.rom[0], 97),
-            (self.rom[1:1], ROM(b'')),
-            (self.rom[:1], ROM(b'a')),
-            (self.rom[1:3], ROM(b'bc')),
-            (self.rom[:], self.rom),
+            (cls.rom[0], 97),
+            (cls.rom[1:1], ROM(b'')),
+            (cls.rom[:1], ROM(b'a')),
+            (cls.rom[1:3], ROM(b'bc')),
+            (cls.rom[:], cls.rom),
         ]
         for (returned, expected) in paramlist:
             yield assert_equal, returned, expected
 
-    def test_lines(self):
-        """ ROM:rom.lines(width) """
+    def test_lines(cls):
+        """ Split ROM into a list """
         paramlist = [
             ([0], [b'abc']),
             ([1], [b'a', b'b', b'c']),
@@ -96,7 +97,7 @@ class TestTinyROM(TestCase):
             ([4], [b'abc']),
         ]
         for (args, expected) in paramlist:
-            returned = self.rom.lines(*args)
+            returned = cls.rom.lines(*args)
             yield assert_equal, returned, expected
 
 
@@ -140,7 +141,7 @@ def test_outfile():
 
 
 def test_execute():
-    """ Test ROM.execute(execstr) expected output """
+    """ Test ROM.execute(execstr) """
     tables = [
         """\
 +-+-+-+

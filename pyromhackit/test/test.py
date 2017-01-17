@@ -100,6 +100,19 @@ class TestTinyROM(object):
             returned = cls.rom.lines(*args)
             yield assert_equal, returned, expected
 
+    def test_decode(cls):
+        """ Decode ROM into a string using codecs """
+        paramlist = [
+            (["Hexify"], "616263"),
+            (["HexifySpaces"], "61 62 63"),
+            (["ASCII"], "abc"),
+            (["MonospaceASCII"], "abc"),
+            (["Mt2GarbageTextPair"], "bカク"),
+        ]
+        for args, expected in paramlist:
+            returned = cls.rom.decode(*args)
+            yield assert_equal, returned, expected
+
 
 def test_pipe():
     """ Test ROM:rom.pipe(...) expected output """

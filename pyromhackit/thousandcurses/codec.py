@@ -59,7 +59,7 @@ class ASCII(Codec):
         return "".join(chr(b) for b in bytestr)
 
 
-class MonospaceASCII(Codec):
+class MonospaceASCIIByte(Codec):
     """ Like ASCII, but replaces any unprintable and non-monospace character
     with some other (non-ascii) monospace character. """
     def encode(string):
@@ -73,7 +73,7 @@ class MonospaceASCII(Codec):
         return chr(b)
 
 
-class MonospaceASCIISeq(Codec):
+class MonospaceASCII(Codec):
     def encode(string):
         raise NotImplementedError
 
@@ -81,7 +81,7 @@ class MonospaceASCIISeq(Codec):
         return "".join(MonospaceASCII.decode(bytes([b])) for b in bytestr)
 
 
-class MajinTenseiII(Codec):
+class MajinTenseiIIByte(Codec):
     """ Bytestrings of length 1 """
 
     hexmap = os.path.join(package_dir, "resources/hexmap.yaml")
@@ -109,8 +109,8 @@ names = {
     "Hexify": Hexify,
     "HexifySpaces": HexifySpaces,
     "ASCII": ASCII,
+    "MonospaceASCIIByte": MonospaceASCIIByte,
     "MonospaceASCII": MonospaceASCII,
-    "MonospaceASCIISeq": MonospaceASCIISeq,
-    "MajinTenseiII": MajinTenseiII,
+    "MajinTenseiIIByte": MajinTenseiIIByte,
     "Mt2GarbageTextPair": Mt2GarbageTextPair,
 }

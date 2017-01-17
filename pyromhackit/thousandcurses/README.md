@@ -11,7 +11,7 @@ Press CTRL+G to exit.
 
 ## Examples
 ```
-$ python thousand_curses.py loremipsum.rom MonospaceASCIISeq
+$ python thousand_curses.py loremipsum.rom MonospaceASCII
 ```
 ![](https://cloud.githubusercontent.com/assets/837775/21470130/a809e35a-ca7b-11e6-8744-519370aed4b6.png)
 

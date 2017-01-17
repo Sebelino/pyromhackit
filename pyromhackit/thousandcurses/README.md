@@ -16,7 +16,7 @@ $ python thousand_curses.py loremipsum.rom MonospaceASCIISeq
 ![](https://cloud.githubusercontent.com/assets/837775/21470130/a809e35a-ca7b-11e6-8744-519370aed4b6.png)
 
 ```
-$ python thousand_curses.py mt2-excerpt.sfc Mt2GarbagePair
+$ python thousand_curses.py mt2-excerpt.sfc Mt2GarbageTextPair
 ```
 ![](https://cloud.githubusercontent.com/assets/837775/21470137/d662dbe4-ca7b-11e6-8ff0-78e853271ac0.png)
 

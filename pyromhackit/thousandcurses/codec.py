@@ -27,11 +27,11 @@ def read_yaml(path):
 
 class Codec(ABC):
     @abstractmethod
-    def encode(bytestr):
+    def encode(string):
         raise NotImplementedError
 
     @abstractmethod
-    def decode(string):
+    def decode(bytestr):
         raise NotImplementedError
 
 

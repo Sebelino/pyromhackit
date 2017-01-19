@@ -1,6 +1,7 @@
 .PHONY: clean
 
 coverage:
+	rm -f .coverage  # May be needed; seen some strange behavior
 	@nosetests -vs --with-coverage \
 	               --cover-package=pyromhackit.reader \
 	               --cover-package=pyromhackit.paletteformatter.paletteformatter \
@@ -23,6 +24,8 @@ clean:
 	rm -f *.pyc
 	rm -rf __pycache__
 	rm -rf .ropeproject
+	rm .coverage
+	rm -r coverage
 
 majin-tensei-ii.ips:
 	python majin-tensei-ii/majin-tensei-ii.py

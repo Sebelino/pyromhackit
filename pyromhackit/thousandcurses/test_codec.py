@@ -49,7 +49,9 @@ class TestBijection(object):
             for bs in cls.bytestrings:
                 d = cdc.decode(bs)
                 e = cdc.encode(d)
-                yield assert_equal, e, bs
+                if e != bs:
+                    break
+            yield assert_equal, e, bs
 
     @unittest.skip("TODO")
     def test_right_invertibility(cls):

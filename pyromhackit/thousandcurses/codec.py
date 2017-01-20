@@ -36,16 +36,16 @@ class Codec(ABC):
 
 
 class Hexify(Codec):
-    def encode(string):
-        raise NotImplementedError
+    def encode(s):
+        return bytes([int(s[i:i+2], base=16) for i in range(len(s))])
 
     def decode(bytestr):
         return "".join(("0"+hex(n)[2:])[-2:].upper() for n in bytestr)
 
 
 class HexifySpaces(Codec):
-    def encode(string):
-        raise NotImplementedError
+    def encode(s):
+        return bytes([int(b, base=16) for b in s.split()])
 
     def decode(bytestr):
         return " ".join(Hexify.decode(bytes([n])) for n in bytestr)

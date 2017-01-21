@@ -29,6 +29,26 @@ class ROM(object):
     def index(self, bstring):
         return self.content.index(bstring)
 
+    def index_regex(self, bregex):
+        """ Returns a pair (a, b) which are the start and end indices of the first string found when searching the ROM
+        using the specified regex, or None if there is none. """
+        match = re.search(bregex, self.content)
+        if match:
+            return match.span()
+
+    def relative_search(self, bregex, stop_on_match=True):
+        """ Returns a dictionary mapping a byte offset to a pair (a, b) which are the indices of the strings found when
+        doing an offset search. """
+        results = dict()
+        for i in range(2**8):
+            offset_rom = self.offset(i)
+            match = offset_rom.index_regex(bregex)
+            if match:
+                results[i] = match
+                if stop_on_match:
+                    return results
+        return results
+
     def lines(self, width):
         """ List of bytestring lines with the specified width """
         if width:
@@ -47,6 +67,10 @@ class ROM(object):
         width = len(tbl[0])
         return [[("%06x:" % (i*width)).upper()]+tbl[i]
                 for i in range(len(tbl))]
+
+    def offset(self, n):
+        """ Increase the value of each byte in the ROM by n modulo 256 """
+        return ROM([(b + n) % 2**8 for b in self])
 
     def decode(self, codec_name):
         c = codec.names[codec_name]

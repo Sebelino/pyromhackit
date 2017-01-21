@@ -26,13 +26,15 @@ def read_yaml(path):
 
 
 class Codec(ABC):
+    @classmethod
     @abstractmethod
-    def encode(string):
-        raise NotImplementedError
+    def encode(cls, s):
+        raise NotImplementedError("Encoder for {0} not implemented.".format(cls.__name__))
 
+    @classmethod
     @abstractmethod
-    def decode(bytestr):
-        raise NotImplementedError
+    def decode(cls, bytestr):
+        raise NotImplementedError("Decoder for {0} not implemented.".format(cls.__name__))
 
 
 class Hexify(Codec):

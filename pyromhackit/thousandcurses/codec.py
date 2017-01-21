@@ -52,8 +52,6 @@ class HexifySpaces(Codec):
 
 
 class ASCII(Codec):
-    def encode(string):
-        raise NotImplementedError
 
     def decode(bytestr):
         return "".join(chr(b) for b in bytestr)
@@ -62,8 +60,6 @@ class ASCII(Codec):
 class MonospaceASCIIByte(Codec):
     """ Like ASCII, but replaces any unprintable and non-monospace character
     with some other (non-ascii) monospace character. """
-    def encode(string):
-        raise NotImplementedError
 
     def decode(bytestr):
         b = bytestr[0]
@@ -74,8 +70,6 @@ class MonospaceASCIIByte(Codec):
 
 
 class MonospaceASCII(Codec):
-    def encode(string):
-        raise NotImplementedError
 
     def decode(bytestr):
         return "".join(MonospaceASCIIByte.decode(bytes([b])) for b in bytestr)
@@ -87,16 +81,11 @@ class MajinTenseiIIByte(Codec):
     hexmap = os.path.join(package_dir, "resources/hexmap.yaml")
     transliter = read_yaml(hexmap)
 
-    def encode(string):
-        raise NotImplementedError
-
     def decode(bytestr):
         return MajinTenseiIIByte.transliter[bytestr[0]]
 
 
 class Mt2GarbageTextPair(Codec):
-    def encode(string):
-        raise NotImplementedError
 
     def decode(bytestr):
         garbage = "".join(MonospaceASCIIByte.decode(bytes([b])) for b in

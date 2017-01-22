@@ -8,7 +8,7 @@ from nose.tools import assert_equal, assert_true
 import unittest
 import os
 
-from .codec import names
+from .codec import codecnames, decodernames
 
 package_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -21,8 +21,8 @@ class TestBijection(object):
 
     def test_totality(cls):
         """ Every bytestring can decoded """
-        for name in names:
-            cdc = names[name]
+        for name in decodernames:
+            cdc = decodernames[name]
             returned = ""
             for bs in cls.bytestrings:
                 returned = cdc.decode(bs)
@@ -32,8 +32,8 @@ class TestBijection(object):
 
     def test_injective_decoding(cls):
         """ x != y -> decode(x) != decode(y) for all bytestrings x, y """
-        for name in names:
-            cdc = names[name]
+        for name in decodernames:
+            cdc = decodernames[name]
             inverse_graph = dict()
             for bs in cls.bytestrings:
                 d = cdc.decode(bs)
@@ -41,11 +41,10 @@ class TestBijection(object):
                     raise AssertionError("Injective property for {0} failed beause decode({1}) = decode({2}) = {3}".format(name, bs, inverse_graph[d], d))
                 inverse_graph[d] = bs
 
-    @unittest.skip("TODO")
     def test_left_invertibility(cls):
         """ x == encode(decode(x)) for all bytestrings x """
-        for name in names:
-            cdc = names[name]
+        for name in codecnames:
+            cdc = codecnames[name]
             for bs in cls.bytestrings:
                 d = cdc.decode(bs)
                 e = cdc.encode(d)

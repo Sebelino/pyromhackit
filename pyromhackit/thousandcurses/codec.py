@@ -59,13 +59,13 @@ class HexifySpaces(Codec):
         return " ".join(Hexify.decode(bytes([n])) for n in bytestr)
 
 
-class ASCII(Codec):
+class ASCII(Decoder):
 
     def decode(bytestr):
         return "".join(chr(b) for b in bytestr)
 
 
-class MonospaceASCIIByte(Codec):
+class MonospaceASCIIByte(Decoder):
     """ Like ASCII, but replaces any unprintable and non-monospace character
     with some other (non-ascii) monospace character. """
 
@@ -77,13 +77,13 @@ class MonospaceASCIIByte(Codec):
         return chr(b)
 
 
-class MonospaceASCII(Codec):
+class MonospaceASCII(Decoder):
 
     def decode(bytestr):
         return "".join(MonospaceASCIIByte.decode(bytes([b])) for b in bytestr)
 
 
-class MajinTenseiII(Codec):
+class MajinTenseiII(Decoder):
     hexmap = os.path.join(package_dir, "resources/hexmap.yaml")
     transliter = read_yaml(hexmap)
 
@@ -91,7 +91,7 @@ class MajinTenseiII(Codec):
         return "".join(MajinTenseiII.transliter[b] for b in bytestr)
 
 
-class Mt2GarbageTextPair(Codec):
+class Mt2GarbageTextPair(Decoder):
 
     def decode(bytestr):
         text, garbage = intersperse(bytestr, 2)
@@ -99,9 +99,13 @@ class Mt2GarbageTextPair(Codec):
         return result
 
 
-names = {
+codecnames = {
     "Hexify": Hexify,
     "HexifySpaces": HexifySpaces,
+}
+
+decodernames = {
+    **codecnames,
     "ASCII": ASCII,
     "MonospaceASCIIByte": MonospaceASCIIByte,
     "MonospaceASCII": MonospaceASCII,

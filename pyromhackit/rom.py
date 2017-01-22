@@ -69,7 +69,7 @@ class ROM(object):
         return ROM([(b + n) % 2**8 for b in self])
 
     def decode(self, codec_name):
-        c = codec.names[codec_name]
+        c = codec.decodernames[codec_name]
         return c.decode(self)
 
     def map(self, mapdata):

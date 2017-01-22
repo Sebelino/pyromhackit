@@ -45,7 +45,7 @@ class Codec(Decoder):
 
 class Hexify(Codec):
     def encode(s):
-        return bytes([int(s[i:i+2], base=16) for i in range(len(s))])
+        return bytes([int(s[i:i+2], base=16) for i in range(0, len(s), 2)])
 
     def decode(bytestr):
         return "".join(("0"+hex(n)[2:])[-2:].upper() for n in bytestr)

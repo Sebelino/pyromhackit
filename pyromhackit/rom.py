@@ -1,9 +1,5 @@
 #!/usr/bin/env python
 
-import argparse
-import yaml
-import sys
-import string
 from prettytable import PrettyTable
 import re
 from ast import literal_eval

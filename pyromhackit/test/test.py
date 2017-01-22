@@ -5,7 +5,6 @@
 from ..rom import ROM
 import os
 from os.path import isfile
-from unittest import TestCase
 from nose.tools import assert_equal, assert_not_equal
 
 package_dir = os.path.dirname(os.path.abspath(__file__))

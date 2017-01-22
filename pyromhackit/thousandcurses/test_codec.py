@@ -4,7 +4,7 @@
 Tests for checking the bijective property of codecs.
 """
 
-from nose.tools import assert_equal, assert_not_equal, assert_true
+from nose.tools import assert_equal, assert_true
 import unittest
 import os
 

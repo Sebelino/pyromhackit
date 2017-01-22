@@ -25,16 +25,22 @@ def read_yaml(path):
     return dct
 
 
-class Codec(ABC):
-    @classmethod
-    @abstractmethod
-    def encode(cls, s):
-        raise NotImplementedError("Encoder for {0} not implemented.".format(cls.__name__))
+def intersperse(bytestr, n):
+    return [bytestr[i::n] for i in range(n)]
 
+
+class Decoder(ABC):
     @classmethod
     @abstractmethod
     def decode(cls, bytestr):
         raise NotImplementedError("Decoder for {0} not implemented.".format(cls.__name__))
+
+
+class Codec(Decoder):
+    @classmethod
+    @abstractmethod
+    def encode(cls, s):
+        raise NotImplementedError("Encoder for {0} not implemented.".format(cls.__name__))
 
 
 class Hexify(Codec):
@@ -77,23 +83,20 @@ class MonospaceASCII(Codec):
         return "".join(MonospaceASCIIByte.decode(bytes([b])) for b in bytestr)
 
 
-class MajinTenseiIIByte(Codec):
-    """ Bytestrings of length 1 """
-
+class MajinTenseiII(Codec):
     hexmap = os.path.join(package_dir, "resources/hexmap.yaml")
     transliter = read_yaml(hexmap)
 
     def decode(bytestr):
-        return MajinTenseiIIByte.transliter[bytestr[0]]
+        return "".join(MajinTenseiII.transliter[b] for b in bytestr)
 
 
 class Mt2GarbageTextPair(Codec):
 
     def decode(bytestr):
-        garbage = "".join(MonospaceASCIIByte.decode(bytes([b])) for b in
-                          bytestr[1::2])
-        text = "".join(MajinTenseiIIByte.decode(bytes([b])) for b in bytestr[::2])
-        return garbage+text
+        text, garbage = intersperse(bytestr, 2)
+        result = MajinTenseiII.decode(text) + MonospaceASCII.decode(garbage)
+        return result
 
 
 names = {
@@ -102,6 +105,6 @@ names = {
     "ASCII": ASCII,
     "MonospaceASCIIByte": MonospaceASCIIByte,
     "MonospaceASCII": MonospaceASCII,
-    "MajinTenseiIIByte": MajinTenseiIIByte,
+    "MajinTenseiII": MajinTenseiII,
     "Mt2GarbageTextPair": Mt2GarbageTextPair,
 }

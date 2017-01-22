@@ -107,7 +107,7 @@ class TestTinyROM(object):
             (["HexifySpaces"], "61 62 63"),
             (["ASCII"], "abc"),
             (["MonospaceASCII"], "abc"),
-            (["Mt2GarbageTextPair"], "bカク"),
+            (["Mt2GarbageTextPair"], "カクb"),
         ]
         for args, expected in paramlist:
             returned = cls.rom.decode(*args)

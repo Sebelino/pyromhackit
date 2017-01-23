@@ -3,6 +3,7 @@
 from prettytable import PrettyTable
 import re
 from ast import literal_eval
+import difflib
 
 from .reader import write
 from .thousandcurses import codec
@@ -11,6 +12,48 @@ from .thousandcurses.codec import read_yaml
 """
 Class representing a ROM.
 """
+
+
+class Facet(object):
+    """ A ROM's bytestring along with a decoding for it and all associations between them.  """
+    def __init__(self, bytestr, decoder):
+        self.src = bytestr
+        self.decoder = decoder
+        self.dst = decoder.decode(self.src)
+
+    def source_diffusion(self, idx):
+        """ Returns the indices of the bytes in the ROM affected
+        when altering the ith character of the decoded string """
+        self.src[idx]  # Raise IndexError?
+        indices = set()
+        for i in range(2**8):
+            alteration = self.src[:idx]+bytes([i])+self.src[idx+1:]
+            dalteration = self.decoder.decode(alteration)
+            diff = difflib.ndiff(dalteration, self.dst)
+            adiff = [ds for ds in diff if ds[0] != '+']
+            for j, s in enumerate(adiff):
+                if s[0] == '-':
+                    indices.add(j)
+        return indices
+
+    def impose_character(self, byteidx, stridx, c):
+        """ By modifying the byteidx'th byte, find a byte value that causes the stridx'th character
+        to become character c. Return None if no such value exists. """
+
+    def impose_byte(self, stridx, byteidx, b):
+        """ By modifying the stridx'th character, find a byte value that causes the stridx'th character
+        to become character c. Return None if no such value exists. """
+
+    def __repr__(self):
+        if len(self.src) <= 30:
+            srcstr = "Facet({},".format(self.src)
+        else:
+            srcstr = "Facet({}{}{},".format(self.src[:20], "...", self.src[len(self.src)-7:])
+        if len(self.dst) <= 30:
+            dststr = "      {})".format(self.dst)
+        else:
+            dststr = "      {}{}{},".format(self.dst[:20], "...", self.dst[len(self.dst)-7:])
+        return "{}\n{}".format(srcstr, dststr)
 
 
 class ROM(object):

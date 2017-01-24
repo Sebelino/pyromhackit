@@ -38,6 +38,11 @@ def test_init2():
     ROM(path=ROMPATH)
 
 
+def test_idempotence():
+    """ ROM(ROM(bs)) == ROM(bs) for all bytestrings bs """
+    assert_equal(ROM(ROM(b'abc')), ROM(b'abc'))
+
+
 class TestTinyROM(object):
     """ Test methods for an explicitly given tiny ROM """
 

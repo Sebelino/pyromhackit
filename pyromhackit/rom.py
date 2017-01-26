@@ -91,6 +91,7 @@ class ROM(object):
         return results
 
     def lines(self, width):
+        # TODO Return a list of ROMs instead?
         """ List of bytestring lines with the specified width """
         if width:
             w = width
@@ -210,11 +211,17 @@ class ROM(object):
     def __ne__(self, other):
         return not self.__eq__(other)
 
+    def __lt__(self, other):
+        return self.content.__lt__(other.content)
+
     def __getitem__(self, val):
         if isinstance(val, int):
             return self.content[val]
         if isinstance(val, slice):
             return ROM(self.content[val.start:val.stop:val.step])
+
+    def __hash__(self):
+        return hash(repr(self))
 
     def __str__(self):
         return self.pipe("hex | join ' '")

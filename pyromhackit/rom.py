@@ -57,6 +57,8 @@ class Facet(object):
 
 
 class ROM(object):
+    """ A fancier kind of bytestring, designed to be easier to read and edit. """
+
     def __init__(self, *args, **kwargs):
         if 'path' in kwargs:
             path = kwargs['path']
@@ -110,10 +112,6 @@ class ROM(object):
     def offset(self, n):
         """ Increase the value of each byte in the ROM by n modulo 256 """
         return ROM([(b + n) % 2**8 for b in self])
-
-    def decode(self, codec_name):
-        c = codec.decodernames[codec_name]
-        return c.decode(self)
 
     def map(self, mapdata):
         if isinstance(mapdata, dict):

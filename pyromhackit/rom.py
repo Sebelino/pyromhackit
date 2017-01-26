@@ -19,7 +19,7 @@ class Facet(object):
     def __init__(self, bytestr, decoder):
         self.src = ROM(bytestr)
         self.decoder = decoder
-        self.dst = decoder.decode(self.src)
+        self.dst = decoder.decode(bytes(self.src))
 
     def source_diffusion(self, idx):
         """ Returns the indices of the bytes in the ROM affected

@@ -50,19 +50,19 @@ class TestTinyROM(object):
     @classmethod
     def setup_class(cls):
         """ Construct a sample short ROM """
-        cls.rom = ROM(b'abc')
+        cls.rom = ROM(b'a\xffc')
 
     def test_repr(cls):
         """ Call __repr__ """
-        assert_equal(cls.rom.__repr__(), "ROM(b'abc')")
+        assert_equal(cls.rom.__repr__(), "ROM(b'a\\xffc')")
 
     def test_bytes(cls):
         """ Bytestring representation """
-        assert_equal(bytes(cls.rom), b"abc")
+        assert_equal(bytes(cls.rom), b"a\xffc")
 
     def test_str(cls):
         """ Unicode string representation """
-        assert_equal(str(cls.rom), "61 62 63")
+        assert_equal(str(cls.rom), "ROM(b'a\\xffc')")
 
     def test_len(cls):
         """ Call len(...) on ROM instance """
@@ -70,15 +70,15 @@ class TestTinyROM(object):
 
     def test_eq(cls):
         """ Two ROMs constructed from the same bytestring are equal """
-        assert_equal(cls.rom, ROM(b'abc'))
+        assert_equal(cls.rom, ROM(b'a\xffc'))
 
     def test_neq(cls):
         """ ROM =/= bytestring """
-        assert_not_equal(cls.rom, b'abc')
+        assert_not_equal(cls.rom, b'a\xffc')
 
     def test_index(cls):
         """ Find bytestring in ROM """
-        assert_equal(cls.rom.index(b'b'), 1)
+        assert_equal(cls.rom.index(b'\xff'), 1)
 
     def test_subscripting(cls):
         """ Subscripting support is isomorphic to bytestrings """
@@ -86,7 +86,7 @@ class TestTinyROM(object):
             (cls.rom[0], 97),
             (cls.rom[1:1], ROM(b'')),
             (cls.rom[:1], ROM(b'a')),
-            (cls.rom[1:3], ROM(b'bc')),
+            (cls.rom[1:3], ROM(b'\xffc')),
             (cls.rom[:], cls.rom),
         ]
         for (returned, expected) in paramlist:
@@ -95,11 +95,11 @@ class TestTinyROM(object):
     def test_lines(cls):
         """ Split ROM into a list """
         paramlist = [
-            ([0], [b'abc']),
-            ([1], [b'a', b'b', b'c']),
-            ([2], [b'ab', b'c']),
-            ([3], [b'abc']),
-            ([4], [b'abc']),
+            ([0], [b'a\xffc']),
+            ([1], [b'a', b'\xff', b'c']),
+            ([2], [b'a\xff', b'c']),
+            ([3], [b'a\xffc']),
+            ([4], [b'a\xffc']),
         ]
         for (args, expected) in paramlist:
             returned = cls.rom.lines(*args)

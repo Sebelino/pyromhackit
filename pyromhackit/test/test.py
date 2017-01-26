@@ -2,10 +2,11 @@
 
 """ Test suite for ROM class. """
 
-from ..rom import ROM
 import os
 from os.path import isfile
 from nose.tools import assert_equal, assert_not_equal
+
+from ..rom import ROM
 
 package_dir = os.path.dirname(os.path.abspath(__file__))
 

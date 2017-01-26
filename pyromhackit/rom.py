@@ -224,7 +224,27 @@ class ROM(object):
         return hash(repr(self))
 
     def __str__(self):
-        return self.pipe("hex | join ' '")
+        head = list("ROM(b''")
+        tail = list("...b'')")
+        max_width = 80
+        if len(repr(self)) <= max_width:
+            return repr(self)
+        left_weight = 2
+        it = iter(self.content)
+        rit = reversed(self.content)
+        byte_iter = zip(*[it] * left_weight, rit)
+        byte_iter = iter(y for x in byte_iter for y in x)
+        for i in range(len(self)):
+            b = bytes([next(byte_iter)])
+            br = repr(b)[2:-1]
+            room_available = len(head) + len(tail) + len(br) <= max_width
+            if not room_available:
+                break
+            if i % (left_weight + 1) == left_weight:
+                tail[5:5] = list(br)
+            elif room_available:
+                head[-1:-1] = list(br)
+        return "".join(head+tail)
 
     def __repr__(self):
         if len(self) <= 30:

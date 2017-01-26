@@ -15,9 +15,9 @@ Class representing a ROM.
 
 
 class Facet(object):
-    """ A ROM's bytestring along with a decoding for it and all associations between them.  """
+    """ A ROM paired with a string decoded from it and the relations between them.  """
     def __init__(self, bytestr, decoder):
-        self.src = bytestr
+        self.src = ROM(bytestr)
         self.decoder = decoder
         self.dst = decoder.decode(self.src)
 

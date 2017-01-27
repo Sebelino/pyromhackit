@@ -4,7 +4,7 @@
 
 import os
 from os.path import isfile
-from nose.tools import assert_equal, assert_not_equal
+import pytest
 
 from ..rom import ROM
 
@@ -41,69 +41,72 @@ def test_init2():
 
 def test_idempotence():
     """ ROM(ROM(bs)) == ROM(bs) for all bytestrings bs """
-    assert_equal(ROM(ROM(b'abc')), ROM(b'abc'))
+    assert ROM(ROM(b'abc')) == ROM(b'abc')
 
 
-class TestTinyROM(object):
+@pytest.fixture(scope="module")
+def tinyrom():
     """ Test methods for an explicitly given tiny ROM """
+    return ROM(b"a\xffc")
 
-    @classmethod
-    def setup_class(cls):
-        """ Construct a sample short ROM """
-        cls.rom = ROM(b'a\xffc')
 
-    def test_repr(cls):
-        """ Call __repr__ """
-        assert_equal(cls.rom.__repr__(), "ROM(b'a\\xffc')")
+def test_repr(tinyrom):
+    """ Call __repr__ """
+    assert tinyrom.__repr__() == "ROM(b'a\\xffc')"
 
-    def test_bytes(cls):
-        """ Bytestring representation """
-        assert_equal(bytes(cls.rom), b"a\xffc")
 
-    def test_str(cls):
-        """ Unicode string representation """
-        assert_equal(str(cls.rom), "ROM(b'a\\xffc')")
+def test_bytes(tinyrom):
+    """ Bytestring representation """
+    assert bytes(tinyrom) == b"a\xffc"
 
-    def test_len(cls):
-        """ Call len(...) on ROM instance """
-        assert_equal(len(cls.rom), 3)
 
-    def test_eq(cls):
-        """ Two ROMs constructed from the same bytestring are equal """
-        assert_equal(cls.rom, ROM(b'a\xffc'))
+def test_str(tinyrom):
+    """ Unicode string representation """
+    assert str(tinyrom) == "ROM(b'a\\xffc')"
 
-    def test_neq(cls):
-        """ ROM =/= bytestring """
-        assert_not_equal(cls.rom, b'a\xffc')
 
-    def test_index(cls):
-        """ Find bytestring in ROM """
-        assert_equal(cls.rom.index(b'\xff'), 1)
+def test_len(tinyrom):
+    """ Call len(...) on ROM instance """
+    assert len(tinyrom) == 3
 
-    def test_subscripting(cls):
-        """ Subscripting support is isomorphic to bytestrings """
-        paramlist = [
-            (cls.rom[0], 97),
-            (cls.rom[1:1], ROM(b'')),
-            (cls.rom[:1], ROM(b'a')),
-            (cls.rom[1:3], ROM(b'\xffc')),
-            (cls.rom[:], cls.rom),
-        ]
-        for (returned, expected) in paramlist:
-            yield assert_equal, returned, expected
 
-    def test_lines(cls):
-        """ Split ROM into a list """
-        paramlist = [
-            ([0], [b'a\xffc']),
-            ([1], [b'a', b'\xff', b'c']),
-            ([2], [b'a\xff', b'c']),
-            ([3], [b'a\xffc']),
-            ([4], [b'a\xffc']),
-        ]
-        for (args, expected) in paramlist:
-            returned = cls.rom.lines(*args)
-            yield assert_equal, returned, expected
+def test_eq(tinyrom):
+    """ Two ROMs constructed from the same bytestring are equal """
+    assert tinyrom == ROM(b'a\xffc')
+
+
+def test_neq(tinyrom):
+    """ ROM =/= bytestring """
+    assert tinyrom != b'a\xffc'
+
+
+def test_index(tinyrom):
+    """ Find bytestring in ROM """
+    assert tinyrom.index(b'\xff') == 1
+
+
+@pytest.mark.parametrize("arg,expected", [
+    (0, 97),
+    (slice(1, 1), ROM(b'')),
+    (slice(None, 1), ROM(b'a')),
+    (slice(1, 3), ROM(b'\xffc')),
+    (slice(None, None), ROM(b'a\xffc')),
+])
+def test_subscripting(tinyrom ,arg, expected):
+    """ Subscripting support is isomorphic to bytestrings """
+    assert tinyrom[arg] == expected
+
+
+@pytest.mark.parametrize("arg, expected", [
+    (0, [b'a\xffc']),
+    (1, [b'a', b'\xff', b'c']),
+    (2, [b'a\xff', b'c']),
+    (3, [b'a\xffc']),
+    (4, [b'a\xffc']),
+])
+def test_lines(tinyrom, arg, expected):
+    """ Split ROM into a list """
+    assert tinyrom.lines(arg) == expected
 
 
 class Test256ByteROM(object):
@@ -217,13 +220,13 @@ def test_outfile():
     with open(OUTPATH, 'rb') as outfile:
         returned = outfile.read()
         expected = rom.content
-        assert_equal(returned, expected)
+        assert returned == expected
     os.remove(OUTPATH)
     rom.pipe("map {} | save {}".format(MAPPATH, OUTPATH))
     with open(OUTPATH, 'r', encoding="utf8") as outfile:
         returned = outfile.read()
         expected = rom.pipe("map {}".format(MAPPATH))
-        assert_equal(returned, expected)
+        assert returned == expected
 
 
 def test_execute():

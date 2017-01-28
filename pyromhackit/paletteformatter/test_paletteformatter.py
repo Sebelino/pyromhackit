@@ -159,8 +159,9 @@ def test_formatconvert_files():
     for (prefix, f1, f2) in translations:
         inpath = os.path.join(package_dir, "{}.{}".format(prefix, f1))
         outpath = os.path.join(package_dir,"{}.{}".format(prefix, f2))
-        formatconvert(inpath, f1, f2, "sample.dat")
-        with open("sample.dat", "rb") as file1, open(outpath, "rb") as file2:
+        samplefile = os.path.join(package_dir, "sample.dat")
+        formatconvert(inpath, f1, f2, samplefile)
+        with open(samplefile, "rb") as file1, open(outpath, "rb") as file2:
             returned = file1.read()
             expected = file2.read()
             yield assert_equals, returned.strip(), expected.strip()
@@ -168,6 +169,6 @@ def test_formatconvert_files():
 
 def teardown():
     try:
-        os.remove("./sample.dat")
+        os.remove(os.path.join(package_dir, "./sample.dat"))
     except OSError:  # FileNotFoundError
         pass

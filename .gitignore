@@ -3,4 +3,5 @@ venv
 *.smc
 *.srm
 cover
+htmlcov
 copyrighted

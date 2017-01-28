@@ -2,11 +2,12 @@
 
 coverage:
 	rm -f .coverage  # May be needed; seen some strange behavior
-	@nosetests -vs --with-coverage \
-	               --cover-package=pyromhackit.reader \
-	               --cover-package=pyromhackit.paletteformatter.paletteformatter \
-	               --cover-package=pyromhackit.thousandcurses.codec \
-	               --cover-html
+	pytest \
+		--verbose\
+		--capture=no\
+		--cov=pyromhackit\
+		--cov-report=term\
+		--cov-report=html
 
 venv: venv/bin/activate
 
@@ -24,8 +25,8 @@ clean:
 	rm -f *.pyc
 	rm -rf __pycache__
 	rm -rf .ropeproject
-	rm .coverage
-	rm -r coverage
+	rm -f .coverage
+	rm -rf htmlcov
 
 majin-tensei-ii.ips:
 	python majin-tensei-ii/majin-tensei-ii.py

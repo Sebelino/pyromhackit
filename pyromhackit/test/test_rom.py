@@ -23,7 +23,7 @@ Expected:\n[{}]
     """.format(returned, expected))
 
 
-def set_up():
+def setup_module():
     """ Assert that certain files are present for testing """
     assert isfile(ROMPATH)
     assert isfile(MAPPATH)

@@ -142,27 +142,27 @@ class TestROM256:
         e = r"ROM(b'\x00\x01\x02\x03\x04\x05\x06\x07\x08\t\n\x0b'...b'\xfb\xfc\xfd\xfe\xff')"
         assert str(rom256) == e
 
-#    def test_str_contracted(cls):
-#        paramlist = [
-#            (-1, ValueError),
-#            (0, ValueError),
-#            (1, ValueError),
-#            (7, ValueError),
-#            (8, r"ROM(...)"),
-#            (12, r"ROM(b'a'...)"),
-#            (15, r"ROM(b'\x00'...)"),
-#            (18, r"ROM(b'\x00'...)"),
-#            (19, r"ROM(b'\x00\x01'...)"),
-#            (19, r"ROM(b'\x00\x01'...)"),
-#            (25, r"ROM(b'\x00\x01'...)"),
-#            (26, r"ROM(b'\x00\x01'...b'\xff')"),
-#        ]
-#        for (arg, expected) in paramlist:
-#            print(expected is ValueError)
-#            if expected is ValueError:
-#                yield pytest.raises, ValueError, cls.rom.str_contracted, arg
-#            returned = cls.rom.str_contracted(arg)
-#            yield assert, returned, expected
+    @pytest.mark.parametrize("arg, expected", [
+            (-1, ValueError),
+            (0, ValueError),
+            (1, ValueError),
+            (7, ValueError),
+            (8, r"ROM(...)"),
+            (12, r"ROM(b'a'...)"),
+            (15, r"ROM(b'\x00'...)"),
+            (18, r"ROM(b'\x00'...)"),
+            (19, r"ROM(b'\x00\x01'...)"),
+            (19, r"ROM(b'\x00\x01'...)"),
+            (25, r"ROM(b'\x00\x01'...)"),
+            (26, r"ROM(b'\x00\x01'...b'\xff')"),
+    ])
+    def test_str_contracted(self, rom256, arg, expected):
+        if expected is ValueError:
+            with pytest.raises(ValueError) as excinfo:
+                rom256.str_contracted(arg)
+        else:
+            returned = rom256.str_contracted(arg)
+            assert returned == expected
 
 
     def test_len(self, rom256):

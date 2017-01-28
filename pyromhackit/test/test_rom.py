@@ -127,20 +127,20 @@ def rom256():
     """ Test methods for a ROM consiting of every byte value """
     return ROM(bytes256)
 
+class TestROM256:
+    def test_repr(self, rom256):
+        """ Call __repr__ """
+        expected = "ROM(" + repr(bytes256) + ")"
+        assert rom256.__repr__() == expected
 
-def test_repr(rom256):
-    """ Call __repr__ """
-    expected = "ROM(" + repr(bytes256) + ")"
-    assert rom256.__repr__() == expected
+    def test_bytes(self, rom256):
+        """ Bytestring representation """
+        assert bytes(rom256) == bytes(range(256))
 
-def test_bytes(rom256):
-    """ Bytestring representation """
-    assert bytes(rom256) == bytes(range(256))
-
-def test_str(rom256):
-    """ Unicode string representation """
-    e = r"ROM(b'\x00\x01\x02\x03\x04\x05\x06\x07\x08\t\n\x0b'...b'\xfb\xfc\xfd\xfe\xff')"
-    assert str(rom256) == e
+    def test_str(self, rom256):
+        """ Unicode string representation """
+        e = r"ROM(b'\x00\x01\x02\x03\x04\x05\x06\x07\x08\t\n\x0b'...b'\xfb\xfc\xfd\xfe\xff')"
+        assert str(rom256) == e
 
 #    def test_str_contracted(cls):
 #        paramlist = [
@@ -165,48 +165,48 @@ def test_str(rom256):
 #            yield assert, returned, expected
 
 
-def test_len(rom256):
-    """ Call len(...) on ROM instance """
-    assert len(rom256) == 256
+    def test_len(self, rom256):
+        """ Call len(...) on ROM instance """
+        assert len(rom256) == 256
 
 
-def test_eq(rom256):
-    """ Two ROMs constructed from the same bytestring are equal """
-    assert rom256 == ROM(bytes(range(256)))
+    def test_eq(self, rom256):
+        """ Two ROMs constructed from the same bytestring are equal """
+        assert rom256 == ROM(bytes(range(256)))
 
 
-def test_neq(rom256):
-    """ ROM =/= bytestring """
-    assert rom256 != bytes(range(2**8))
+    def test_neq(self, rom256):
+        """ ROM =/= bytestring """
+        assert rom256 != bytes(range(2**8))
 
 
-def test_index(rom256):
-    """ Find bytestring in ROM """
-    assert rom256.index(b'\x80') == 0x80
+    def test_index(self, rom256):
+        """ Find bytestring in ROM """
+        assert rom256.index(b'\x80') == 0x80
 
 
-@pytest.mark.parametrize("arg, expected", [
-    (0, 0),
-    (slice(1, 1), ROM(b'')),
-    (slice(None, 1), ROM(b'\x00')),
-    (slice(1, 3), ROM(b'\x01\x02')),
-    (slice(None, None), ROM(bytes256)),
-])
-def test_subscripting(rom256, arg, expected):
-    """ Subscripting support is isomorphic to bytestrings """
-    assert rom256[arg] == expected
+    @pytest.mark.parametrize("arg, expected", [
+        (0, 0),
+        (slice(1, 1), ROM(b'')),
+        (slice(None, 1), ROM(b'\x00')),
+        (slice(1, 3), ROM(b'\x01\x02')),
+        (slice(None, None), ROM(bytes256)),
+    ])
+    def test_subscripting(self, rom256, arg, expected):
+        """ Subscripting support is isomorphic to bytestrings """
+        assert rom256[arg] == expected
 
 
-@pytest.mark.parametrize("arg, expected", [
-    (0, [bytes256]),
-    (1, [bytes([b]) for b in bytes256]),
-    (2, [bytes(bytes256[i:i+2]) for i in range(0, len(bytes256), 2)]),
-    (256, [bytes256]),
-    (257, [bytes256]),
-])
-def test_lines(rom256, arg, expected):
-    """ Split ROM into a list """
-    assert rom256.lines(arg) == expected
+    @pytest.mark.parametrize("arg, expected", [
+        (0, [bytes256]),
+        (1, [bytes([b]) for b in bytes256]),
+        (2, [bytes(bytes256[i:i+2]) for i in range(0, len(bytes256), 2)]),
+        (256, [bytes256]),
+        (257, [bytes256]),
+    ])
+    def test_lines(self, rom256, arg, expected):
+        """ Split ROM into a list """
+        assert rom256.lines(arg) == expected
 
 
 @pytest.mark.parametrize("args, expected", [

@@ -42,63 +42,64 @@ def tinyrom():
     return ROM(b"a\xffc")
 
 
-def test_repr(tinyrom):
-    """ Call __repr__ """
-    assert tinyrom.__repr__() == "ROM(b'a\\xffc')"
+class TestTinyROM:
+    def test_repr(self, tinyrom):
+        """ Call __repr__ """
+        assert tinyrom.__repr__() == "ROM(b'a\\xffc')"
 
 
-def test_bytes(tinyrom):
-    """ Bytestring representation """
-    assert bytes(tinyrom) == b"a\xffc"
+    def test_bytes(self, tinyrom):
+        """ Bytestring representation """
+        assert bytes(tinyrom) == b"a\xffc"
 
 
-def test_str(tinyrom):
-    """ Unicode string representation """
-    assert str(tinyrom) == "ROM(b'a\\xffc')"
+    def test_str(self, tinyrom):
+        """ Unicode string representation """
+        assert str(tinyrom) == "ROM(b'a\\xffc')"
 
 
-def test_len(tinyrom):
-    """ Call len(...) on ROM instance """
-    assert len(tinyrom) == 3
+    def test_len(self, tinyrom):
+        """ Call len(...) on ROM instance """
+        assert len(tinyrom) == 3
 
 
-def test_eq(tinyrom):
-    """ Two ROMs constructed from the same bytestring are equal """
-    assert tinyrom == ROM(b'a\xffc')
+    def test_eq(self, tinyrom):
+        """ Two ROMs constructed from the same bytestring are equal """
+        assert tinyrom == ROM(b'a\xffc')
 
 
-def test_neq(tinyrom):
-    """ ROM =/= bytestring """
-    assert tinyrom != b'a\xffc'
+    def test_neq(self, tinyrom):
+        """ ROM =/= bytestring """
+        assert tinyrom != b'a\xffc'
 
 
-def test_index(tinyrom):
-    """ Find bytestring in ROM """
-    assert tinyrom.index(b'\xff') == 1
+    def test_index(self, tinyrom):
+        """ Find bytestring in ROM """
+        assert tinyrom.index(b'\xff') == 1
 
 
-@pytest.mark.parametrize("arg, expected", [
-    (0, 97),
-    (slice(1, 1), ROM(b'')),
-    (slice(None, 1), ROM(b'a')),
-    (slice(1, 3), ROM(b'\xffc')),
-    (slice(None, None), ROM(b'a\xffc')),
-])
-def test_subscripting(tinyrom ,arg, expected):
-    """ Subscripting support is isomorphic to bytestrings """
-    assert tinyrom[arg] == expected
+    @pytest.mark.parametrize("arg, expected", [
+        (0, 97),
+        (slice(1, 1), ROM(b'')),
+        (slice(None, 1), ROM(b'a')),
+        (slice(1, 3), ROM(b'\xffc')),
+        (slice(None, None), ROM(b'a\xffc')),
+    ])
+    def test_subscripting(self, tinyrom ,arg, expected):
+        """ Subscripting support is isomorphic to bytestrings """
+        assert tinyrom[arg] == expected
 
 
-@pytest.mark.parametrize("arg, expected", [
-    (0, [b'a\xffc']),
-    (1, [b'a', b'\xff', b'c']),
-    (2, [b'a\xff', b'c']),
-    (3, [b'a\xffc']),
-    (4, [b'a\xffc']),
-])
-def test_lines(tinyrom, arg, expected):
-    """ Split ROM into a list """
-    assert tinyrom.lines(arg) == expected
+    @pytest.mark.parametrize("arg, expected", [
+        (0, [b'a\xffc']),
+        (1, [b'a', b'\xff', b'c']),
+        (2, [b'a\xff', b'c']),
+        (3, [b'a\xffc']),
+        (4, [b'a\xffc']),
+    ])
+    def test_lines(self, tinyrom, arg, expected):
+        """ Split ROM into a list """
+        assert tinyrom.lines(arg) == expected
 
 
 bytes256 = (

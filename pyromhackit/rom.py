@@ -223,7 +223,11 @@ class ROM(object):
     def __hash__(self):
         return hash(repr(self))
 
-    def __str__(self):
+    def str_contracted(self, max_width):
+        # TODO left_weight parameter?
+        """ Returns a string displaying the ROM with at most max_width characters. """
+        if max_width < 8:
+            raise ValueError("ROM cannot be displayed with less than 8 characters.")
         head = list("ROM(b''")
         tail = list("...b'')")
         max_width = 80
@@ -245,6 +249,9 @@ class ROM(object):
             elif room_available:
                 head[-1:-1] = list(br)
         return "".join(head+tail)
+
+    def __str__(self):
+        return self.str_contracted(80)
 
     def __repr__(self):
         return "ROM({})".format(self.content)

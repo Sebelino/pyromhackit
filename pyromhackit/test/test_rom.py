@@ -246,24 +246,26 @@ def remove_files():
         pass
 
 
-@pytest.mark.skip(reason="TODO. Looks wrongly implemented.")
-def test_outfile():
+@pytest.fixture()
+def write_rom_to_file(request):
+    mode, pipeline, expected = request.param
+    rom = ROM(path=ROMPATH)[257:257+13]
+    rom.pipe(pipeline)
+    with open(OUTPATH, mode) as outfile:
+        returned = outfile.read()
+        yield (mode, pipeline, returned, expected)
+    remove_files()
+
+
+@pytest.mark.parametrize("write_rom_to_file", [
+    ("rb", "save {}".format(OUTPATH), rb"23623=3\9325<"),
+    ("r", "map {} | save {}".format(MAPPATH, OUTPATH), "reprehenderit"),
+], indirect=True)
+def test_outfile(write_rom_to_file):
     """ Test loading a ROM from a file and write it to another """
-    offset = 257
-    rom = ROM(path=ROMPATH)[offset:offset+13]
-    rom.pipe("save {}".format(OUTPATH))
-    with open(OUTPATH, 'rb') as outfile:
-        returned = outfile.read()
-        expected = rom.content
-        assert returned == expected
-    os.remove(OUTPATH)
-    remove_files()
-    rom.pipe("map {} | save {}".format(MAPPATH, OUTPATH))
-    with open(OUTPATH, 'r', encoding="utf8") as outfile:
-        returned = outfile.read()
-        expected = rom.pipe("map {}".format(MAPPATH))
-        assert returned == expected
-    remove_files()
+    _, _, returned, expected = write_rom_to_file
+    assert returned == expected
+
 
 tables = [
         """\
@@ -279,6 +281,7 @@ tables = [
 | g |   |   |
 +---+---+---+""",
 ]
+
 
 @pytest.fixture(scope="function")
 def execution(request):

@@ -15,14 +15,6 @@ MAPPATH = os.path.join(package_dir, "./loremipsum.yml")
 OUTPATH = os.path.join(package_dir, "./loremipsum.txt")
 
 
-def assert_equal2(returned, expected):
-    """ Clearer assert function """
-    assert returned == expected, ("""
-Returned:\n[{}]
-Expected:\n[{}]
-    """.format(returned, expected))
-
-
 def setup_module():
     """ Assert that certain files are present for testing """
     assert isfile(ROMPATH)

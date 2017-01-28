@@ -7,7 +7,8 @@ coverage:
 		--capture=no\
 		--cov=pyromhackit\
 		--cov-report=term\
-		--cov-report=html
+		--cov-report=html\
+		pyromhackit
 
 venv: venv/bin/activate
 

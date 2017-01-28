@@ -165,9 +165,10 @@ def test_formatconvert_files():
             returned = file1.read()
             expected = file2.read()
             yield assert_equals, returned.strip(), expected.strip()
+            remove_files()
 
 
-def teardown():
+def remove_files():
     try:
         os.remove(os.path.join(package_dir, "./sample.dat"))
     except OSError:  # FileNotFoundError

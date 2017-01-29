@@ -224,31 +224,45 @@ class ROM(object):
         return hash(repr(self))
 
     def str_contracted(self, max_width):
-        # TODO left_weight parameter?
         """ Returns a string displaying the ROM with at most max_width characters. """
+        # If too cramped:
         if max_width < 8:
             raise ValueError("ROM cannot be displayed with less than 8 characters.")
-        head = list("ROM(b''")
-        tail = list("...b'')")
-        max_width = 80
+        # If entire string fits:
         if len(repr(self)) <= max_width:
             return repr(self)
-        left_weight = 2
+        # If no bytestring fits:
+        if max_width < len("ROM(...)") + len(repr(bytes([self.content[0]]))):
+            return "ROM(...)"
+        left_weight = 2  # Soft-code? Probably not worth the effort.
+        # If non-empty head bytestring:
+        result = list("ROM(b''...)")
+        head = []
+        tail = []
         it = iter(self.content)
         rit = reversed(self.content)
         byte_iter = zip(*[it] * left_weight, rit)
         byte_iter = iter(y for x in byte_iter for y in x)
+        tail_surroundings_len = 0
         for i in range(len(self)):
             b = bytes([next(byte_iter)])
+            is_tail_byte = i % (left_weight + 1) == left_weight
             br = repr(b)[2:-1]
-            room_available = len(head) + len(tail) + len(br) <= max_width
+            if is_tail_byte and not tail:
+                tail_surroundings_len = len("b''")
+            room_available = len("".join(result + head + tail)) + len(br) + tail_surroundings_len <= max_width
             if not room_available:
                 break
-            if i % (left_weight + 1) == left_weight:
-                tail[5:5] = list(br)
-            elif room_available:
-                head[-1:-1] = list(br)
-        return "".join(head+tail)
+            if is_tail_byte:
+                tail.insert(0, br)
+            else:
+                head.append(br)
+        if tail:
+            tail.insert(0, "b'")
+            tail.append("'")
+        result[6:6] = head
+        result[-1:-1] = tail
+        return "".join(result)
 
     def __str__(self):
         return self.str_contracted(80)

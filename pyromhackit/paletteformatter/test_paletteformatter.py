@@ -9,7 +9,6 @@ from .paletteformatter import (
 )
 
 import pytest
-from nose.tools import assert_equals, assert_raises
 import os
 
 package_dir = os.path.dirname(os.path.abspath(__file__))

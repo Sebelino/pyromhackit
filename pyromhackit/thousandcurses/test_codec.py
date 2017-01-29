@@ -7,7 +7,7 @@ Tests for checking the bijective property of codecs.
 import pytest
 import os
 
-from .codec import codecnames, decodernames
+from .codec import Codec, codecnames, decodernames
 
 package_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -56,3 +56,10 @@ class TestBijection:
     @pytest.mark.skip(reason="TODO")
     def test_right_invertibility(self):
         """ x == decode(encode(x)) for all strings x """
+
+
+def test_instantiate_abstract():
+    with pytest.raises(NotImplementedError):
+        Codec.decode(b"")
+    with pytest.raises(NotImplementedError):
+        Codec.encode("")

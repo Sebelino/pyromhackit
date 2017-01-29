@@ -210,6 +210,43 @@ class TestROM256:
         assert rom256.lines(arg) == expected
 
 
+@pytest.mark.parametrize("expected, max_width, rombytes", [
+    (ValueError, 7, b""),
+    (r"ROM(b'')", 8, b""),
+    (r"ROM(...)", 8, b"a"),
+    (r"ROM(b'a')", 9, b"a"),
+    (r"ROM(b'ab')", 10, b"ab"),
+    (r"ROM(b'abc')", 11, b"abc"),
+    (r"ROM(b'abcd')", 12, b"abcd"),
+    (r"ROM(b'a'...)", 12, b"abcde"),
+    (r"ROM(b'abcde')", 13, b"abcde"),
+    (r"ROM(b'ab'...)", 13, b"abcdef"),
+    (r"ROM(b'abcdefghi')", 17, b"abcdefghi"),
+    (r"ROM(b'ab'...b'j')", 17, b"abcdefghij"),
+    (r"ROM(b'abcdefghij')", 18, b"abcdefghij"),
+    (r"ROM(b'abc'...b'k')", 18, b"abcdefghijk"),
+    (r"ROM(...)", 9, b"\t"),
+    (r"ROM(b'\t')", 10, b"\t"),
+    (r"ROM(...)", 10, b"\ta"),
+    (r"ROM(...)", 9, b"\xff"),
+    (r"ROM(...)", 10, b"\xff"),
+    (r"ROM(...)", 11, b"\xff"),
+    (r"ROM(b'\xff')", 12, b"\xff"),
+    (r"ROM(b'\xff')", 13, b"\xff"),
+    (r"ROM(b'\xff')", 14, b"\xff"),
+    (r"ROM(b'\xff')", 15, b"\xff"),
+    (r"ROM(b'\xff\xfe')", 16, b"\xff\xfe"),
+])
+def test_str_contracted(expected, max_width, rombytes):
+    rom = ROM(rombytes)
+    if expected is ValueError:
+        with pytest.raises(ValueError) as excinfo:
+            rom.str_contracted(max_width)
+    else:
+        returned = rom.str_contracted(max_width)
+        assert returned == expected
+
+
 @pytest.mark.parametrize("args, expected", [
     ([lambda x: x], ROM(b"abc")),
     (["hex"], ["61", "62", "63"]),

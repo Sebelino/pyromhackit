@@ -25,6 +25,7 @@ def assert_equals_bytes(returned, expected):
     msg = "Bytestrings not equal:\nbytes({})\nbytes({})".format(retstr, expstr)
     assert returned == expected, msg
 
+
 @pytest.mark.parametrize("strictness, fmt, palette", [
     (Strictness.pedantic, "rgb24bpp", b"\x00\x00\x00"),
     (Strictness.pedantic, "rgb24bpp", bytes([49, 23, 255])),
@@ -35,10 +36,10 @@ def assert_equals_bytes(returned, expected):
     (Strictness.pedantic, "bgr15bpp", b"\x00\x00"),
     (Strictness.pedantic, "bgr15bpp", b"\xFF\x7F"),
     (Strictness.pedantic, "bgr15bpp", b"\xFF\x7F\xA5\x7F"),
-    (Strictness.pedantic, "tpl", b"TPL\x02"+bytes([0, 0, 0, 0]*16)),
-    (Strictness.pedantic, "riffpal", b"RIFF\x14\0\0\0PAL data\x08\0\0\0"+b"\0\x03\x01\0\0\0\0\0"),
-    (Strictness.pedantic, "riffpal", (b"RIFF(\x00\x00\x00PAL data\x1c\x00\x00\x00\x00\x03\x06\x00"+
-                                      b"\x00\x00\x00\x00\xff\x00\x00\x00\x00\xff\x00\x00\x00\x00\xff"+
+    (Strictness.pedantic, "tpl", b"TPL\x02" + bytes([0, 0, 0, 0] * 16)),
+    (Strictness.pedantic, "riffpal", b"RIFF\x14\0\0\0PAL data\x08\0\0\0" + b"\0\x03\x01\0\0\0\0\0"),
+    (Strictness.pedantic, "riffpal", (b"RIFF(\x00\x00\x00PAL data\x1c\x00\x00\x00\x00\x03\x06\x00" +
+                                      b"\x00\x00\x00\x00\xff\x00\x00\x00\x00\xff\x00\x00\x00\x00\xff" +
                                       b"\x00\xff\xff\x00\x00\xff\xff\xff\x00")),
 ])
 def test_validate_positives(strictness, fmt, palette):
@@ -70,78 +71,78 @@ def test_validate_negatives(strictness, fmt, palette):
         validate(palette, fmt, strictness)
 
 
-def test_format2rgb24bpp():
-    # TODO Test cases for uppercased file extensions?
-    positives = [
-        ("tpl",
-         b"TPL\x02"+\
-         bytes([0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0]),
-         bytes([0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0])),
-        ("tpl",
-         b"TPL\x02"+\
-         bytes([
-            0b00000000,0b00000001, 0b00000010,0b00000011, 0b00000100,0b00000101, 0b00000110,0b00000111,
-            0b00001000,0b00001001, 0b00001010,0b00001011, 0b00001100,0b00001101, 0b00001110,0b00001111,
-            0b00010000,0b00010001, 0b00010010,0b00010011, 0b00010100,0b00010101, 0b00010110,0b00010111,
-            0b00011000,0b00011001, 0b00011010,0b00011011, 0b00011100,0b00011101, 0b00011110,0b00011111,
-         ]),
-         bytes([
-            0,  64,0,              16, 192,0,             32, 64,8,              48, 192,8,
-            64, 64,16,             80, 192,16,            96, 64,24,             112,192,24,
-            128,64,32,             144,192,32,            160,64,40,             176,192,40,
-            192,64,48,             208,192,48,            224,64,56,             240,192,56,
-         ])),
-    ]
-    for fmt, input, expected in positives:
-        returned = format2rgb24bpp(input, fmt)
-        yield assert_equals_bytes, returned, expected
+@pytest.mark.parametrize("fmt, input_bytes, expected", [
+    ("tpl",
+     b"TPL\x02" +
+     bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
+     bytes(
+         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])),
+    ("tpl",
+     b"TPL\x02" +
+     bytes([
+         0b00000000, 0b00000001, 0b00000010, 0b00000011, 0b00000100, 0b00000101, 0b00000110, 0b00000111,
+         0b00001000, 0b00001001, 0b00001010, 0b00001011, 0b00001100, 0b00001101, 0b00001110, 0b00001111,
+         0b00010000, 0b00010001, 0b00010010, 0b00010011, 0b00010100, 0b00010101, 0b00010110, 0b00010111,
+         0b00011000, 0b00011001, 0b00011010, 0b00011011, 0b00011100, 0b00011101, 0b00011110, 0b00011111,
+     ]),
+     bytes([
+         0, 64, 0, 16, 192, 0, 32, 64, 8, 48, 192, 8,
+         64, 64, 16, 80, 192, 16, 96, 64, 24, 112, 192, 24,
+         128, 64, 32, 144, 192, 32, 160, 64, 40, 176, 192, 40,
+         192, 64, 48, 208, 192, 48, 224, 64, 56, 240, 192, 56,
+     ])),
+])
+def test_format2rgb24bpp(fmt, input_bytes, expected):
+    # TODO Test cases for upper-case file extensions?
+    returned = format2rgb24bpp(input_bytes, fmt)
+    assert returned == expected
 
 
-def test_rgb24bpp2format():
-    positives = [
-        ("tpl",
-         bytes([0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0]),
-         b"TPL\x02"+\
-         bytes([0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0])),
-        ("tpl",
-         bytes([
-            0,  64,0,              16, 192,0,             32, 64,8,              48, 192,8,
-            64, 64,16,             80, 192,16,            96, 64,24,             112,192,24,
-            128,64,32,             144,192,32,            160,64,40,             176,192,40,
-            192,64,48,             208,192,48,            224,64,56,             240,192,56,
-         ]),
-         b"TPL\x02"+\
-         bytes([
-            0b00000000,0b00000001, 0b00000010,0b00000011, 0b00000100,0b00000101, 0b00000110,0b00000111,
-            0b00001000,0b00001001, 0b00001010,0b00001011, 0b00001100,0b00001101, 0b00001110,0b00001111,
-            0b00010000,0b00010001, 0b00010010,0b00010011, 0b00010100,0b00010101, 0b00010110,0b00010111,
-            0b00011000,0b00011001, 0b00011010,0b00011011, 0b00011100,0b00011101, 0b00011110,0b00011111,
-         ])),
-    ]
-    for fmt, input, expected in positives:
-        returned = rgb24bpp2format(input, fmt)
-        yield assert_equals_bytes, returned, expected
+@pytest.mark.parametrize("fmt, input_bytes, expected", [
+    ("tpl",
+     bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
+     b"TPL\x02" +
+     bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])),
+    ("tpl",
+     bytes([
+         0, 64, 0, 16, 192, 0, 32, 64, 8, 48, 192, 8,
+         64, 64, 16, 80, 192, 16, 96, 64, 24, 112, 192, 24,
+         128, 64, 32, 144, 192, 32, 160, 64, 40, 176, 192, 40,
+         192, 64, 48, 208, 192, 48, 224, 64, 56, 240, 192, 56,
+     ]),
+     b"TPL\x02" +
+     bytes([
+         0b00000000, 0b00000001, 0b00000010, 0b00000011, 0b00000100, 0b00000101, 0b00000110, 0b00000111,
+         0b00001000, 0b00001001, 0b00001010, 0b00001011, 0b00001100, 0b00001101, 0b00001110, 0b00001111,
+         0b00010000, 0b00010001, 0b00010010, 0b00010011, 0b00010100, 0b00010101, 0b00010110, 0b00010111,
+         0b00011000, 0b00011001, 0b00011010, 0b00011011, 0b00011100, 0b00011101, 0b00011110, 0b00011111,
+     ])),
+])
+def test_rgb24bpp2format(fmt, input_bytes, expected):
+    returned = rgb24bpp2format(input_bytes, fmt)
+    assert returned == expected
 
 
-def test_formatconvert_files():
-    translations = [
-        ("./testsuite/onlyblack", "rgb24bpp", "rgb24bpphex"),
-        ("./testsuite/onlyblack", "rgb24bpphex", "rgb24bpp"),
-        ("./testsuite/blackwhite", "rgb24bpp", "rgb24bpphex"),
-        ("./testsuite/blackwhite", "rgb24bpphex", "rgb24bpp"),
-        ("./testsuite/increasing16", "tpl", "rgb24bpp"),
-        ("./testsuite/increasing16step8", "tpl", "rgb24bpp"),
-    ]
-    for (prefix, f1, f2) in translations:
-        inpath = os.path.join(package_dir, "{}.{}".format(prefix, f1))
-        outpath = os.path.join(package_dir,"{}.{}".format(prefix, f2))
-        samplefile = os.path.join(package_dir, "sample.dat")
-        formatconvert(inpath, f1, f2, samplefile)
-        with open(samplefile, "rb") as file1, open(outpath, "rb") as file2:
-            returned = file1.read()
-            expected = file2.read()
-            yield assert_equals, returned.strip(), expected.strip()
-            remove_files()
+@pytest.mark.parametrize("prefix, fmt1, fmt2", [
+    ("./testsuite/onlyblack", "rgb24bpp", "rgb24bpphex"),
+    ("./testsuite/onlyblack", "rgb24bpphex", "rgb24bpp"),
+    ("./testsuite/blackwhite", "rgb24bpp", "rgb24bpphex"),
+    ("./testsuite/blackwhite", "rgb24bpphex", "rgb24bpp"),
+    ("./testsuite/increasing16", "tpl", "rgb24bpp"),
+    ("./testsuite/increasing16step8", "tpl", "rgb24bpp"),
+])
+def test_formatconvert_files(prefix, fmt1, fmt2):
+    inpath = os.path.join(package_dir, "{}.{}".format(prefix, fmt1))
+    outpath = os.path.join(package_dir, "{}.{}".format(prefix, fmt2))
+    samplefile = os.path.join(package_dir, "sample.dat")
+    formatconvert(inpath, fmt1, fmt2, samplefile)
+    with open(samplefile, "rb") as file1, open(outpath, "rb") as file2:
+        returned = file1.read()
+        expected = file2.read()
+        assert returned.strip() == expected.strip()
+        remove_files()
 
 
 def remove_files():

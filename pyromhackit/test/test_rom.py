@@ -36,13 +36,13 @@ def test_idempotence():
     assert ROM(ROM(b'abc')) == ROM(b'abc')
 
 
-@pytest.fixture(scope="module")
-def tinyrom():
-    """ Test methods for an explicitly given tiny ROM """
-    return ROM(b"a\xffc")
-
-
 class TestTinyROM:
+    @pytest.fixture(scope="module")
+    def tinyrom(self):
+        """ Test methods for an explicitly given tiny ROM """
+        return ROM(b"a\xffc")
+
+
     def test_repr(self, tinyrom):
         """ Call __repr__ """
         assert tinyrom.__repr__() == "ROM(b'a\\xffc')"
@@ -122,13 +122,12 @@ bytes256 = (
 )
 
 
-@pytest.fixture(scope="module")
-def rom256():
-    """ Test methods for a ROM consiting of every byte value """
-    return ROM(bytes256)
-
-
 class TestROM256:
+    @pytest.fixture(scope="module")
+    def rom256(self):
+        """ Test methods for a ROM consiting of every byte value """
+        return ROM(bytes256)
+
     def test_repr(self, rom256):
         """ Call __repr__ """
         expected = "ROM(" + repr(bytes256) + ")"

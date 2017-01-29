@@ -127,6 +127,7 @@ def rom256():
     """ Test methods for a ROM consiting of every byte value """
     return ROM(bytes256)
 
+
 class TestROM256:
     def test_repr(self, rom256):
         """ Call __repr__ """
@@ -142,13 +143,13 @@ class TestROM256:
         e = r"ROM(b'\x00\x01\x02\x03\x04\x05\x06\x07\x08\t\n\x0b'...b'\xfb\xfc\xfd\xfe\xff')"
         assert str(rom256) == e
 
-    @pytest.mark.parametrize("arg, expected", [
+    @pytest.mark.parametrize("max_width, expected", [
             (-1, ValueError),
             (0, ValueError),
             (1, ValueError),
             (7, ValueError),
             (8, r"ROM(...)"),
-            (12, r"ROM(b'a'...)"),
+            (14, r"ROM(...)"),
             (15, r"ROM(b'\x00'...)"),
             (18, r"ROM(b'\x00'...)"),
             (19, r"ROM(b'\x00\x01'...)"),
@@ -156,12 +157,12 @@ class TestROM256:
             (25, r"ROM(b'\x00\x01'...)"),
             (26, r"ROM(b'\x00\x01'...b'\xff')"),
     ])
-    def test_str_contracted(self, rom256, arg, expected):
+    def test_str_contracted(self, rom256, max_width, expected):
         if expected is ValueError:
             with pytest.raises(ValueError) as excinfo:
-                rom256.str_contracted(arg)
+                rom256.str_contracted(max_width)
         else:
-            returned = rom256.str_contracted(arg)
+            returned = rom256.str_contracted(max_width)
             assert returned == expected
 
 

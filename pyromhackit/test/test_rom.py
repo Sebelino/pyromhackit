@@ -42,41 +42,33 @@ class TestTinyROM:
         """ Test methods for an explicitly given tiny ROM """
         return ROM(b"a\xffc")
 
-
     def test_repr(self, tinyrom):
         """ Call __repr__ """
         assert tinyrom.__repr__() == "ROM(b'a\\xffc')"
-
 
     def test_bytes(self, tinyrom):
         """ Bytestring representation """
         assert bytes(tinyrom) == b"a\xffc"
 
-
     def test_str(self, tinyrom):
         """ Unicode string representation """
         assert str(tinyrom) == "ROM(b'a\\xffc')"
-
 
     def test_len(self, tinyrom):
         """ Call len(...) on ROM instance """
         assert len(tinyrom) == 3
 
-
     def test_eq(self, tinyrom):
         """ Two ROMs constructed from the same bytestring are equal """
         assert tinyrom == ROM(b'a\xffc')
-
 
     def test_neq(self, tinyrom):
         """ ROM =/= bytestring """
         assert tinyrom != b'a\xffc'
 
-
     def test_index(self, tinyrom):
         """ Find bytestring in ROM """
         assert tinyrom.index(b'\xff') == 1
-
 
     @pytest.mark.parametrize("arg, expected", [
         (0, 97),
@@ -85,10 +77,9 @@ class TestTinyROM:
         (slice(1, 3), ROM(b'\xffc')),
         (slice(None, None), ROM(b'a\xffc')),
     ])
-    def test_subscripting(self, tinyrom ,arg, expected):
+    def test_subscripting(self, tinyrom, arg, expected):
         """ Subscripting support is isomorphic to bytestrings """
         assert tinyrom[arg] == expected
-
 
     @pytest.mark.parametrize("arg, expected", [
         (0, [b'a\xffc']),
@@ -143,18 +134,18 @@ class TestROM256:
         assert str(rom256) == e
 
     @pytest.mark.parametrize("max_width, expected", [
-            (-1, ValueError),
-            (0, ValueError),
-            (1, ValueError),
-            (7, ValueError),
-            (8, r"ROM(...)"),
-            (14, r"ROM(...)"),
-            (15, r"ROM(b'\x00'...)"),
-            (18, r"ROM(b'\x00'...)"),
-            (19, r"ROM(b'\x00\x01'...)"),
-            (19, r"ROM(b'\x00\x01'...)"),
-            (25, r"ROM(b'\x00\x01'...)"),
-            (26, r"ROM(b'\x00\x01'...b'\xff')"),
+        (-1, ValueError),
+        (0, ValueError),
+        (1, ValueError),
+        (7, ValueError),
+        (8, r"ROM(...)"),
+        (14, r"ROM(...)"),
+        (15, r"ROM(b'\x00'...)"),
+        (18, r"ROM(b'\x00'...)"),
+        (19, r"ROM(b'\x00\x01'...)"),
+        (19, r"ROM(b'\x00\x01'...)"),
+        (25, r"ROM(b'\x00\x01'...)"),
+        (26, r"ROM(b'\x00\x01'...b'\xff')"),
     ])
     def test_str_contracted(self, rom256, max_width, expected):
         if expected is ValueError:
@@ -164,26 +155,21 @@ class TestROM256:
             returned = rom256.str_contracted(max_width)
             assert returned == expected
 
-
     def test_len(self, rom256):
         """ Call len(...) on ROM instance """
         assert len(rom256) == 256
-
 
     def test_eq(self, rom256):
         """ Two ROMs constructed from the same bytestring are equal """
         assert rom256 == ROM(bytes(range(256)))
 
-
     def test_neq(self, rom256):
         """ ROM =/= bytestring """
-        assert rom256 != bytes(range(2**8))
-
+        assert rom256 != bytes(range(2 ** 8))
 
     def test_index(self, rom256):
         """ Find bytestring in ROM """
         assert rom256.index(b'\x80') == 0x80
-
 
     @pytest.mark.parametrize("arg, expected", [
         (0, 0),
@@ -196,11 +182,10 @@ class TestROM256:
         """ Subscripting support is isomorphic to bytestrings """
         assert rom256[arg] == expected
 
-
     @pytest.mark.parametrize("arg, expected", [
         (0, [bytes256]),
         (1, [bytes([b]) for b in bytes256]),
-        (2, [bytes(bytes256[i:i+2]) for i in range(0, len(bytes256), 2)]),
+        (2, [bytes(bytes256[i:i + 2]) for i in range(0, len(bytes256), 2)]),
         (256, [bytes256]),
         (257, [bytes256]),
     ])
@@ -263,7 +248,7 @@ def test_pipe(args, expected):
     (["map {}".format(MAPPATH)], "reprehenderit"),
 ])
 def test_pipe2(args, expected):
-    rom = ROM(path=ROMPATH)[257:257+13]
+    rom = ROM(path=ROMPATH)[257:257 + 13]
     returned = rom.pipe(*args)
     assert returned == expected
 
@@ -279,7 +264,7 @@ def remove_files():
 @pytest.fixture()
 def write_rom_to_file(request):
     mode, pipeline, expected = request.param
-    rom = ROM(path=ROMPATH)[257:257+13]
+    rom = ROM(path=ROMPATH)[257:257 + 13]
     rom.pipe(pipeline)
     with open(OUTPATH, mode) as outfile:
         returned = outfile.read()
@@ -298,13 +283,13 @@ def test_outfile(write_rom_to_file):
 
 
 tables = [
-        """\
+    """\
 +-+-+-+
 |a|b|c|
 |d|e|f|
 |g| | |
 +-+-+-+""",
-        """\
+    """\
 +---+---+---+
 | a | b | c |
 | d | e | f |
@@ -323,27 +308,27 @@ def execution(request):
 
 
 @pytest.mark.parametrize("execution", [
-        (b"abc", "latin1", "abc"),
-        (b"abc", "hex", ["61", "62", "63"]),
-        (b"abc", "odd", b"ac"),
-        (["a", "bb", "c"], "join", "abbc"),
-        (["a", "bb", "c"], "join ' '", "a bb c"),
-        (["a", "bb", "c"], "join __", "a__bb__c"),
-        (b"01234 56784",
-         "map {}".format(MAPPATH), "Lorem ipsum"),
-        ("abcdefg", "tabulate 3", "abc\ndef\ng  "),
-        ("abcdefg", "tabulate 3 --label", "0: abc\n3: def\n6: g  "),
-        ("abcdefg", "tabulate 3 -l", "0: abc\n3: def\n6: g  "),
-        ("abcdefghijklmn", "tabulate 3 -l", """\
+    (b"abc", "latin1", "abc"),
+    (b"abc", "hex", ["61", "62", "63"]),
+    (b"abc", "odd", b"ac"),
+    (["a", "bb", "c"], "join", "abbc"),
+    (["a", "bb", "c"], "join ' '", "a bb c"),
+    (["a", "bb", "c"], "join __", "a__bb__c"),
+    (b"01234 56784",
+     "map {}".format(MAPPATH), "Lorem ipsum"),
+    ("abcdefg", "tabulate 3", "abc\ndef\ng  "),
+    ("abcdefg", "tabulate 3 --label", "0: abc\n3: def\n6: g  "),
+    ("abcdefg", "tabulate 3 -l", "0: abc\n3: def\n6: g  "),
+    ("abcdefghijklmn", "tabulate 3 -l", """\
  0: abc
  3: def
  6: ghi
  9: jkl
 12: mn """),
-        ("abcdefg", "tabulate 3 --border", tables[0]),
-        ("abcdefg", "tabulate 3 -b", tables[0]),
-        ("abcdefg", "tabulate 3 -b --padding 1", tables[1]),
-        ("abcdefg", "tabulate 3 -b -p 1", tables[1]),
+    ("abcdefg", "tabulate 3 --border", tables[0]),
+    ("abcdefg", "tabulate 3 -b", tables[0]),
+    ("abcdefg", "tabulate 3 -b --padding 1", tables[1]),
+    ("abcdefg", "tabulate 3 -b -p 1", tables[1]),
 ], indirect=True)
 def test_execute(execution):
     """ Test ROM.execute(execstr) """

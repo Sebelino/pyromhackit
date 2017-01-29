@@ -4,54 +4,55 @@
 Tests for checking the bijective property of codecs.
 """
 
-from nose.tools import assert_equal, assert_true
-import unittest
+import pytest
 import os
 
 from .codec import codecnames, decodernames
 
 package_dir = os.path.dirname(os.path.abspath(__file__))
 
-class TestBijection(object):
 
-    @classmethod
-    def setup_class(cls):
-        cls.bytestrings = [bytes([i]) for i in range(2**8)]
-        cls.strings = [chr(i) for i in range(2**8)]
+class TestBijection:
+    def setup_class(self):
+        self.bytestrings = [bytes([i]) for i in range(2 ** 8)]
+        self.strings = [chr(i) for i in range(2 ** 8)]
 
-    def test_totality(cls):
+    @pytest.mark.parametrize("decodername", decodernames.keys())
+    def test_totality(self, decodername):
         """ Every bytestring can decoded """
-        for name in decodernames:
-            cdc = decodernames[name]
-            returned = ""
-            for bs in cls.bytestrings:
-                returned = cdc.decode(bs)
-                if not isinstance(returned, str):
-                    break
-            yield assert_true, isinstance(returned, str)
+        cdc = decodernames[decodername]
+        returned = ""
+        for bs in self.bytestrings:
+            returned = cdc.decode(bs)
+            if not isinstance(returned, str):
+                break
+        assert isinstance(returned, str)
 
-    def test_injective_decoding(cls):
+    @pytest.mark.parametrize("decodername", decodernames.keys())
+    def test_injective_decoding(self, decodername):
         """ x != y -> decode(x) != decode(y) for all bytestrings x, y """
-        for name in decodernames:
-            cdc = decodernames[name]
-            inverse_graph = dict()
-            for bs in cls.bytestrings:
-                d = cdc.decode(bs)
-                if d in inverse_graph:
-                    raise AssertionError("Injective property for {0} failed beause decode({1}) = decode({2}) = {3}".format(name, bs, inverse_graph[d], d))
-                inverse_graph[d] = bs
+        cdc = decodernames[decodername]
+        inverse_graph = dict()
+        for bs in self.bytestrings:
+            d = cdc.decode(bs)
+            if d in inverse_graph:
+                raise AssertionError(
+                    "Injective property for {0} failed beause decode({1}) = decode({2}) = {3}".format(decodername, bs,
+                                                                                                      inverse_graph[
+                                                                                                          d], d))
+            inverse_graph[d] = bs
 
-    def test_left_invertibility(cls):
+    @pytest.mark.parametrize("codecname", codecnames.keys())
+    def test_left_invertibility(self, codecname):
         """ x == encode(decode(x)) for all bytestrings x """
-        for name in codecnames:
-            cdc = codecnames[name]
-            for bs in cls.bytestrings:
-                d = cdc.decode(bs)
-                e = cdc.encode(d)
-                if e != bs:
-                    break
-            yield assert_equal, e, bs
+        cdc = codecnames[codecname]
+        for bs in self.bytestrings:
+            d = cdc.decode(bs)
+            e = cdc.encode(d)
+            if e != bs:
+                break
+        assert e == bs
 
-    @unittest.skip("TODO")
-    def test_right_invertibility(cls):
+    @pytest.mark.skip(reason="TODO")
+    def test_right_invertibility(self):
         """ x == decode(encode(x)) for all strings x """

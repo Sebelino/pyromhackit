@@ -8,13 +8,14 @@ from .paletteformatter import (
     rgb24bpp2format
 )
 
+import pytest
 from nose.tools import assert_equals, assert_raises
 import os
 
 package_dir = os.path.dirname(os.path.abspath(__file__))
 
 
-def setUp():
+def setup_module():
     pass
 
 
@@ -22,43 +23,32 @@ def assert_equals_bytes(returned, expected):
     retstr = ",".join("{:3}".format(c) for c in returned)
     expstr = ",".join("{:3}".format(c) for c in expected)
     msg = "Bytestrings not equal:\nbytes({})\nbytes({})".format(retstr, expstr)
-    assert_equals(returned, expected, msg)
+    assert returned == expected, msg
+
+@pytest.mark.parametrize("strictness, fmt, palette", [
+    (Strictness.pedantic, "rgb24bpp", b"\x00\x00\x00"),
+    (Strictness.pedantic, "rgb24bpp", bytes([49, 23, 255])),
+    (Strictness.pedantic, "rgb24bpp", bytes([49, 23, 255, 255, 255, 0])),
+    (Strictness.pedantic, "rgb24bpphex", b"00 00 00"),
+    (Strictness.pedantic, "rgb24bpphex", b"AA AA AA"),
+    (Strictness.pedantic, "rgb24bpphex", b"11 33 22 11 22 33"),
+    (Strictness.pedantic, "bgr15bpp", b"\x00\x00"),
+    (Strictness.pedantic, "bgr15bpp", b"\xFF\x7F"),
+    (Strictness.pedantic, "bgr15bpp", b"\xFF\x7F\xA5\x7F"),
+    (Strictness.pedantic, "tpl", b"TPL\x02"+bytes([0, 0, 0, 0]*16)),
+    (Strictness.pedantic, "riffpal", b"RIFF\x14\0\0\0PAL data\x08\0\0\0"+b"\0\x03\x01\0\0\0\0\0"),
+    (Strictness.pedantic, "riffpal", (b"RIFF(\x00\x00\x00PAL data\x1c\x00\x00\x00\x00\x03\x06\x00"+
+                                      b"\x00\x00\x00\x00\xff\x00\x00\x00\x00\xff\x00\x00\x00\x00\xff"+
+                                      b"\x00\xff\xff\x00\x00\xff\xff\xff\x00")),
+])
+def test_validate_positives(strictness, fmt, palette):
+    try:
+        validate(palette, fmt, strictness)
+    except AssertionError as e:
+        pytest.fail("validate failed because: {0}".format(e))
 
 
-def test_validate():
-    positives = {
-        Strictness.pedantic: {
-            "rgb24bpp": [
-                b"\x00\x00\x00",
-                bytes([49, 23, 255]),
-                bytes([49, 23, 255, 255, 255, 0]),
-            ],
-            "rgb24bpphex": [
-                b"00 00 00",
-                b"AA AA AA",
-                b"11 33 22 11 22 33",
-            ],
-            "bgr15bpp": [
-                b"\x00\x00",
-                b"\xFF\x7F",
-                b"\xFF\x7F\xA5\x7F",
-            ],
-            "tpl": [
-                b"TPL\x02"+bytes([0, 0, 0, 0]*16)
-            ],
-            "riffpal": [
-                b"RIFF"+b"\x14\0\0\0"+b"PAL data"+b"\x08\0\0\0"+b"\0\x03"
-                b"\x01\0"+b"\0\0\0\0",
-                b"RIFF(\x00\x00\x00PAL data\x1c\x00\x00\x00\x00\x03\x06\x00"
-                b"\x00\x00\x00\x00\xff\x00\x00\x00\x00\xff\x00\x00\x00\x00\xff"
-                b"\x00\xff\xff\x00\x00\xff\xff\xff\x00",
-            ],
-        },
-    }
-    for strictness in positives:
-        for fmt in positives[strictness]:
-            for palette in positives[strictness][fmt]:
-                yield validate, palette, fmt, strictness
+def test_validate_negatives():
     negatives = {
         Strictness.pedantic: {
             "rgb24bpp": [

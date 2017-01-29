@@ -2,6 +2,7 @@
 
 import argparse
 from enum import IntEnum
+import logging
 
 nes2rgb = {
     0x00: (112, 112, 112),
@@ -315,28 +316,28 @@ def rgb24bpp2format(palette, fmt: str):
 
 def formatconvert(path, informat=None, outformat=None, outfile=None,
                   strictness=Strictness.pedantic):
-    print("Attempting to read file...")
+    logging.debug("Attempting to read file...")
     contents = readfile(path)
     infmt = informat
     if not informat:
-        print("Attempting to guess format...")
+        logging.debug("Attempting to guess format...")
         infmt = guessformat(contents)
-        print("Looks {}-formatted to me.".format(infmt))
-    print("Validating input...")
+        logging.debug("Looks {}-formatted to me.".format(infmt))
+    logging.debug("Validating input...")
     validate(contents, infmt, strictness)
     if outformat and informat != outformat:
-        print("Attempting to change format into standard RGB 24 BPP...")
+        logging.debug("Attempting to change format into standard RGB 24 BPP...")
         contents = format2rgb24bpp(contents, infmt)
-        print("Attempting to change format into {}...".format(outformat))
+        logging.debug("Attempting to change format into {}...".format(outformat))
         contents = rgb24bpp2format(contents, outformat)
     if outfile:
-        print("Attempting to write output to file...")
+        logging.debug("Attempting to write output to file...")
         with open(outfile, "wb") as f:
             f.write(contents)
     else:
-        print("Printing output...")
+        logging.debug("Printing output...")
         hexstr = rgb24bpp2rgb24bpphex(contents)
-        print(hexstr.decode("latin1"))
+        logging.debug(hexstr.decode("latin1"))
 
 if __name__ == "__main__":
     descr = """
@@ -359,6 +360,7 @@ Converts a palette file of one format to another.
                         choices=["lax", "lenient", "pragmatic", "pedantic",
                                  "nazi"],
                         help="Level of strictness when validating the input.")
+    parser.add_argument("--verbose", "-v", help="Enable verbose output.")
     """
     The strictness levels are totally ordered, so all validity checks associated
     with level X are included in level X+1, where
@@ -394,6 +396,9 @@ Converts a palette file of one format to another.
     where 0 <= x <= 255 for each x in {R, G, B}.
     """
     args = parser.parse_args()
+
+    if args.verbose:
+        logging.basicConfig(level=logging.DEBUG)
 
     formatconvert(args.path, args.informat, args.outformat, args.outfile,
                   args.strictness)

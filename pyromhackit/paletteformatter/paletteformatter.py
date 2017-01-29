@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import argparse
-from contracts import contract
 from enum import IntEnum
 
 nes2rgb = {
@@ -232,8 +231,7 @@ def validate_rgb24bpphex(palette, strictness):
         )
 
 
-@contract(palette=bytes, fmt=str, strictness=Strictness)
-def validate(palette, fmt, strictness):
+def validate(palette: bytes, fmt: str, strictness: Strictness):
     """
     Validates the palette of the given format with the given level of
     strictness. Raises an exception if it does not meet up to the standards.
@@ -293,7 +291,7 @@ def format2rgb24bpp(palette, fmt):
     raise ValueError("Unrecognized format: {}".format(fmt))
 
 
-def rgb24bpp2format(palette, fmt):
+def rgb24bpp2format(palette, fmt: str):
     """ Changes the format of the RGB 24 BPP formatted input into fmt. """
     if fmt == "rgb24bpp":
         return palette

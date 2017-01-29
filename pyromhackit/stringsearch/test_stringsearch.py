@@ -1,16 +1,15 @@
 #!/usr/bin/env python
 
-from nose.tools import assert_equals
+import pytest
 
 
 def locations(content):
     return [(content.index(b"HELLO"), len("HELLO"))]
 
 
-def test_findscript():
-    paramlist = [
-        (b"\x00\x10\x42 HELLO \x89\x32", [(4, 5)]),
-    ]
-    for (param, expected) in paramlist:
-        returned = locations(param)
-        yield assert_equals, returned, expected
+@pytest.mark.parametrize("bytestr, expected", [
+    (b"\x00\x10\x42 HELLO \x89\x32", [(4, 5)]),
+])
+def test_findscript(bytestr, expected):
+    returned = locations(bytestr)
+    assert returned == expected

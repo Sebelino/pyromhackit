@@ -48,40 +48,26 @@ def test_validate_positives(strictness, fmt, palette):
         pytest.fail("validate failed because: {0}".format(e))
 
 
-def test_validate_negatives():
-    negatives = {
-        Strictness.pedantic: {
-            "rgb24bpp": [
-                b"",
-                b"\x00",
-                b"\x00\x00",
-                b"\x00\x00\x00\x00",
-            ],
-            "rgb24bpphex": [
-                b"",
-                b"00",
-                b"00 11",
-                b"00 11 22 33",
-            ],
-            "bgr15bpp": [
-                b"",
-                b"\x7F",
-                b"\xFF\x7F\x7F",
-                b"\x00\x80",
-            ],
-        },
-        Strictness.nazi: {
-            "rgb24bpphex": [
-                b"aa aa aa",
-                b"11 33 22 11 22 33",
-                b"AA BB CC AA BB CC",
-            ],
-        },
-    }
-    for strictness in negatives:
-        for fmt in negatives[strictness]:
-            for palette in negatives[strictness][fmt]:
-                yield assert_raises, AssertionError, validate, palette, fmt, strictness
+@pytest.mark.parametrize("strictness, fmt, palette", [
+    (Strictness.pedantic, "rgb24bpp", b""),
+    (Strictness.pedantic, "rgb24bpp", b"\x00"),
+    (Strictness.pedantic, "rgb24bpp", b"\x00\x00"),
+    (Strictness.pedantic, "rgb24bpp", b"\x00\x00\x00\x00"),
+    (Strictness.pedantic, "rgb24bpphex", b""),
+    (Strictness.pedantic, "rgb24bpphex", b"00"),
+    (Strictness.pedantic, "rgb24bpphex", b"00 11"),
+    (Strictness.pedantic, "rgb24bpphex", b"00 11 22 33"),
+    (Strictness.pedantic, "bgr15bpp", b""),
+    (Strictness.pedantic, "bgr15bpp", b"\x7F"),
+    (Strictness.pedantic, "bgr15bpp", b"\xFF\x7F\x7F"),
+    (Strictness.pedantic, "bgr15bpp", b"\x00\x80"),
+    (Strictness.nazi, "rgb24bpphex", b"aa aa aa"),
+    (Strictness.nazi, "rgb24bpphex", b"11 33 22 11 22 33"),
+    (Strictness.nazi, "rgb24bpphex", b"AA BB CC AA BB CC"),
+])
+def test_validate_negatives(strictness, fmt, palette):
+    with pytest.raises(AssertionError):
+        validate(palette, fmt, strictness)
 
 
 def test_format2rgb24bpp():

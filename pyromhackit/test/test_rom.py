@@ -184,14 +184,29 @@ class TestROM256:
 
     @pytest.mark.parametrize("arg, expected", [
         (0, [bytes256]),
-        (1, [bytes([b]) for b in bytes256]),
-        (2, [bytes(bytes256[i:i + 2]) for i in range(0, len(bytes256), 2)]),
+        (1, [b"\x00", b"\x01", b"\x02"]),
+        (2, [b"\x00\x01", b"\x02\x03", b"\x04\x05"]),
+        (3, [b"\x00\x01\x02", b"\x03\x04\x05", b"\x06\x07\x08"]),
+        (255, [bytes256[:-1], b"\xff"]),
         (256, [bytes256]),
         (257, [bytes256]),
     ])
-    def test_lines(self, rom256, arg, expected):
+    def test_lines_first_three(self, rom256, arg, expected):
         """ Split ROM into a list """
-        assert rom256.lines(arg) == expected
+        assert rom256.lines(arg)[:3] == expected
+
+    @pytest.mark.parametrize("arg, expected", [
+        (0, [bytes256]),
+        (1, [b"\xfd", b"\xfe", b"\xff"]),
+        (2, [b"\xfa\xfb", b"\xfc\xfd", b"\xfe\xff"]),
+        (3, [b"\xf9\xfa\xfb", b"\xfc\xfd\xfe", b"\xff"]),
+        (255, [bytes256[:-1], b"\xff"]),
+        (256, [bytes256]),
+        (257, [bytes256]),
+    ])
+    def test_lines_last_three(self, rom256, arg, expected):
+        """ Split ROM into a list """
+        assert rom256.lines(arg)[-3:] == expected
 
 
 @pytest.mark.parametrize("expected, max_width, rombytes", [

@@ -26,7 +26,7 @@ clean:
 	rm -f *.pyc
 	rm -rf __pycache__
 	rm -rf .ropeproject
-	rm -f .coverage
+	find . -name .coverage | xargs rm
 	rm -rf htmlcov
 
 majin-tensei-ii.ips:

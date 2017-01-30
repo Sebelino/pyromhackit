@@ -71,7 +71,7 @@ class Isomorphism(Morphism):
 
 
 class ROM(object):
-    """ A fancier kind of bytestring, designed to be easier to read and edit. """
+    """ A fancier kind of bytestring, bytestream, or handle to a file, designed to be easier to read and edit. """
 
     def __init__(self, *args, **kwargs):
         if 'path' in kwargs:

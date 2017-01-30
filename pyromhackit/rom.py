@@ -14,8 +14,14 @@ Class representing a ROM.
 """
 
 
-class Facet(object):
-    """ A ROM paired with a string decoded from it and the relations between them.  """
+class Morphism(object):
+    """ A ROM paired with a string decoded from it using a specific decoder. The decoded string is a 'facet'
+     of the ROM -- if the ROM is modified, the decoded string is generally modified as well. On the other hand,
+     the decoded string cannot be directly modified, as it is solely dependent on the ROM and on the decoder.
+     Formally, a Morphism is a function from the set of ROMs (bytestrings) to the set of strings.
+     Unlike with an Isomorphism, multiple different ROMs can be decoded into the same string. You want to use this
+     class if you have only implemented a decoder and/or if you are only interested in knowing how the decoded string
+     changes as you edit the ROM. A typical use case scenario would be to to dump the in-game script for your ROM. """
     def __init__(self, bytestr, decoder):
         self.src = ROM(bytestr)
         self.decoder = decoder
@@ -54,6 +60,14 @@ class Facet(object):
         else:
             dststr = "      {}{}{},".format(self.dst[:20], "...", self.dst[len(self.dst)-7:])
         return "{}\n{}".format(srcstr, dststr)
+
+
+class Isomorphism(Morphism):
+    """ A ROM paired with a string decoded from it using a specific codec. The decoded string is simply another
+    way to represent the ROM -- if the ROM is modified, so is the decoded string. Conversely, if the decoded string
+    is modified, so is the ROM. Formally, an Isomorphism is a bijective function from the set of ROMs (bytestrings)
+    to the set of strings. You want to use this class if you want to be able to edit the underlying ROM by editing a
+    more user-friendly decoding of it. A typical use case scenario is to edit in-game text."""
 
 
 class ROM(object):

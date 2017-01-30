@@ -50,6 +50,10 @@ class Morphism(object):
         """ By modifying the stridx'th character, find a byte value that causes the stridx'th character
         to become character c. Return None if no such value exists. """
 
+    def impose_decoding(self, b, c):
+        """ By modifying the way the decoder associates byte b to a character, find a decoder that associates
+         b to character c. """
+
     def __repr__(self):
         srcstr = "Facet({},".format(bytes(self.src))
         dststr = "       {},".format(self.dst)

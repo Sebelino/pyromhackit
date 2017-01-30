@@ -51,6 +51,11 @@ class Morphism(object):
         to become character c. Return None if no such value exists. """
 
     def __repr__(self):
+        srcstr = "Facet({},".format(bytes(self.src))
+        dststr = "       {},".format(self.dst)
+        return "{}\n{}".format(srcstr, dststr)
+
+    def __str__(self):
         if len(self.src) <= 30:
             srcstr = "Facet({},".format(self.src)
         else:

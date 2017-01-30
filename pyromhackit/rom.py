@@ -22,6 +22,7 @@ class Morphism(object):
      Unlike with an Isomorphism, multiple different ROMs can be decoded into the same string. You want to use this
      class if you have only implemented a decoder and/or if you are only interested in knowing how the decoded string
      changes as you edit the ROM. A typical use case scenario would be to to dump the in-game script for your ROM. """
+
     def __init__(self, bytestr, decoder):
         self.src = ROM(bytestr)
         self.decoder = decoder
@@ -32,8 +33,8 @@ class Morphism(object):
         when altering the ith character of the decoded string """
         self.src[idx]  # Raise IndexError?
         indices = set()
-        for i in range(2**8):
-            alteration = self.src[:idx]+bytes([i])+self.src[idx+1:]
+        for i in range(2 ** 8):
+            alteration = self.src[:idx] + bytes([i]) + self.src[idx + 1:]
             dalteration = self.decoder.decode(alteration)
             diff = difflib.ndiff(dalteration, self.dst)
             adiff = [ds for ds in diff if ds[0] != '+']
@@ -98,7 +99,7 @@ class ROM(object):
         """ Returns a dictionary mapping a byte offset to a pair (a, b) which are the indices of the strings found when
         doing an offset search. """
         results = dict()
-        for i in range(2**8):
+        for i in range(2 ** 8):
             offset_rom = self.offset(i)
             match = offset_rom.index_regex(bregex)
             if match:
@@ -112,8 +113,8 @@ class ROM(object):
         """ List of bytestring lines with the specified width """
         if width:
             w = width
-            tbl = [self.content[i*w:(i+1)*w]
-                   for i in range(int(len(self)/w)+1)]
+            tbl = [self.content[i * w:(i + 1) * w]
+                   for i in range(int(len(self) / w) + 1)]
             if tbl[-1] == b'':
                 return tbl[:-1]
             return tbl
@@ -124,12 +125,12 @@ class ROM(object):
     def labeltable(tbl):
         """ [[String]] (NxM) -> [[String]] (NxM+1) """
         width = len(tbl[0])
-        return [[("%06x:" % (i*width)).upper()]+tbl[i]
+        return [[("%06x:" % (i * width)).upper()] + tbl[i]
                 for i in range(len(tbl))]
 
     def offset(self, n):
         """ Increase the value of each byte in the ROM by n modulo 256 """
-        return ROM([(b + n) % 2**8 for b in self])
+        return ROM([(b + n) % 2 ** 8 for b in self])
 
     def map(self, mapdata):
         if isinstance(mapdata, dict):
@@ -154,12 +155,12 @@ class ROM(object):
         table = PrettyTable(header=False, border=border, padding_width=padding)
         labelwidth = len(str(len(stream)))
         for i in range(0, len(stream), cols):
-            segment = stream[i:i+cols]
-            segment = segment+" "*max(0, cols-len(segment))
+            segment = stream[i:i + cols]
+            segment = segment + " " * max(0, cols - len(segment))
             segment = list(segment)
             if label:
-                fmtstr = "{:>"+str(labelwidth)+"}: "
-                segment = [fmtstr.format(i)]+segment
+                fmtstr = "{:>" + str(labelwidth) + "}: "
+                segment = [fmtstr.format(i)] + segment
             table.add_row(segment)
         tablestr = str(table)
         return tablestr

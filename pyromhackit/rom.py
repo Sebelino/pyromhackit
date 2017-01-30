@@ -55,20 +55,14 @@ class Morphism(object):
          b to character c. """
 
     def __repr__(self):
-        srcstr = "Facet({},".format(bytes(self.src))
-        dststr = "       {},".format(self.dst)
-        return "{}\n{}".format(srcstr, dststr)
+        return "Morphism({}, {})".format(bytes(self.src), repr(self.dst))
 
     def __str__(self):
-        if len(self.src) <= 30:
-            srcstr = "Facet({},".format(self.src)
-        else:
-            srcstr = "Facet({}{}{},".format(self.src[:20], "...", self.src[len(self.src)-7:])
-        if len(self.dst) <= 30:
-            dststr = "      {})".format(self.dst)
-        else:
-            dststr = "      {}{}{},".format(self.dst[:20], "...", self.dst[len(self.dst)-7:])
-        return "{}\n{}".format(srcstr, dststr)
+        romstr = str(self.src).replace(self.src.__class__.__name__, self.__class__.__name__, 1)
+        whitespace = " " * (len(self.__class__.__name__) + 2)
+        dststr = repr(self.dst)
+        result = "{},\n{}{})".format(romstr[:-1], whitespace, dststr)
+        return result
 
 
 class Isomorphism(Morphism):

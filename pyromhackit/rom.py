@@ -23,8 +23,8 @@ class Morphism(object):
      class if you have only implemented a decoder and/or if you are only interested in knowing how the decoded string
      changes as you edit the ROM. A typical use case scenario would be to to dump the in-game script for your ROM. """
 
-    def __init__(self, bytestr, decoder):
-        self.src = ROM(bytestr)
+    def __init__(self, rom_specifier, decoder):
+        self.src = ROM(rom_specifier)
         self.decoder = decoder
         self.dst = decoder.decode(bytes(self.src))
 

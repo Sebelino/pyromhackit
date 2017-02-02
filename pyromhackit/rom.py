@@ -238,6 +238,12 @@ class ROM(object):
         if isinstance(val, slice):
             return ROM(self.content[val.start:val.stop:val.step])
 
+    def __add__(self, operand):
+        return ROM(self.content + operand)
+
+    def __radd__(self, operand):
+        return ROM(operand + self.content)
+
     def __hash__(self):
         return hash(repr(self))
 

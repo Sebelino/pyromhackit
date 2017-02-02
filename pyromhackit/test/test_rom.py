@@ -81,6 +81,13 @@ class TestTinyROM:
         """ Subscripting support is isomorphic to bytestrings """
         assert tinyrom[arg] == expected
 
+    def test_convert_to_bytes(self, tinyrom):
+        assert bytes(tinyrom) == b"a\xffc"
+
+    def test_concat_bytes(self, tinyrom):
+        assert b'123' + tinyrom == ROM(b'123a\xffc')
+        assert tinyrom + b'123' == ROM(b'a\xffc123')
+
     @pytest.mark.parametrize("arg, expected", [
         (0, [b'a\xffc']),
         (1, [b'a', b'\xff', b'c']),

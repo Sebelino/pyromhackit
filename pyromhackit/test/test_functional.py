@@ -12,7 +12,7 @@ from ..roms.persona1usa.dump import Persona1Codec, rom_path
 package_dir = os.path.dirname(os.path.abspath(__file__))
 
 
-@pytest.mark.skipif(os.path.exists(rom_path), reason="File not found")
+@pytest.mark.skipif(not os.path.exists(rom_path), reason="File not found")
 class TestPersona1USA:
 
     def test_dump_tensi(self):

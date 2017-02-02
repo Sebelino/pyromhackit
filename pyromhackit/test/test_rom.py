@@ -28,7 +28,7 @@ def test_init1():
 
 def test_init2():
     """ Call constructor with sample path """
-    ROM(path=ROMPATH)
+    ROM(ROMPATH)
 
 
 def test_idempotence():
@@ -270,7 +270,7 @@ def test_pipe(args, expected):
     (["map {}".format(MAPPATH)], "reprehenderit"),
 ])
 def test_pipe2(args, expected):
-    rom = ROM(path=ROMPATH)[257:257 + 13]
+    rom = ROM(ROMPATH)[257:257 + 13]
     returned = rom.pipe(*args)
     assert returned == expected
 
@@ -286,7 +286,7 @@ def remove_files():
 @pytest.fixture()
 def write_rom_to_file(request):
     mode, pipeline, expected = request.param
-    rom = ROM(path=ROMPATH)[257:257 + 13]
+    rom = ROM(ROMPATH)[257:257 + 13]
     rom.pipe(pipeline)
     with open(OUTPATH, mode) as outfile:
         returned = outfile.read()

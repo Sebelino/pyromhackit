@@ -73,17 +73,26 @@ class Isomorphism(Morphism):
     to the set of strings. You want to use this class if you want to be able to edit the underlying ROM by editing a
     more user-friendly decoding of it. A typical use case scenario is to edit in-game text."""
 
+    def impose_byte(self, stridx, byteidx, b):
+        """ By modifying the stridx'th character, find a byte value that causes the stridx'th character
+        to become character c. Return None if no such value exists. """
+        return None
+
 
 class ROM(object):
     """ A fancier kind of bytestring, bytestream, or handle to a file, designed to be easier to read and edit. """
 
-    def __init__(self, *args, **kwargs):
-        if 'path' in kwargs:
-            path = kwargs['path']
+    def __init__(self, rom_specifier):
+        if isinstance(rom_specifier, str):
+            path = rom_specifier
             with open(path, 'rb') as f:
                 self.content = f.read()
+        elif isinstance(rom_specifier, bytes):
+            self.content = rom_specifier
+        elif isinstance(rom_specifier, ROM):
+            self.content = bytes(rom_specifier)
         else:
-            self.content = bytes(*args)
+            raise ValueError("ROM constructor expected a bytestring or path, got: {}".format(type(rom_specifier)))
 
     def index(self, bstring):
         return self.content.index(bstring)

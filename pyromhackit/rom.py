@@ -46,14 +46,15 @@ class Morphism(object):
     def impose_character(self, byteidx, stridx, c):
         """ By modifying the byteidx'th byte, find a byte value that causes the stridx'th character
         to become character c. Return None if no such value exists. """
-
-    def impose_byte(self, stridx, byteidx, b):
-        """ By modifying the stridx'th character, find a byte value that causes the stridx'th character
-        to become character c. Return None if no such value exists. """
+        return None
 
     def impose_decoding(self, b, c):
         """ By modifying the way the decoder associates byte b to a character, find a decoder that associates
-         b to character c. """
+         b to character c. Return a new Morphism based on the altered decoder or None if no way to make such an
+         alteration could be found. """
+        newdecoder = self.decoder
+        newdecoder[b] = c
+        return Morphism(self.src, newdecoder)
 
     def __repr__(self):
         return "Morphism({}, {})".format(bytes(self.src), repr(self.dst))

@@ -56,6 +56,11 @@ class Morphism(object):
         newdecoder[b] = c
         return Morphism(self.src, newdecoder)
 
+    def dump(self, path):
+        """ Dump the decoded string. """
+        with open(path, 'w') as f:
+            f.write(self.dst)
+
     def __repr__(self):
         return "Morphism({}, {})".format(bytes(self.src), repr(self.dst))
 

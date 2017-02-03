@@ -13,13 +13,13 @@ package_dir = os.path.dirname(os.path.abspath(__file__))
 
 
 @pytest.mark.skipif(not os.path.exists(rom_path), reason="File not found")
+@pytest.mark.skip("TODO")
 class TestPersona1USA:
 
     def test_dump_tensi(self):
         morphism = Morphism(rom_path, Persona1Codec)
-        dump_path = "./tensi.txt"
-        char_count = morphism.dump(dump_path)
-        assert char_count == 1234567890
+        dump_path = os.path.join(package_dir, "tensi.txt")
+        morphism.dump(dump_path)
         assert os.path.exists(dump_path)
         included_strings = [
             "Since you require",
@@ -30,7 +30,7 @@ class TestPersona1USA:
             content = f.read()
             seek = 0
             for s in included_strings:
-                idx = content.find(content, beg=seek)
+                idx = content.find(s, seek + 1)
                 assert idx >= 0, "Script excerpt \"{}\" not found.".format(s)
                 assert idx >= seek, "Script excerpt \"{}\" found in the wrong place."
                 seek = idx

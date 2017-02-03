@@ -21,14 +21,22 @@ def setup_module():
     assert isfile(MAPPATH)
 
 
-def test_init1():
+def test_init_bytestring():
     """ Call constructor with sample data """
     ROM(b'abc')
 
 
-def test_init2():
+def test_init_path():
     """ Call constructor with sample path """
     ROM(ROMPATH)
+
+
+def test_init_fail():
+    """ Call constructor with invalid value """
+    with pytest.raises(ValueError):
+        ROM(7)
+    with pytest.raises(ValueError):
+        ROM(None)
 
 
 def test_idempotence():

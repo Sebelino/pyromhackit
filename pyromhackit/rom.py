@@ -97,6 +97,8 @@ class ROM(object):
             self.content = rom_specifier
         elif isinstance(rom_specifier, ROM):
             self.content = bytes(rom_specifier)
+        elif isinstance(rom_specifier, list):
+            self.content = bytes(rom_specifier)
         else:
             raise ValueError("ROM constructor expected a bytestring or path, got: {}".format(type(rom_specifier)))
 

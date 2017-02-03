@@ -80,6 +80,15 @@ class TestTinyROM:
         """ ROM =/= bytestring """
         assert tinyrom != b'a\xffc'
 
+    def test_lt(self, tinyrom):
+        """ ROM inequality is isomorphic to that of bytestrings """
+        assert tinyrom < ROM(b'a\xffd')
+        assert tinyrom > ROM(b'a\xffb')
+
+    def test_hash(self, tinyrom):
+        """ ROM hash = the hash of its repr """
+        assert hash(tinyrom) == hash(r"ROM(b'a\xffc')")
+
     def test_index(self, tinyrom):
         """ Find bytestring in ROM """
         assert tinyrom.index(b'\xff') == 1

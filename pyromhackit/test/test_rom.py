@@ -78,6 +78,20 @@ class TestTinyROM:
         """ Find bytestring in ROM """
         assert tinyrom.index(b'\xff') == 1
 
+    @pytest.mark.parametrize("bregex, expected", [
+        (b'a', (0, 1)),
+        (b'\xff', (1, 2)),
+        (b'c', (2, 3)),
+        (b'a.', (0, 2)),
+        (b'a.c', (0, 3)),
+        (b'.*', (0, 3)),
+        (b'.*c', (0, 3)),
+        (b'd', None),
+    ])
+    def test_index_regex(self, tinyrom, bregex, expected):
+        """ Find bytestring in ROM using regex """
+        assert tinyrom.index_regex(bregex) == expected
+
     @pytest.mark.parametrize("arg, expected", [
         (0, 97),
         (slice(1, 1), ROM(b'')),

@@ -76,7 +76,7 @@ class TestTinyROM:
         """ Two ROMs constructed from the same bytestring are equal """
         assert tinyrom == ROM(b'a\xffc')
 
-    def test_neq(self, tinyrom):
+    def test_ne(self, tinyrom):
         """ ROM =/= bytestring """
         assert tinyrom != b'a\xffc'
 

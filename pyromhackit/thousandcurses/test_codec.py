@@ -7,7 +7,7 @@ Tests for checking the bijective property of codecs.
 import pytest
 import os
 
-from .codec import Codec, codecnames, decodernames
+from .codec import Codec, codecnames, decodernames, UppercaseASCII
 
 package_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -63,3 +63,11 @@ def test_instantiate_abstract():
         Codec.decode(b"")
     with pytest.raises(NotImplementedError):
         Codec.encode("")
+
+
+@pytest.mark.parametrize("bytestr, expected", [
+    (b'Abc', ([b'A', b'b', b'c'], ["A", "B", "C"], {0: {0}, 1: {1}, 2: {2}})),
+])
+def test_mapping_UppercaseASCII(bytestr, expected):
+    returned = UppercaseASCII.mapping(bytestr)
+    assert returned == expected

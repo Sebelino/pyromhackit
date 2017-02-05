@@ -77,10 +77,23 @@ class MonospaceASCIIByte(Decoder):
         return chr(b)
 
 
-class MonospaceASCII(Decoder):
+class MonospaceASCII(Decoder):  # TODO Codec
 
     def decode(bytestr):
         return "".join(MonospaceASCIIByte.decode(bytes([b])) for b in bytestr)
+
+
+class UppercaseASCII(Decoder):
+
+    def decode(bytestr):
+        return "".join(MonospaceASCIIByte.decode(bytes([b])) for b in bytestr)
+
+    def mapping(bytestr):
+        """ Returns a triplet (B, S, F) where:
+        * B is a bytestring tree (nested list of bytestrings), such that the flattening of B is equal to bytestr,
+        * S is a string tree (nested list of strings), such that the flattening of S is equal to decode(bytestr),
+        * F is a nested dictionary mapping each leaf in B to a set of leaves in S by their indices. """
+        return ([b'A', b'b', b'c'], ['A', 'B', 'C'], {0: {0}, 1: {1}, 2: {2}})
 
 
 class MajinTenseiII(Decoder):

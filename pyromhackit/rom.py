@@ -262,7 +262,7 @@ class ROM(object):
         return ROM(operand + self.content)
 
     def __hash__(self):
-        return hash(repr(self))
+        return hash(str(self))
 
     def str_contracted(self, max_width):
         """ Returns a string displaying the ROM with at most max_width characters. """
@@ -270,8 +270,8 @@ class ROM(object):
         if max_width < 8:
             raise ValueError("ROM cannot be displayed with less than 8 characters.")
         # If entire string fits:
-        if len(repr(self)) <= max_width:
-            return repr(self)
+        if len(str(self)) <= max_width:
+            return str(self)
         # If no bytestring fits:
         if max_width < len("ROM(...)") + len(repr(bytes([self.content[0]]))):
             return "ROM(...)"
@@ -306,7 +306,4 @@ class ROM(object):
         return "".join(result)
 
     def __str__(self):
-        return self.str_contracted(80)
-
-    def __repr__(self):
         return "ROM({})".format(self.content)

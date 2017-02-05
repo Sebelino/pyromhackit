@@ -4,6 +4,7 @@
 
 import os
 from os.path import isfile
+import re
 import pytest
 
 from ..rom import ROM
@@ -58,7 +59,9 @@ class TestTinyROM:
 
     def test_repr(self, tinyrom):
         """ Call __repr__ """
-        assert tinyrom.__repr__() == "ROM(b'a\\xffc')"
+        rpr = tinyrom.__repr__()
+        repr_regex = r"<pyromhackit\.rom.ROM object at 0x(\d|\w)+>"
+        assert re.search(repr_regex, rpr)
 
     def test_bytes(self, tinyrom):
         """ Bytestring representation """
@@ -190,8 +193,9 @@ class TestROM256:
 
     def test_repr(self, rom256):
         """ Call __repr__ """
-        expected = "ROM(" + repr(bytes256) + ")"
-        assert rom256.__repr__() == expected
+        rpr = rom256.__repr__()
+        repr_regex = r"<pyromhackit\.rom.ROM object at 0x(\d|\w)+>"
+        assert re.search(repr_regex, rpr)
 
     def test_bytes(self, rom256):
         """ Bytestring representation """
@@ -199,7 +203,7 @@ class TestROM256:
 
     def test_str(self, rom256):
         """ Unicode string representation """
-        e = r"ROM(b'\x00\x01\x02\x03\x04\x05\x06\x07\x08\t\n\x0b'...b'\xfb\xfc\xfd\xfe\xff')"
+        e = "ROM({})".format(repr(bytes256))
         assert str(rom256) == e
 
     @pytest.mark.parametrize("max_width, expected", [

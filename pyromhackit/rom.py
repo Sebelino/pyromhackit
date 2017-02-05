@@ -140,6 +140,7 @@ class ROM(object):
 
     @staticmethod
     def labeltable(tbl):
+        # TODO This should really be moved to codecs
         """ [[String]] (NxM) -> [[String]] (NxM+1) """
         width = len(tbl[0])
         return [[("%06x:" % (i * width)).upper()] + tbl[i]

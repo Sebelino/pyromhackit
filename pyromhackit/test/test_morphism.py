@@ -6,7 +6,7 @@ import os
 
 import pytest
 
-from ..rom import Morphism
+from ..morphism import Morphism
 from ..thousandcurses.codec import ASCII
 
 package_dir = os.path.dirname(os.path.abspath(__file__))

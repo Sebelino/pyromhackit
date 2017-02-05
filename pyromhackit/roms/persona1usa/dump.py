@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
 import os
-from pyromhackit.rom import ROM, Morphism
+from pyromhackit.rom import ROM
+from pyromhackit.morphism import Morphism
 import pyromhackit.thousandcurses.codec as codec
 from pyromhackit.roms.persona1usa.hexmap import transliter
 

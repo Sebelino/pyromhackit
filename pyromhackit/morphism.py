@@ -51,9 +51,6 @@ class Morphism(object):
         with open(path, 'w') as f:
             f.write(self.dst)
 
-    def __repr__(self):
-        return "Morphism({}, {})".format(bytes(self.src), repr(self.dst))
-
     def __str__(self):
         romstr = str(self.src).replace(self.src.__class__.__name__, self.__class__.__name__, 1)
         whitespace = " " * (len(self.__class__.__name__) + 2)

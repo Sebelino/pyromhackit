@@ -3,7 +3,7 @@
 """ Test suite for ROM class. """
 
 import os
-
+import re
 import pytest
 
 from ..morphism import Morphism
@@ -17,8 +17,9 @@ class TestASCIIMorphism:
         self.morphism = Morphism(b"abcdefghi", ASCII)
 
     def test_repr(self):
-        expected = "Morphism(b'abcdefghi', 'abcdefghi')"
-        assert repr(self.morphism) == expected
+        rpr = self.morphism.__repr__()
+        repr_regex = r"<pyromhackit\.morphism.Morphism object at 0x(\d|\w)+>"
+        assert re.search(repr_regex, rpr)
 
     def test_str(self):
         expected = ("Morphism(b'abcdefghi',\n"

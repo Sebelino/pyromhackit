@@ -188,7 +188,7 @@ bytes256 = (
 class TestROM256:
     @pytest.fixture(scope="module")
     def rom256(self):
-        """ Test methods for a ROM consiting of every byte value """
+        """ Test methods for a ROM consisting of every byte value """
         return ROM(bytes256)
 
     def test_repr(self, rom256):

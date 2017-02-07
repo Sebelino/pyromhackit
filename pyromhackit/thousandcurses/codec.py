@@ -18,6 +18,50 @@ from abc import ABC, abstractmethod
 package_dir = os.path.dirname(os.path.abspath(__file__))
 
 
+class Tree(object):
+    def __init__(self, arg):
+        container_types = {tuple, list, Tree}
+        if any(isinstance(arg, tpe) for tpe in container_types) and len(arg) >= 1:
+            self.type = None
+            children = list(arg)
+            self.children = [Tree(c) if any(isinstance(c, tpe) for tpe in container_types) else c for c in children]
+            typeset = {c.type if isinstance(c, Tree) else type(c) for c in self.children}
+            self.type = typeset.pop()
+            if typeset:
+                t = typeset.pop()
+                raise TypeError("Tree contains elements of both type {} and {}.".format(self.type, t))
+        else:
+            raise ValueError("A tree is constructed from a non-empty list/tuple of trees, strings, or bytestrings. "
+                             "The presence of a string is mutually exclusive with the presence of a bytestring.")
+
+    def flatten(self):
+        empty = self.type()
+        return empty.join(c.flatten() if isinstance(c, Tree) else c for c in self.children)
+
+    def list(self):
+        return [c.list() if isinstance(c, Tree) else c for c in self.children]
+
+    def __getitem__(self, idx):
+        err = IndexError("Tree index out of range.")
+        if not self.children and idx == 0:
+            return self.content
+        elif self.children:
+            return self.children[idx]
+        raise err
+
+    def __len__(self):
+        return len(self.children)
+
+    def __str__(self):
+        if not self.children:
+            return "{}".format(repr(self.content))
+        childrenstr = ",".join(str(c) for c in self.children)
+        treestr = "({})".format(childrenstr)
+        return treestr
+
+    def __repr__(self):
+        return self.__str__()
+
 def read_yaml(path):
     """ YAML -> Dictionary. """
     stream = open(path, 'r', encoding='utf8')

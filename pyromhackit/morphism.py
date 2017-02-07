@@ -18,6 +18,13 @@ class Morphism(object):
         self.decoder = decoder
         self.dst = decoder.decode(bytes(self.src))
 
+    def index(self, item):
+        """ If the argument is a bytestring, return (i, j) where i is the index of item found in the ROM and j is the
+        index of the corresponding item in the decoded string. If the argument is a string, return (i, j) where j is
+        the index of item found in the decoded string and i is the index of the corresponding item in the ROM.
+        """
+        return (0, 0)
+
     def source_diffusion(self, idx):
         """ Returns the indices of the bytes in the ROM affected
         when altering the ith character of the decoded string """

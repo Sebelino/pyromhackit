@@ -130,7 +130,7 @@ class MonospaceASCII(Decoder):  # TODO Codec
 class UppercaseASCII(Decoder):
 
     def decode(bytestr):
-        return "".join(MonospaceASCIIByte.decode(bytes([b])) for b in bytestr)
+        return "".join(MonospaceASCIIByte.decode(bytes([b]).upper()) for b in bytestr)
 
     def mapping(bytestr):
         """ Returns a triplet (B, S, F) where:

@@ -62,6 +62,12 @@ class Tree(object):
     def __repr__(self):
         return self.__str__()
 
+
+def identity_dict(n):
+    """ n -> {0: 0, 1: 1, ..., n: n} """
+    return dict(list(zip(range(n), range(n))))
+
+
 def read_yaml(path):
     """ YAML -> Dictionary. """
     stream = open(path, 'r', encoding='utf8')
@@ -71,6 +77,13 @@ def read_yaml(path):
 
 def intersperse(bytestr, n):
     return [bytestr[i::n] for i in range(n)]
+
+
+def treemap(fn, element):  # TODO Memory complexity
+    if isinstance(element, Tree):
+        tree = element
+        return Tree([treemap(fn, c) for c in tree])
+    return fn(element)
 
 
 class Decoder(ABC):

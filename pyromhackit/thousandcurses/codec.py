@@ -30,6 +30,7 @@ class Tree(object):
             if typeset:
                 t = typeset.pop()
                 raise TypeError("Tree contains elements of both type {} and {}.".format(self.type, t))
+            self.numleaves = sum(1 if not isinstance(c, Tree) else c.numleaves for c in self.children)
         else:
             raise ValueError("A tree is constructed from a non-empty list/tuple of trees, strings, or bytestrings. "
                              "The presence of a string is mutually exclusive with the presence of a bytestring.")
@@ -149,8 +150,12 @@ class UppercaseASCII(Decoder):
         """ Returns a triplet (B, S, F) where:
         * B is a bytestring tree (nested list of bytestrings), such that the flattening of B is equal to bytestr,
         * S is a string tree (nested list of strings), such that the flattening of S is equal to decode(bytestr),
-        * F is a nested dictionary mapping each leaf in B to a set of leaves in S by their indices. """
-        return ([b'A', b'b', b'c'], ['A', 'B', 'C'], {0: {0}, 1: {1}, 2: {2}})
+        * F is a dictionary mapping an index of B to an index of S. each leaf in B to a set of leaves in S by their
+          indices. """
+        btree = Tree([bytes([b]) for b in bytestr]) if bytestr else Tree([b''])
+        stree = treemap(UppercaseASCII.decode, btree)
+        indexmap = identity_dict(len(btree.flatten()))
+        return (btree.list(), stree.list(), indexmap)
 
 
 class MajinTenseiII(Decoder):

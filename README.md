@@ -54,7 +54,7 @@ $ ./reader.py majin-tensei-ii/mt2.sfc bin map text -t majin-tensei-ii/hexmap.yam
 
 ## Testing
 ```bash
-$ nosetests
+$ pytest pyromhackit
 ```
 
 Features

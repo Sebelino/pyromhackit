@@ -74,6 +74,24 @@ def test_mapping_UppercaseASCII(bytestr, expected):
     returned = UppercaseASCII.mapping(bytestr)
     assert returned == expected
 
+def assert_mapping(bytestr, decoder, mapping):
+    b, s, f = mapping
+    assert any(isinstance(b, tpe) for tpe in {bytes, Tree})
+    assert b.flatten() == bytestr
+    assert any(isinstance(s, tpe) for tpe in {str, Tree})
+    assert s.flatten() == decoder.decode(bytestr)
+    assert isinstance(f, dict)
+    assert all(isinstance(bl, tuple) for bl in f)
+    assert all(isinstance(i, int) for bl in f for i in bl)
+    assert all(isinstance(v, set) for v in f.values())
+    assert all(isinstance(sl, tuple) for v in f.values() for sl in v)
+    assert all(isinstance(i, int) for v in f.values() for sl in v for i in sl)
+    for bl, sls in f.items():
+        complement = {x for y in f.values() for x in y}
+        for bl2 in bytestrings(len(bl)):
+            sl2 = decoder.decode(bl2)
+            assert sl2 not in complement
+
 
 class TestTree(object):
     @pytest.mark.parametrize("arg, expected", [

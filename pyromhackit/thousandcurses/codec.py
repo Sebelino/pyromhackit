@@ -122,6 +122,12 @@ class ASCII(Decoder):
     def decode(bytestr):
         return "".join(chr(b) for b in bytestr)
 
+    def mapping(bytestr):
+        btree = Tree([bytes([b]) for b in bytestr]) if bytestr else Tree([b''])
+        stree = treemap(ASCII.decode, btree)
+        indexmap = identity_dict(len(btree.flatten()))
+        return btree.list(), stree.list(), indexmap
+
 
 class MonospaceASCIIByte(Decoder):
     """ Like ASCII, but replaces any unprintable and non-monospace character
@@ -147,15 +153,22 @@ class UppercaseASCII(Decoder):
         return "".join(MonospaceASCIIByte.decode(bytes([b]).upper()) for b in bytestr)
 
     def mapping(bytestr):
-        """ Returns a triplet (B, S, F) where:
-        * B is a bytestring tree (nested list of bytestrings), such that the flattening of B is equal to bytestr,
-        * S is a string tree (nested list of strings), such that the flattening of S is equal to decode(bytestr),
-        * F is a dictionary mapping an index of B to an index of S. each leaf in B to a set of leaves in S by their
-          indices. """
+        """ Returns any triplet (B, S, F) which satisfies the following conditions:
+        * B is a bytestring tree (nested list of bytestrings).
+        * The flattening of B is equal to bytestr.
+        * S is a string tree (nested list of strings).
+        * The flattening of S is equal to decode(bytestr).
+        * F is a dictionary mapping each leaf in B to a set of leaves in S. F is formally a dict mapping a tuple of
+          integers to a nested dict so that each value in each dict is either another dict or a set of integers which
+          are indices in S.
+        * Each leaf L in B holds the property that, when modified, every leaf in S will remain unchanged except those
+          in the set of leaves that F maps L to.
+        * The algorithm is deterministic.
+        """
         btree = Tree([bytes([b]) for b in bytestr]) if bytestr else Tree([b''])
         stree = treemap(UppercaseASCII.decode, btree)
         indexmap = identity_dict(len(btree.flatten()))
-        return (btree.list(), stree.list(), indexmap)
+        return btree.list(), stree.list(), indexmap
 
 
 class MajinTenseiII(Decoder):

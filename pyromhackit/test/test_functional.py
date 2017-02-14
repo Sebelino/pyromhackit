@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-""" Test suite for ROM class. """
+""" Black-box testing on the interface exposed to the average user. """
 
 import os
 

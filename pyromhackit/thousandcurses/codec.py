@@ -65,8 +65,8 @@ class Tree(object):
 
 
 def identity_dict(n):
-    """ n -> {0: 0, 1: 1, ..., n: n} """
-    return dict(list(zip(range(n), range(n))))
+    """ n -> {(0,): {(0,)}, (1,): {(1,)}, ..., (n,): {(n,)}} """
+    return dict([((a,), {(b,)}) for a, b in zip(range(n), range(n))])
 
 
 def read_yaml(path):

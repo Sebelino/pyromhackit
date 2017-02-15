@@ -67,12 +67,14 @@ def test_instantiate_abstract():
 
 @pytest.mark.parametrize("bytestr, expected", [
     (b'', ([b''], [""], dict())),
-    (b'Abc', ([b'A', b'b', b'c'], ["A", "B", "C"], {0: 0, 1: 1, 2: 2})),
-    (b'AbCD', ([b'A', b'b', b'C', b'D'], ["A", "B", "C", "D"], {0: 0, 1: 1, 2: 2, 3: 3})),
+    (b'Abc', ([b'A', b'b', b'c'], ["A", "B", "C"], {(0,): {(0,)}, (1,): {(1,)}, (2,): {(2,)}})),
+    (b'AbCD', ([b'A', b'b', b'C', b'D'], ["A", "B", "C", "D"], {(0,): {(0,)}, (1,): {(1,)}, (2,): {(2,)}, (3,): {(3,)}})),
 ])
 def test_mapping_UppercaseASCII(bytestr, expected):
-    returned = UppercaseASCII.mapping(bytestr)
-    assert returned == expected
+    b, s, f = UppercaseASCII.mapping(bytestr)
+    assert_mapping(bytestr, UppercaseASCII, (Tree(b), Tree(s), f))
+    assert (b, s, f) == expected
+
 
 def assert_mapping(bytestr, decoder, mapping):
     b, s, f = mapping

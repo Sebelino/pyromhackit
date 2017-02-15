@@ -16,14 +16,28 @@ class Morphism(object):
     def __init__(self, rom_specifier, decoder):
         self.src = ROM(rom_specifier)
         self.decoder = decoder
+        self.srctree, self.dsttree, self.graph = decoder.mapping(bytes(self.src))
         self.dst = decoder.decode(bytes(self.src))
 
     def index(self, item):
-        """ If the argument is a bytestring, return (i, j) where i is the index of item found in the ROM and j is the
-        index of the corresponding item in the decoded string. If the argument is a string, return (i, j) where j is
-        the index of item found in the decoded string and i is the index of the corresponding item in the ROM.
+        """ If item is a bytestring, return (i, j) where i is the index of the first byte in item found in the
+        ROM and j is the index of the first character in the decoded string that item affects.
+        If item is a string, return (i, j) where j is the index of the first character in item found in the
+        decoded string and i is the index of the first byte in the ROM that affects item.
         """
-        return (0, 0)
+        if isinstance(item, bytes):
+            i = self.src.index(item)
+            (j,) = self.graph[(i,)]
+            return i, j
+        elif isinstance(item, str):
+            j = self.dst.index(item)
+            for bl in self.graph:
+                vs = {v[0] for v in self.graph[bl]}
+                if j in vs:
+                    (i,) = bl
+                    return i, j
+            raise ValueError("Affecting byte not found.")
+        raise ValueError("Argument must be either a bytestring or a string.")
 
     def source_diffusion(self, idx):
         """ Returns the indices of the bytes in the ROM affected

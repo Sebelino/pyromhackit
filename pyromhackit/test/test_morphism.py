@@ -33,7 +33,6 @@ class TestASCIIMorphism:
         ("bcdefghi", (1, 1)),
         ("fgh", (5, 5)),
     ])
-    @pytest.mark.skip()
     def test_index(self, searchitem, expected):
         returned = self.morphism.index(searchitem)
         assert returned == expected
@@ -46,19 +45,19 @@ class TestASCIIMorphism:
     def test_source_diffusion(self, srcindex, expected):
         assert self.morphism.source_diffusion(srcindex) == expected
 
-    @pytest.mark.skip("TODO")
     @pytest.mark.parametrize("byteidx, stridx, c, expected", [
         (0, 0, 'K', ord('K')),
         (0, 1, 'K', None),
         (8, 8, 'a', ord('a')),
         (0, 0, 'ä', None),
     ])
+    @pytest.mark.skip()
     def test_impose_character(self, byteidx, stridx, c, expected):
         if expected is None:
             assert self.morphism.impose_character(byteidx, stridx, c) is None
         else:
             returned = self.morphism.impose_character(byteidx, stridx, c)
-            msg = "Could not find a value of r[{}] so that s[{}] == {}".format(byteidx, stridx, c)
+            msg = "Could not find a value of r[{}] so that s[{}] == {}".format(byteidx, stridx, repr(c))
             assert isinstance(returned, int), msg
             assert returned == expected
 

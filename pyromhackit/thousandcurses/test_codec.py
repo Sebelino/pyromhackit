@@ -12,6 +12,13 @@ from .codec import Codec, codecnames, decodernames, UppercaseASCII, Tree
 package_dir = os.path.dirname(os.path.abspath(__file__))
 
 
+def bytestrings(n):
+    """ Returns a generator for bytestrings of length n. """
+    for i in range(n):
+        lst = [i >> i * j for j in range(n)]
+        yield bytes(lst)
+
+
 class TestBijection:
     def setup_class(self):
         self.bytestrings = [bytes([i]) for i in range(2 ** 8)]

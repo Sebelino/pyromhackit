@@ -129,6 +129,12 @@ class ASCII(Decoder):
         return btree.list(), stree.list(), indexmap
 
 
+class ReverseASCII(Decoder):
+
+    def decode(bytestr):
+        return "".join(reversed(chr(b) for b in bytestr))
+
+
 class MonospaceASCIIByte(Decoder):
     """ Like ASCII, but replaces any unprintable and non-monospace character
     with some other (non-ascii) monospace character. """

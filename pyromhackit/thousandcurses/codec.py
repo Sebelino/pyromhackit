@@ -10,10 +10,11 @@ Encoders/decoders are bijective -- each encoder has a inverse decoder function,
 and vice versa.
 """
 
+import sys
 import os
 import yaml
 from abc import ABC, abstractmethod
-
+import inspect
 
 package_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -130,9 +131,8 @@ class ASCII(Decoder):
 
 
 class ReverseASCII(Decoder):
-
     def decode(bytestr):
-        return "".join(reversed(chr(b) for b in bytestr))
+        return "".join(reversed([chr(b) for b in bytestr]))
 
 
 class MonospaceASCIIByte(Decoder):
@@ -186,23 +186,15 @@ class MajinTenseiII(Decoder):
 
 
 class Mt2GarbageTextPair(Decoder):
-
     def decode(bytestr):
         text, garbage = intersperse(bytestr, 2)
         result = MajinTenseiII.decode(text) + MonospaceASCII.decode(garbage)
         return result
 
 
-codecnames = {
-    "Hexify": Hexify,
-    "HexifySpaces": HexifySpaces,
-}
-
-decodernames = {
-    **codecnames,
-    "ASCII": ASCII,
-    "MonospaceASCIIByte": MonospaceASCIIByte,
-    "MonospaceASCII": MonospaceASCII,
-    "MajinTenseiII": MajinTenseiII,
-    "Mt2GarbageTextPair": Mt2GarbageTextPair,
-}
+decoders = {c for (_, c) in
+            inspect.getmembers(sys.modules[__name__],
+                               lambda c: inspect.isclass(c) and issubclass(c, Decoder) and c not in {Decoder, Codec})}
+codecs = {c for (_, c) in
+          inspect.getmembers(sys.modules[__name__],
+                             lambda c: inspect.isclass(c) and issubclass(c, Codec) and c is not Codec)}

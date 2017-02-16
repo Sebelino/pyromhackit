@@ -73,7 +73,8 @@ def test_instantiate_abstract():
 @pytest.mark.parametrize("bytestr, expected", [
     (b'', ([b''], [""], dict())),
     (b'Abc', ([b'A', b'b', b'c'], ["A", "B", "C"], {(0,): {(0,)}, (1,): {(1,)}, (2,): {(2,)}})),
-    (b'AbCD', ([b'A', b'b', b'C', b'D'], ["A", "B", "C", "D"], {(0,): {(0,)}, (1,): {(1,)}, (2,): {(2,)}, (3,): {(3,)}})),
+    (b'AbCD',
+     ([b'A', b'b', b'C', b'D'], ["A", "B", "C", "D"], {(0,): {(0,)}, (1,): {(1,)}, (2,): {(2,)}, (3,): {(3,)}})),
 ])
 def test_mapping_UppercaseASCII(bytestr, expected):
     b, s, f = UppercaseASCII.mapping(bytestr)
@@ -104,9 +105,9 @@ class TestTree(object):
     @pytest.mark.parametrize("arg, expected", [
         ([], ValueError),
         ([b''], 1),
-        ([b'',b'a'], 2),
-        ([b'',[b'a']], 2),
-        ([b'',[b'a', b'bc']], 2),
+        ([b'', b'a'], 2),
+        ([b'', [b'a']], 2),
+        ([b'', [b'a', b'bc']], 2),
     ])
     def test_len(self, arg, expected):
         if expected is ValueError:

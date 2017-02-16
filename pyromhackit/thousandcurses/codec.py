@@ -104,10 +104,10 @@ class Codec(Decoder):
 
 class Hexify(Codec):
     def encode(s):
-        return bytes([int(s[i:i+2], base=16) for i in range(0, len(s), 2)])
+        return bytes([int(s[i:i + 2], base=16) for i in range(0, len(s), 2)])
 
     def decode(bytestr):
-        return "".join(("0"+hex(n)[2:])[-2:].upper() for n in bytestr)
+        return "".join(("0" + hex(n)[2:])[-2:].upper() for n in bytestr)
 
 
 class HexifySpaces(Codec):
@@ -119,7 +119,6 @@ class HexifySpaces(Codec):
 
 
 class ASCII(Decoder):
-
     def decode(bytestr):
         return "".join(chr(b) for b in bytestr)
 
@@ -141,7 +140,7 @@ class MonospaceASCIIByte(Decoder):
 
     def decode(bytestr):
         b = bytestr[0]
-        replacements = list(range(2**8, 2**9))
+        replacements = list(range(2 ** 8, 2 ** 9))
         if not chr(b).isprintable():
             return chr(replacements[b])
         return chr(b)
@@ -154,7 +153,6 @@ class MonospaceASCII(Decoder):  # TODO Codec
 
 
 class UppercaseASCII(Decoder):
-
     def decode(bytestr):
         return "".join(MonospaceASCIIByte.decode(bytes([b]).upper()) for b in bytestr)
 

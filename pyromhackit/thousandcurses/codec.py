@@ -88,11 +88,29 @@ def treemap(fn, element):  # TODO Memory complexity
     return fn(element)
 
 
+def simple_graph(btree):
+    return None
+
+
 class Decoder(ABC):
     @classmethod
     @abstractmethod
     def decode(cls, bytestr):
         raise NotImplementedError("Decoder for {0} not implemented.".format(cls.__name__))
+
+    @classmethod
+    def domain(cls, bytestr):
+        """ Returns a bytestring tree containing a single leaf. Not really useful unless overridden. """
+        return Tree([bytestr])
+
+    @classmethod
+    def mapping(cls, bytestr):
+        """ Returns a pair (S, F), where S is the codomain (string tree) and F is the graph (dictionary mapping
+        bytestring tree leaves to string tree leaves). """
+        btree = cls.domain(bytestr)
+        stree = Tree([cls.decode(bytestr)])
+        indexmap = {(0,): {(0,)}}
+        return stree, indexmap
 
 
 class Codec(Decoder):

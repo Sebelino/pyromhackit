@@ -88,10 +88,6 @@ def treemap(fn, element):  # TODO Memory complexity
     return fn(element)
 
 
-def simple_graph(btree):
-    return None
-
-
 class Decoder(ABC):
     @classmethod
     @abstractmethod

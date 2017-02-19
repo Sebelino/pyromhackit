@@ -122,20 +122,20 @@ def validate_rgb24bpp(palette, strictness):
 
 
 def validate_bgr15bpp(palette, strictness):
-        assert len(palette) >= 2
-        assert len(palette) % 2 == 0
-        duplicatemsg = "SIE PALETTE KONTAINS DUPLIKATE KOLORS, DUMKOPF!"
-        if strictness >= Strictness.pragmatic:
-            for byteindex in range(1, len(palette), 2):
-                bit = (palette[byteindex] & 0x80) >> 7
-                assert bit == 0
-        if strictness == Strictness.nazi:
-            enumeration = enumer(palette, 2)
-            assert len(enumeration) == len(set(enumeration)), duplicatemsg
-            assert enumeration == sorted(enumeration), (
-                "SIE PALETTE IS A MESS! SORT YOUR KOLORS, DUMKOPF! LEAST BLUE"
-                "KOLORS IN FRONT! THEN LEAST GREEN! THEN LEAST RED!"
-            )
+    assert len(palette) >= 2
+    assert len(palette) % 2 == 0
+    duplicatemsg = "SIE PALETTE KONTAINS DUPLIKATE KOLORS, DUMKOPF!"
+    if strictness >= Strictness.pragmatic:
+        for byteindex in range(1, len(palette), 2):
+            bit = (palette[byteindex] & 0x80) >> 7
+            assert bit == 0
+    if strictness == Strictness.nazi:
+        enumeration = enumer(palette, 2)
+        assert len(enumeration) == len(set(enumeration)), duplicatemsg
+        assert enumeration == sorted(enumeration), (
+            "SIE PALETTE IS A MESS! SORT YOUR KOLORS, DUMKOPF! LEAST BLUE"
+            "KOLORS IN FRONT! THEN LEAST GREEN! THEN LEAST RED!"
+        )
 
 
 def validate_nes(palette, strictness):

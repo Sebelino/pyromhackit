@@ -322,13 +322,13 @@ def formatconvert(path, informat=None, outformat=None, outfile=None,
     if not informat:
         logging.debug("Attempting to guess format...")
         infmt = guessformat(contents)
-        logging.debug("Looks {}-formatted to me.".format(infmt))
+        logging.debug("Looks %s-formatted to me." % infmt)
     logging.debug("Validating input...")
     validate(contents, infmt, strictness)
     if outformat and informat != outformat:
         logging.debug("Attempting to change format into standard RGB 24 BPP...")
         contents = format2rgb24bpp(contents, infmt)
-        logging.debug("Attempting to change format into {}...".format(outformat))
+        logging.debug("Attempting to change format into %s..." % outformat)
         contents = rgb24bpp2format(contents, outformat)
     if outfile:
         logging.debug("Attempting to write output to file...")

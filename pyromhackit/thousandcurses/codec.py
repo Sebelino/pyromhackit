@@ -43,6 +43,22 @@ class Tree(object):
     def list(self):
         return [c.list() if isinstance(c, Tree) else c for c in self.children]
 
+    def annotate(self):  # Mutability
+        """ Adds an attribute, 'position', to this tree and all nested subtrees, so that the flattening of each tree
+        is a substring of the flattening of the entire tree and the index of the first element in the substring relative
+        to the complete string is equal to the tree's position attribute. """
+        self._annotate(0)
+
+    def _annotate(self, position):
+        self.position = position
+        offset = position
+        for c in self:
+            if isinstance(c, Tree):
+                c._annotate(offset)
+                offset += c.numleaves
+            else:
+                offset += len(c)
+
     def __getitem__(self, idx):
         err = IndexError("Tree index out of range.")
         if not self.children and idx == 0:

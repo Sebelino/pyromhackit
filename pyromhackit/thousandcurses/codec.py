@@ -15,6 +15,7 @@ import os
 import yaml
 from abc import ABC, abstractmethod
 import inspect
+from queue import Queue
 
 package_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -58,6 +59,31 @@ class Tree(object):
                 offset += c.numleaves
             else:
                 offset += len(c)
+
+    def leaf_indices(self):
+        """ Returns a queue of sequences of indices leading to a leaf, in a left-to-right
+        depth-first-search manner. """
+        return self._leaf_indices([])
+
+    def _leaf_indices(self, stack):
+        q = Queue()
+        for i in range(len(self.children)):
+            if isinstance(self.children[i], Tree):
+                self.children[i]._leaf_indices(stack+[i])
+            else:
+                q.queue(tuple(stack+[i]))
+        return q
+
+    def graph(self):
+        for path in self.leaf_indices():
+            self.reel_in(*path)
+        return {(self.position,): ()}
+
+    def reel_in(self, *args):
+        hook = self
+        for i in args:
+            hook = hook.children[i]
+        return hook
 
     def __getitem__(self, idx):
         err = IndexError("Tree index out of range.")

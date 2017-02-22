@@ -134,21 +134,43 @@ class Decoder(ABC):
     @classmethod
     @abstractmethod
     def decode(cls, bytestr):
+        """ Decodes a bytestring into a string, or a bytestring tree into a string tree. """
         raise NotImplementedError("Decoder for {0} not implemented.".format(cls.__name__))
 
     @classmethod
     def domain(cls, bytestr):
-        """ Returns a bytestring tree containing a single leaf. Not really useful unless overridden. """
+        """ Returns any bytestring tree such that the flattening of it is equal to bytestr. By default returns a
+        bytestring tree containing a single leaf. """
         return Tree([bytestr])
 
     @classmethod
+    def operate(cls, tree):
+        """ Performs any number of operations on the tree and returns the result. Note that if the original tree
+        contains a 'position' attribute, the new tree and all its nested subtrees will each possess this attribute
+        which is the position of the original (sub-)tree it corresponds to. """
+        return tree
+
+    @classmethod
     def mapping(cls, bytestr):
-        """ Returns a pair (S, F), where S is the codomain (string tree) and F is the graph (dictionary mapping
-        bytestring tree leaves to string tree leaves). """
+        """ Returns any triplet (B, S, F) which satisfies the following conditions:
+        * B is a bytestring tree (nested list of bytestrings).
+        * The flattening of B is equal to bytestr.
+        * S is a string tree (nested list of strings).
+        * The flattening of S is equal to decode(bytestr).
+        * F is a dictionary mapping each leaf in B to a set of leaves in S. F is formally a dict mapping a tuple of
+          integers to a nested dict so that each value in each dict is either another dict or a set of integers which
+          are indices in S.
+        * Each leaf L in B holds the property that, when modified, every leaf in S will remain unchanged except those
+          in the set of leaves that F maps L to.
+        * The algorithm is deterministic.
+        There should be no reason to override this method.
+        """
         btree = cls.domain(bytestr)
-        stree = Tree([cls.decode(bytestr)])
-        indexmap = {(0,): {(0,)}}
-        return stree, indexmap
+        btree.annotate()
+        newbtree = cls.operate(btree)
+        stree = cls.decode(newbtree)
+        graph = stree.graph()
+        return btree, stree, graph
 
 
 class Codec(Decoder):
@@ -213,18 +235,6 @@ class UppercaseASCII(Decoder):
         return "".join(MonospaceASCIIByte.decode(bytes([b]).upper()) for b in bytestr)
 
     def mapping(bytestr):
-        """ Returns any triplet (B, S, F) which satisfies the following conditions:
-        * B is a bytestring tree (nested list of bytestrings).
-        * The flattening of B is equal to bytestr.
-        * S is a string tree (nested list of strings).
-        * The flattening of S is equal to decode(bytestr).
-        * F is a dictionary mapping each leaf in B to a set of leaves in S. F is formally a dict mapping a tuple of
-          integers to a nested dict so that each value in each dict is either another dict or a set of integers which
-          are indices in S.
-        * Each leaf L in B holds the property that, when modified, every leaf in S will remain unchanged except those
-          in the set of leaves that F maps L to.
-        * The algorithm is deterministic.
-        """
         btree = Tree([bytes([b]) for b in bytestr]) if bytestr else Tree([b''])
         stree = treemap(UppercaseASCII.decode, btree)
         indexmap = identity_dict(len(btree.flatten()))

@@ -132,6 +132,8 @@ class TestTree(object):
         [b''],
         [b'a', b'b'],
         [b'a', [[b'c']], b'b'],
+        [b'a', [[b'c', b'd']], b'b'],
+        [b'a', [[b'c', b'd'], b'e'], b'b'],
     ])
     def test_list(self, expected):
         returned = Tree(expected).list()

@@ -12,6 +12,8 @@ and vice versa.
 
 import sys
 import os
+
+import numpy
 import yaml
 from abc import ABC, abstractmethod
 import inspect
@@ -43,6 +45,11 @@ class Tree(object):
 
     def list(self):
         return [c.list() if isinstance(c, Tree) else c for c in self.children]
+
+    def offsets(self):
+        t = tuple(c.numleaves if isinstance(c, Tree) else 1 for c in self)
+        offsets = tuple(numpy.cumsum(t)-t)
+        return offsets
 
     def annotate(self):  # Mutability
         """ Adds an attribute, 'position', to this tree and all nested subtrees, so that the flattening of each tree

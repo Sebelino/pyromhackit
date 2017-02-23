@@ -136,3 +136,22 @@ class TestTree(object):
     def test_list(self, expected):
         returned = Tree(expected).list()
         assert returned == expected
+
+    @pytest.mark.parametrize("arg, expected", [
+        ([b'a'], (0,)),
+        ([b'ab', b'c'], (0, 1)),
+        ([[b'hoy'], b'ab', b'c'], (0, 1, 2)),
+        ([[b'hoy', b'yo'], b'ab', b'c'], (0, 2, 3)),
+        ([[b'hoy', b'yo'], b'ab', [b'oy', b'yoh', b's'], b'c'], (0, 2, 3, 6)),
+    ])
+    def test_offsets(self, arg, expected):
+        t = Tree(arg)
+        assert t.offsets() == expected
+
+    def test_reel_in(self):
+        assert Tree([b'a']).reel_in(0) == b'a'
+        assert Tree([b'a', b'b']).reel_in(0) == b'a'
+        assert Tree([b'a', b'b']).reel_in(1) == b'b'
+        assert Tree([b'a', [b'c'], b'b']).reel_in(1, 0) == b'c'
+        assert Tree([b'a', [b'c', b'd'], b'b']).reel_in(1, 0) == b'c'
+        assert Tree([b'a', [b'c', b'd'], b'b']).reel_in(1, 1) == b'd'

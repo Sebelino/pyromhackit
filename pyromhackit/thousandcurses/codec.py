@@ -46,6 +46,13 @@ class Tree(object):
     def list(self):
         return [c.list() if isinstance(c, Tree) else c for c in self.children]
 
+    def invert(self):  # Mutability
+        self.children.reverse()
+        self.positions = tuple(reversed(self.positions))
+        for c in self.children:
+            if isinstance(c, Tree):
+                c.invert()
+
     def offsets(self):
         t = tuple(c.numleaves if isinstance(c, Tree) else 1 for c in self)
         offsets = tuple(numpy.cumsum(t)-t)

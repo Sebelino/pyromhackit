@@ -157,3 +157,13 @@ class TestTree(object):
         assert Tree([b'a', [b'c'], b'b']).reel_in(1, 0) == b'c'
         assert Tree([b'a', [b'c', b'd'], b'b']).reel_in(1, 0) == b'c'
         assert Tree([b'a', [b'c', b'd'], b'b']).reel_in(1, 1) == b'd'
+
+    @pytest.mark.parametrize("arg, expected", [
+        ([b'ab'], [b'ab']),
+        ([b'ab', b'c'], [b'c', b'ab']),
+        ([b'ab', [b'c', b'de'], b'f'], [b'f', [b'de', b'c'], b'ab']),
+    ])
+    def test_invert(self, arg, expected):
+        returned = Tree(arg).invert()
+        assert returned == expected
+        assert returned.invert() == Tree(arg)

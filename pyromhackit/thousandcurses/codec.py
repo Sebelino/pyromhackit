@@ -165,8 +165,8 @@ class Decoder(ABC):
         * S is a string tree (nested list of strings).
         * The flattening of S is equal to decode(bytestr).
         * F is a dictionary mapping each leaf in B to a set of leaves in S. F is formally a dict mapping a tuple of
-          integers to a nested dict so that each value in each dict is either another dict or a set of integers which
-          are indices in S.
+          integers to other tuples of integers so that each key tuple is a path of indices leading to a leaf in B and
+          its associated value tuple is a path of indices leading to the corresponding leaf in S.
         * Each leaf L in B holds the property that, when modified, every leaf in S will remain unchanged except those
           in the set of leaves that F maps L to.
         * The algorithm is deterministic.

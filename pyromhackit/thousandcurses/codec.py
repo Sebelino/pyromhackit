@@ -116,6 +116,28 @@ class Tree(object):
             return self.children[idx]
         raise err
 
+    def structurally_equals(self, other):
+        if len(other) != len(self):
+            return False
+        for a, b in zip(self, other):
+            subtrees_equal = isinstance(a, Tree) and isinstance(b, Tree) and a.structurally_equals(b)
+            leaves_equal = type(a) is type(b) and a == b
+            if not (subtrees_equal or leaves_equal):
+                return False
+        return True
+
+    def __eq__(self, other):
+        if not isinstance(other, Tree):
+            return False
+        if not self.structurally_equals(other):
+            return False
+        if self.positions != other.positions:
+            return False
+        return True
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
     def __len__(self):
         return len(self.children)
 

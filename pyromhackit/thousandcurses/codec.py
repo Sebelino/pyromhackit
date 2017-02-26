@@ -70,22 +70,32 @@ class Tree(object):
         offsets = tuple(numpy.cumsum(t)-t)
         return offsets
 
-
-            else:
-
     def leaf_indices(self):
-        """ Returns a queue of sequences of indices leading to a leaf, in a left-to-right
-        depth-first-search manner. """
+        """ Returns a list of sequences of indices leading to a leaf, in a left-to-right depth-first-search manner. """
         return self._leaf_indices([])
 
     def _leaf_indices(self, stack):
-        q = Queue()
+        paths = []
         for i in range(len(self.children)):
             if isinstance(self.children[i], Tree):
-                self.children[i]._leaf_indices(stack+[i])
+                self.children[i]._leaf_indices(stack + [i])
             else:
-                q.queue(tuple(stack+[i]))
-        return q
+                paths.append(tuple(stack + [i]))
+        return paths
+
+    def leaf_parent_indices(self):
+        """ Returns a list of sequences of indices leading to a parent of a leaf, in a left-to-right
+        depth-first-search manner. """
+        return self._leaf_parent_indices([])
+
+    def _leaf_parent_indices(self, stack):
+        paths = []
+        for i in range(len(self.children)):
+            if isinstance(self.children[i], Tree):
+                self.children[i]._leaf_parent_indices(stack + [i])
+            else:
+                paths.append(tuple(stack))
+        return paths
 
     def graph(self):
         for path in self.leaf_indices():

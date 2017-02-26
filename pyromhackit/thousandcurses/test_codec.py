@@ -164,6 +164,8 @@ class TestTree(object):
         ([b'ab', [b'c', b'de'], b'f'], [b'f', [b'de', b'c'], b'ab']),
     ])
     def test_invert(self, arg, expected):
-        returned = Tree(arg).invert()
-        assert returned == expected
-        assert returned.invert() == Tree(arg)
+        t = Tree(arg)
+        t.invert()
+        assert t.structurally_equals(Tree(expected))
+        t.invert()
+        assert t.structurally_equals(Tree(arg))

@@ -15,20 +15,32 @@ import os
 
 import numpy
 import yaml
+from random import randint
 from abc import ABC, abstractmethod
 import inspect
-from queue import Queue
 
 package_dir = os.path.dirname(os.path.abspath(__file__))
 
 
 class Tree(object):
-    def __init__(self, arg):
+    def __init__(self, arg, _position=0):
         container_types = {tuple, list, Tree}
         if any(isinstance(arg, tpe) for tpe in container_types) and len(arg) >= 1:
             self.type = None
             children = list(arg)
-            self.children = [Tree(c) if any(isinstance(c, tpe) for tpe in container_types) else c for c in children]
+            self.children = []
+            delta = 0
+            positions = []
+            for c in children:
+                positions.append(delta)
+                if any(isinstance(c, tpe) for tpe in container_types):
+                    infant = Tree(c, _position=_position + delta)
+                    self.children.append(infant)
+                    delta += infant.numleaves
+                else:
+                    self.children.append(c)
+                    delta += 1
+            self.positions = tuple(positions)
             typeset = {c.type if isinstance(c, Tree) else type(c) for c in self.children}
             self.type = typeset.pop()
             if typeset:
@@ -58,21 +70,8 @@ class Tree(object):
         offsets = tuple(numpy.cumsum(t)-t)
         return offsets
 
-    def annotate(self):  # Mutability
-        """ Adds an attribute, 'position', to this tree and all nested subtrees, so that the flattening of each tree
-        is a substring of the flattening of the entire tree and the index of the first element in the substring relative
-        to the complete string is equal to the tree's position attribute. """
-        self._annotate(0)
 
-    def _annotate(self, position):
-        self.position = position
-        offset = position
-        for c in self:
-            if isinstance(c, Tree):
-                c._annotate(offset)
-                offset += c.numleaves
             else:
-                offset += len(c)
 
     def leaf_indices(self):
         """ Returns a queue of sequences of indices leading to a leaf, in a left-to-right

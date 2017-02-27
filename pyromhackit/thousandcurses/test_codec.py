@@ -207,3 +207,13 @@ class TestTree(object):
         assert t.structurally_equals(Tree(expected))
         t.invert()
         assert t.structurally_equals(Tree(arg))
+
+    @pytest.mark.parametrize("content, fn, expected", [
+        ([b'Sebelino'], bytes.upper, Tree([b'SEBELINO'])),
+        ([b'abc', [b'dEf', b'gh']], bytes.upper, Tree([b'ABC', [b'DEF', b'GH']])),
+        ([b'abc', [b'dEf', b'gh']], bytes.decode, Tree(['abc', ['dEf', 'gh']])),
+    ])
+    def test_map(self, content, fn, expected):
+        t = Tree(content)
+        t2 = t.map(fn)
+        assert t2 == expected

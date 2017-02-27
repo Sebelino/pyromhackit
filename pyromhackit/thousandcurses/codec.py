@@ -78,7 +78,8 @@ class Tree(object):
         paths = []
         for i in range(len(self.children)):
             if isinstance(self.children[i], Tree):
-                self.children[i]._leaf_indices(stack + [i])
+                for ci in self.children[i]._leaf_indices(stack + [i]):
+                    paths.append(ci)
             else:
                 paths.append(tuple(stack + [i]))
         return paths

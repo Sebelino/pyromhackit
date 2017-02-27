@@ -167,6 +167,19 @@ class TestTree(object):
         t = Tree(arg)
         returned = t.leaf_indices()
         assert returned == expected
+
+    @pytest.mark.parametrize("arg, expected", [
+        ([b''], [()]),
+        ([b'ab', b'cde'], [()]),
+        ([b'ab', [b'cde', b'f']], [(), (1,)]),
+        ([b'ab', [[b'cde'], [b'f', b'gh']]], [(), (1, 0), (1, 1)]),
+        ([[b'ab'], [b'c', b'de']], [(0,), (1,)]),
+    ])
+    def test_leaf_parent_indices(self, arg, expected):
+        t = Tree(arg)
+        returned = t.leaf_parent_indices()
+        assert returned == expected
+
         ([b'ab'], [b'ab']),
         ([b'ab', b'c'], [b'c', b'ab']),
         ([b'ab', [b'c', b'de'], b'f'], [b'f', [b'de', b'c'], b'ab']),

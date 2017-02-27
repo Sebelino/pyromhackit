@@ -186,12 +186,6 @@ def treemap(fn, element):  # TODO Memory complexity
 
 class Decoder(ABC):
     @classmethod
-    @abstractmethod
-    def decode(cls, bytestr):
-        """ Decodes a bytestring into a string, or a bytestring tree into a string tree. """
-        raise NotImplementedError("Decoder for {0} not implemented.".format(cls.__name__))
-
-    @classmethod
     def domain(cls, bytestr):
         """ Returns any bytestring tree such that the flattening of it is equal to bytestr. By default returns a
         bytestring tree containing a single leaf. """
@@ -199,10 +193,16 @@ class Decoder(ABC):
 
     @classmethod
     def operate(cls, tree):
-        """ Performs any number of operations on the tree and returns the result. Note that if the original tree
-        contains a 'position' attribute, the new tree and all its nested subtrees will each possess this attribute
-        which is the position of the original (sub-)tree it corresponds to. """
+        """ Performs any number of operations on the tree and returns the result. Note that the original tree
+        contains a 'position' attribute which the new tree and each of its nested subtrees will possess
+        which is the position of the original (sub-)tree it corresponds to. By default performs no operation. """
         return tree
+
+    @classmethod
+    @abstractmethod
+    def decode(cls, bytestr):
+        """ Decodes a bytestring into a string, or a bytestring tree into a string tree. """
+        raise NotImplementedError("Decoder for {0} not implemented.".format(cls.__name__))
 
     @classmethod
     def mapping(cls, bytestr):
@@ -220,7 +220,6 @@ class Decoder(ABC):
         There should be no reason to override this method.
         """
         btree = cls.domain(bytestr)
-        btree.annotate()
         newbtree = cls.operate(btree)
         stree = cls.decode(newbtree)
         graph = stree.graph()

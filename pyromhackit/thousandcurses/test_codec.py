@@ -182,6 +182,21 @@ class TestTree(object):
         returned = t.leaf_parent_indices()
         assert returned == expected
 
+    @pytest.mark.parametrize("arg, expected, expected_inversion", [
+        ([b''], {(0,): (0,)}, {(0,): (0,)}),
+        ([b'ab', b'cde'], {(0,): (0,), (1,): (1,)}, {(1,): (0,), (0,): (1,)}),
+        ([b'ab', [b'cde', b'f']], {(0,): (0,), (1, 0): (1, 0), (1, 1): (1, 1)},
+                                  {(0,): (1,), (1, 0): (0, 1), (1, 1): (0, 0)}),
+    ])
+    def test_graph(self, arg, expected, expected_inversion):
+        t = Tree(arg)
+        returned = t.graph()
+        assert returned == expected
+        t.invert()
+        returned = t.graph()
+        assert returned == expected_inversion
+
+    @pytest.mark.parametrize("arg, expected", [
         ([b'ab'], [b'ab']),
         ([b'ab', b'c'], [b'c', b'ab']),
         ([b'ab', [b'c', b'de'], b'f'], [b'f', [b'de', b'c'], b'ab']),

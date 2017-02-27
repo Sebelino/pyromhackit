@@ -94,9 +94,16 @@ class Tree(object):
         return parent_paths
 
     def graph(self):
+        grph = dict()
         for path in self.leaf_indices():
-            self.reel_in(*path)
-        return {(self.position,): ()}
+            originalpath = []
+            subtree = self
+            for node in path:
+                orgnode = subtree.positions[node]
+                originalpath.append(orgnode)
+                subtree = subtree[node]
+            grph[tuple(originalpath)] = path
+        return grph
 
     def reel_in(self, *args):
         hook = self

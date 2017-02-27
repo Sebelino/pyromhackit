@@ -120,9 +120,11 @@ class Tree(object):
         if len(other) != len(self):
             return False
         for a, b in zip(self, other):
-            subtrees_equal = isinstance(a, Tree) and isinstance(b, Tree) and a.structurally_equals(b)
-            leaves_equal = type(a) is type(b) and a == b
-            if not (subtrees_equal or leaves_equal):
+            a_tree_equality = isinstance(a, Tree) and a.structurally_equals(b)
+            b_tree_equality = isinstance(b, Tree) and b.structurally_equals(a)
+            container_equality = list(a) == list(b)
+            leaf_equality = type(a) is type(b) and a == b
+            if not (a_tree_equality or b_tree_equality or container_equality or leaf_equality):
                 return False
         return True
 

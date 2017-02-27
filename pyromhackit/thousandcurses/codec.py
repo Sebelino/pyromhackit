@@ -12,6 +12,7 @@ and vice versa.
 
 import sys
 import os
+from itertools import groupby
 
 import numpy
 import yaml
@@ -87,16 +88,10 @@ class Tree(object):
     def leaf_parent_indices(self):
         """ Returns a list of sequences of indices leading to a parent of a leaf, in a left-to-right
         depth-first-search manner. """
-        return self._leaf_parent_indices([])
-
-    def _leaf_parent_indices(self, stack):
-        paths = []
-        for i in range(len(self.children)):
-            if isinstance(self.children[i], Tree):
-                self.children[i]._leaf_parent_indices(stack + [i])
-            else:
-                paths.append(tuple(stack))
-        return paths
+        leaf_paths = self.leaf_indices()
+        parent_paths = [path[:-1] for path in leaf_paths]
+        parent_paths = [p[0] for p in groupby(parent_paths)]
+        return parent_paths
 
     def graph(self):
         for path in self.leaf_indices():

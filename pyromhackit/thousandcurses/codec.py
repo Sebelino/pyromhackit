@@ -71,6 +71,10 @@ class Tree(object):
         offsets = tuple(numpy.cumsum(t) - t)
         return offsets
 
+    def map(self, fn):  # TODO Memory complexity
+        """ Applies the given unary function to every leaf in this tree. """
+        return Tree([c.map(fn) if isinstance(c, Tree) else fn(c) for c in self])
+
     def leaf_indices(self):
         """ Returns a list of sequences of indices leading to a leaf, in a left-to-right depth-first-search manner. """
         return self._leaf_indices([])

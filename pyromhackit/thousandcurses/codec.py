@@ -68,7 +68,7 @@ class Tree(object):
 
     def offsets(self):
         t = tuple(c.numleaves if isinstance(c, Tree) else 1 for c in self)
-        offsets = tuple(numpy.cumsum(t)-t)
+        offsets = tuple(numpy.cumsum(t) - t)
         return offsets
 
     def leaf_indices(self):

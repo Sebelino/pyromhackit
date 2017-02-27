@@ -162,6 +162,8 @@ class TestTree(object):
         ([b''], [(0,)]),
         ([b'ab', b'cde'], [(0,), (1,)]),
         ([b'ab', [b'cde', b'f']], [(0,), (1, 0), (1, 1)]),
+        ([b'ab', [[b'cde'], [b'f', b'gh']]], [(0,), (1, 0, 0), (1, 1, 0), (1, 1, 1)]),
+        ([[b'ab'], [b'c', b'de']], [(0, 0), (1, 0), (1, 1)]),
     ])
     def test_leaf_indices(self, arg, expected):
         t = Tree(arg)

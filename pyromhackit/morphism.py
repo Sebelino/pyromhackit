@@ -40,8 +40,8 @@ class Morphism(object):
         raise TypeError("Argument must be either a bytestring or a string.")
 
     def source_diffusion(self, idx):
-        """ Returns the indices of the bytes in the ROM affected
-        when altering the ith character of the decoded string """
+        """ Returns the set of indices of the characters in the decoded string affected when altering the ith byte
+        in the ROM. """
         self.src[idx]  # Raise IndexError?
         indices = set()
         for i in range(2 ** 8):

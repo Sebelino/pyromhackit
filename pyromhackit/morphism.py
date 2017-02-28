@@ -37,7 +37,7 @@ class Morphism(object):
                     (i,) = bl
                     return i, j
             raise ValueError("Affecting byte not found.")
-        raise ValueError("Argument must be either a bytestring or a string.")
+        raise TypeError("Argument must be either a bytestring or a string.")
 
     def source_diffusion(self, idx):
         """ Returns the indices of the bytes in the ROM affected

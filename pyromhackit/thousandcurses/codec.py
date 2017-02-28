@@ -153,7 +153,7 @@ class Tree(object):
     def __str__(self):
         if not self.children:
             return "{}".format(repr(self.content))
-        childrenstr = ",".join(str(c) for c in self.children)
+        childrenstr = ",".join(repr(c) for c in self.children)
         treestr = "({})".format(childrenstr)
         return treestr
 

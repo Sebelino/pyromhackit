@@ -117,6 +117,14 @@ class TestTree(object):
             assert len(Tree(arg)) == expected
 
     @pytest.mark.parametrize("arg, expected", [
+        ([b'abc'], "(b'abc')"),
+        (['abc'], "('abc')"),
+    ])
+    def test_str(self, arg, expected):
+        t = Tree(arg)
+        assert str(t) == expected
+
+    @pytest.mark.parametrize("arg, expected", [
         ([b''], b''),
         ([b'abc'], b'abc'),
         ([b'abc', b'def'], b'abcdef'),

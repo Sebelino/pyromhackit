@@ -30,9 +30,8 @@ class TestWord(object):
     def test_srctree(self):
         assert self.morphism.srctree == [b'\x00\xe7', b'\x01\x0f', b'\x01\x17']
 
-    @pytest.mark.skip()
     def test_dsttree(self):
-        assert self.morphism.srctree == ['H', 'o', 'w']
+        assert self.morphism.dsttree == ['H', 'o', 'w']
 
     @pytest.mark.parametrize("bindex, sindex", [
         (0, 0),

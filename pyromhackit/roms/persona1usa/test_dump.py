@@ -4,6 +4,7 @@ import os
 from .dump import rom_path, Persona1Codec
 from pyromhackit.rom import ROM
 from pyromhackit.morphism import Morphism
+from pyromhackit.thousandcurses.codec import Tree
 import pytest
 
 package_dir = os.path.dirname(os.path.abspath(__file__))
@@ -28,10 +29,10 @@ class TestWord(object):
         assert self.morphism.dst == 'How'
 
     def test_srctree(self):
-        assert self.morphism.srctree == [b'\x00\xe7', b'\x01\x0f', b'\x01\x17']
+        assert self.morphism.srctree == Tree([b'\x00\xe7', b'\x01\x0f', b'\x01\x17'])
 
     def test_dsttree(self):
-        assert self.morphism.dsttree == ['H', 'o', 'w']
+        assert self.morphism.dsttree == Tree(['H', 'o', 'w'])
 
     @pytest.mark.parametrize("bindex, sindex", [
         (0, 0),

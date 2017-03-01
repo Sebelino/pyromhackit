@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 
 """ Test suite for ROM class. """
-
+import inspect
 import os
 import re
 import pytest
 
+from ..rom import ROM
 from ..morphism import Morphism
 from ..thousandcurses.codec import ASCII
 
@@ -25,6 +26,29 @@ class TestASCIIMorphism:
         expected = ("Morphism(b'abcdefghi',\n"
                     "          'abcdefghi')")
         assert str(self.morphism) == expected
+
+    @pytest.mark.parametrize("arg, expected", [
+        (0, ord(b'a')),
+        (slice(0, 1), (b'a', 'a')),
+        (slice(0, 2), (b'ab', 'ab')),
+        (slice(6, 9), (b'ghi', 'ghi')),
+        (slice(6, 9), (b'ghi', 'ghi')),
+        ((6, 9), TypeError),
+    ])
+    def test_subscripting(self, arg, expected):
+        if inspect.isclass(expected) and issubclass(expected, Exception):
+            with pytest.raises(TypeError) as excinfo:
+                self.morphism[arg]
+        else:
+            returned = self.morphism[arg]
+            if isinstance(expected, int):
+                assert returned == expected
+            elif isinstance(expected, tuple):
+                bytestring, string = expected
+                assert returned.src == ROM(bytestring)
+                assert returned.dst == string
+            else:
+                raise Exception("Something is wrong with the test.")
 
     @pytest.mark.parametrize("searchitem, expected", [
         ("", (0, 0)),

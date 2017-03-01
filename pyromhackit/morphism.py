@@ -72,6 +72,13 @@ class Morphism(object):
         with open(path, 'w') as f:
             f.write(self.dst)
 
+    def __getitem__(self, val):
+        if isinstance(val, int):
+            return self.src[val]
+        if isinstance(val, slice):
+            rom = self.src[val.start:val.stop:val.step]
+            return Morphism(rom, self.decoder)
+
     def __str__(self):
         romstr = str(self.src).replace(self.src.__class__.__name__, self.__class__.__name__, 1)
         whitespace = " " * (len(self.__class__.__name__) + 2)

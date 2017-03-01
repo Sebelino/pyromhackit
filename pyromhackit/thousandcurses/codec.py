@@ -12,6 +12,7 @@ and vice versa.
 
 import sys
 import os
+import typing
 from itertools import groupby
 
 import numpy
@@ -199,12 +200,12 @@ class Decoder(ABC):
 
     @classmethod
     @abstractmethod
-    def decode(cls, bytestr):
+    def decode(cls, bytestr) -> typing.Union[bytes, Tree]:
         """ Decodes a bytestring into a string, or a bytestring tree into a string tree. """
         raise NotImplementedError("Decoder for {0} not implemented.".format(cls.__name__))
 
     @classmethod
-    def mapping(cls, bytestr):
+    def mapping(cls, bytestr: bytes) -> (Tree, Tree, dict):
         """ Returns any triplet (B, S, F) which satisfies the following conditions:
         * B is a bytestring tree (nested list of bytestrings).
         * The flattening of B is equal to bytestr.

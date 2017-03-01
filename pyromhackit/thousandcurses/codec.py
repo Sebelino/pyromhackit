@@ -16,7 +16,6 @@ from itertools import groupby
 
 import numpy
 import yaml
-from random import randint
 from abc import ABC, abstractmethod
 import inspect
 

@@ -75,6 +75,11 @@ class Tree(object):
         """ Applies the given unary function to every leaf in this tree. """
         return Tree([c.map(fn) if isinstance(c, Tree) else fn(c) for c in self])
 
+    def transliterate(self, dct):
+        """ Replaces every leaf by its associated value in the argument dictionary. Throw an exception if a key
+        does not exist. """
+        return Tree([c.transliterate(dct) if isinstance(c, Tree) else dct[c] for c in self])
+
     def leaf_indices(self):
         """ Returns a list of sequences of indices leading to a leaf, in a left-to-right depth-first-search manner. """
         return self._leaf_indices([])

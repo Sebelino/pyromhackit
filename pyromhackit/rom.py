@@ -183,6 +183,7 @@ class ROM(object):
             return self.content[val]
         if isinstance(val, slice):
             return ROM(self.content[val.start:val.stop:val.step])
+        raise TypeError("ROM indices must be integers or slices, not {}".format(type(val).__name__))
 
     def __add__(self, operand):
         return ROM(self.content + operand)

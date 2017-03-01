@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """ Test suite for ROM class. """
-
+import inspect
 import os
 from os.path import isfile
 import re
@@ -141,10 +141,15 @@ class TestTinyROM:
         (slice(None, 1), ROM(b'a')),
         (slice(1, 3), ROM(b'\xffc')),
         (slice(None, None), ROM(b'a\xffc')),
+        ((1, 3), TypeError),
     ])
     def test_subscripting(self, tinyrom, arg, expected):
         """ Subscripting support is isomorphic to bytestrings """
-        assert tinyrom[arg] == expected
+        if inspect.isclass(expected) and issubclass(expected, Exception):
+            with pytest.raises(TypeError) as excinfo:
+                tinyrom[arg]
+        else:
+            assert tinyrom[arg] == expected
 
     def test_convert_to_bytes(self, tinyrom):
         assert bytes(tinyrom) == b"a\xffc"

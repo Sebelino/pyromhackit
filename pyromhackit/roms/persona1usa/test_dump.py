@@ -10,10 +10,12 @@ import pytest
 package_dir = os.path.dirname(os.path.abspath(__file__))
 
 
+@pytest.mark.skipif(not os.path.isfile(rom_path), reason="Copyright infringement")
 def test_read_rom():
     ROM(rom_path)
 
 
+@pytest.mark.skipif(not os.path.isfile(rom_path), reason="Copyright infringement")
 class TestWord(object):
     def setup_class(self):
         rom = ROM(rom_path)

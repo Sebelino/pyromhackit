@@ -78,6 +78,7 @@ class Morphism(object):
         if isinstance(val, slice):
             rom = self.src[val.start:val.stop:val.step]
             return Morphism(rom, self.decoder)
+        raise TypeError("Morphism indices must be integers or slices, not {}".format(type(val).__name__))
 
     def __str__(self):
         romstr = str(self.src).replace(self.src.__class__.__name__, self.__class__.__name__, 1)

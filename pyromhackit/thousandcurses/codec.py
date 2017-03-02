@@ -140,6 +140,11 @@ class Tree(object):
                 return False
         return True
 
+    @staticmethod
+    def zip(t1: Tree, t2: Tree):
+        """ Merges two trees with equal structure into one, where each leaf is a pair (A, B), where A is the
+        corresponding leaf from the first tree and B is the corresponding leaf from the second. """
+
     def __eq__(self, other):
         if not isinstance(other, Tree):
             return False

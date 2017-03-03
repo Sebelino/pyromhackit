@@ -128,7 +128,35 @@ class Tree(object):
             return self.children[idx]
         raise err
 
-    def structurally_equals(self, other):
+    @staticmethod
+    def zip(t1: 'Tree', t2: 'Tree'):
+        """ Merges two trees with equal structure into one, where each leaf is a pair (A, B), where A is the
+        corresponding leaf from the first tree and B is the corresponding leaf from the second. """
+        if t1.structurally_equals(t2):
+            return Tree._zip(t1, t2)
+        else:
+            raise ValueError("The structure of the trees differ.")
+
+    @staticmethod
+    def _zip(e1, e2):
+        if isinstance(e1, Tree) and isinstance(e2, Tree):
+            return Tree([Tree.zip(c1, c2) for c1, c2 in zip(e1, e2)])
+        else:
+            return e1, e2
+
+    def contentwise_equals(self, other: 'Tree'):
+        """ True iff the (byte-)strings resulting from flattening the trees are equal. """
+        return self.flatten() == other.flatten()
+
+    def graphically_equals(self, other: 'Tree'):
+        """ True iff the trees have the same graph, disregarding all vertex and edge labels. """
+        return False
+
+    def structurally_equals(self, other: 'Tree'):
+        """ True iff the trees are graphically equal and the content of the nth leaf of the first tree equals the
+        content of the nth leaf of the second tree for every n. """
+        if not self.graphically_equals(other):
+            return False
         if len(other) != len(self):
             return False
         for a, b in zip(self, other):
@@ -140,12 +168,8 @@ class Tree(object):
                 return False
         return True
 
-    @staticmethod
-    def zip(t1: Tree, t2: Tree):
-        """ Merges two trees with equal structure into one, where each leaf is a pair (A, B), where A is the
-        corresponding leaf from the first tree and B is the corresponding leaf from the second. """
-
     def __eq__(self, other):
+        """ True iff they are both Trees and all their fields contain equal data. """
         if not isinstance(other, Tree):
             return False
         if not self.structurally_equals(other):

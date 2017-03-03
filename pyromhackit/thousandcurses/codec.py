@@ -161,8 +161,6 @@ class Tree(object):
         return len(self.children)
 
     def __str__(self):
-        if not self.children:
-            return "{}".format(repr(self.content))
         childrenstr = ",".join(repr(c) for c in self.children)
         treestr = "({})".format(childrenstr)
         return treestr

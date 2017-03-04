@@ -36,6 +36,15 @@ class TestWord(object):
     def test_dsttree(self):
         assert self.morphism.dsttree == Tree(['H', 'o', 'w'])
 
+    @pytest.mark.parametrize("srcindex, expected", [
+        (0, {0}),
+        (1, {1}),
+        (2, {2}),
+    ])
+    @pytest.mark.skip()
+    def test_source_diffusion(self, srcindex, expected):
+        assert self.morphism.source_diffusion(srcindex) == expected
+
     @pytest.mark.parametrize("bindex, sindex", [
         (0, 0),
         (1, 0),

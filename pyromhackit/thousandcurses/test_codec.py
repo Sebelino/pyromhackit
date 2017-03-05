@@ -204,6 +204,27 @@ class TestTree(object):
         returned = t.graph()
         assert returned == expected_inversion
 
+    @pytest.mark.parametrize("t1, t2", [
+        (Tree([b'']), Tree([''])),
+        (Tree([b'']), Tree(['ABC'])),
+        (Tree([b'a', b'b']), Tree(['A', 'B'])),
+        (Tree([b'a', [b'b', [b'c', b'd'], b'e']]), Tree(['a', ['b', ['c', 'd'], 'e']])),
+    ])
+    def test_graphically_equals(self, t1, t2):
+        assert t1.graphically_equals(t1)  # Reflexivity
+        assert t1.graphically_equals(t2)
+        if isinstance(t2, Tree):
+            assert t2.graphically_equals(t1)  # Symmetry
+
+    @pytest.mark.parametrize("t1, t2", [
+        (Tree([b'ab']), Tree([b'a', b'b'])),
+        (Tree([b'a', [b'b', [b'c', b'd'], b'e']]), Tree(['a', ['b', ['c', 'd', 'e'], 'f']])),
+        (Tree([b'a', [b'b', [b'c', b'd'], b'e']]), Tree(['a', ['b', ['c', 'd', 'e']]])),
+    ])
+    def test_graphically_not_equals(self, t1, t2):
+        assert not t1.graphically_equals(t2)
+        assert not t2.graphically_equals(t1)  # Symmetry
+
     @pytest.mark.parametrize("arg, expected", [
         ([b'ab'], [b'ab']),
         ([b'ab', b'c'], [b'c', b'ab']),

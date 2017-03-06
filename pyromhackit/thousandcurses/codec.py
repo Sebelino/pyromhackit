@@ -52,6 +52,34 @@ class Tree(object):
             raise ValueError("A tree is constructed from a non-empty list/tuple of trees, strings, or bytestrings. "
                              "The presence of a string is mutually exclusive with the presence of a bytestring.")
 
+    @staticmethod
+    def is_treelike(arg):
+        """ True iff a tree can be constructed from the given object. """
+        container_types = {tuple, list, Tree}
+        content_types = {bytes, str}
+        q = Queue()
+        q.put(arg)
+        content_type = None
+        while not q.empty():
+            element = q.get()
+            for tpe in content_types:
+                if isinstance(element, tpe):
+                    if not content_type or isinstance(element, content_type):
+                        content_type = tpe
+                        break
+                    elif not isinstance(element, content_type):
+                        return False
+            else:
+                if not any(isinstance(element, tpe) for tpe in container_types):
+                    return False
+                if len(element) == 0:
+                    return False
+                for child in element:
+                    q.put(child)
+        if len(arg) == 1 and any(isinstance(arg[0], tpe) for tpe in content_types) and len(arg[0]) == 0:
+            return False
+        return True
+
     def flatten(self):
         empty = self.type()
         return empty.join(c.flatten() if isinstance(c, Tree) else c for c in self.children)

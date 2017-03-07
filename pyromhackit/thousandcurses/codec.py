@@ -76,8 +76,6 @@ class Tree(object):
                     return False
                 for child in element:
                     q.put(child)
-        if len(arg) == 1 and any(isinstance(arg[0], tpe) for tpe in content_types) and len(arg[0]) == 0:
-            return False
         return True
 
     def flatten(self):

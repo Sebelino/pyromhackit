@@ -204,17 +204,28 @@ class TestTree(object):
         returned = t.graph()
         assert returned == expected_inversion
 
-    @pytest.mark.parametrize("t1, t2", [
-        (Tree([b'']), Tree([''])),
-        (Tree([b'']), Tree(['ABC'])),
-        (Tree([b'a', b'b']), Tree(['A', 'B'])),
-        (Tree([b'a', [b'b', [b'c', b'd'], b'e']]), Tree(['a', ['b', ['c', 'd'], 'e']])),
+    @pytest.mark.parametrize("obj", [
+        ([b'']),
+        (['']),
+        (['ABC']),
+        ([b'a', b'b']),
+        ([b'a', [b'b', [b'c', b'd'], b'e']]),
     ])
-    def test_graphically_equals(self, t1, t2):
+    def test_is_treelike(self, obj):
+        assert Tree.is_treelike(obj)
+
+    @pytest.mark.parametrize("arg1, arg2", [
+        ([b''], ['']),
+        ([b''], ['ABC']),
+        ([b'a', b'b'], ['A', 'B']),
+        ([b'a', [b'b', [b'c', b'd'], b'e']], ['a', ['b', ['c', 'd'], 'e']]),
+    ])
+    def test_graphically_equals(self, arg1, arg2):
+        t1 = Tree(arg1)
+        t2 = Tree(arg2)
         assert t1.graphically_equals(t1)  # Reflexivity
         assert t1.graphically_equals(t2)
-        if isinstance(t2, Tree):
-            assert t2.graphically_equals(t1)  # Symmetry
+        assert t2.graphically_equals(t1)  # Symmetry
 
     @pytest.mark.parametrize("t1, t2", [
         (Tree([b'ab']), Tree([b'a', b'b'])),

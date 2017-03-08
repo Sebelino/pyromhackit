@@ -176,22 +176,25 @@ class Tree(object):
         return self.flatten() == other.flatten()
 
     def graphically_equals(self, other: 'Tree'):
-        """ True iff the trees have the same graph, disregarding all vertex and edge labels. """
-        return False
+        """ True iff the trees have the same set of vertices and set of edges, disregarding all labels. """
+        if len(other) != len(self):
+            return False
+        for a, b in zip(self, other):
+            if isinstance(a, Tree) ^ isinstance(b, Tree):
+                return False
+            both_are_trees = isinstance(a, Tree)
+            if both_are_trees and not a.graphically_equals(b):
+                return False
+        return True
 
-    def structurally_equals(self, other: 'Tree'):
+    def deeply_equals(self, other: 'Tree'):
         """ True iff the trees are graphically equal and the content of the nth leaf of the first tree equals the
         content of the nth leaf of the second tree for every n. """
         if not self.graphically_equals(other):
             return False
-        if len(other) != len(self):
-            return False
         for a, b in zip(self, other):
-            a_tree_equality = isinstance(a, Tree) and a.structurally_equals(b)
-            b_tree_equality = isinstance(b, Tree) and b.structurally_equals(a)
-            container_equality = list(a) == list(b)
-            leaf_equality = type(a) is type(b) and a == b
-            if not (a_tree_equality or b_tree_equality or container_equality or leaf_equality):
+            both_are_leaves = not isinstance(a, Tree)
+            if both_are_leaves and a != b:
                 return False
         return True
 
@@ -199,7 +202,7 @@ class Tree(object):
         """ True iff they are both Trees and all their fields contain equal data. """
         if not isinstance(other, Tree):
             return False
-        if not self.structurally_equals(other):
+        if not self.deeply_equals(other):
             return False
         if self.positions != other.positions:
             return False

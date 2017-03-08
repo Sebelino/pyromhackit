@@ -17,7 +17,10 @@ class Morphism(object):
         self.src = ROM(rom_specifier)
         self.decoder = decoder
         self.srctree, self.dsttree, self.graph = decoder.mapping(bytes(self.src))
-        self.dst = decoder.decode(bytes(self.src))
+        try:
+            self.dst = decoder.decode(bytes(self.src))
+        except:  # FIXME
+            self.dst = self.dsttree.flatten()
 
     def index(self, item):
         """ If item is a bytestring, return (i, j) where i is the index of the first byte in item found in the

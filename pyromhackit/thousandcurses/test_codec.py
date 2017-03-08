@@ -214,6 +214,15 @@ class TestTree(object):
     def test_is_treelike(self, obj):
         assert Tree.is_treelike(obj)
 
+    @pytest.mark.parametrize("obj", [
+        ([]),
+        ([5]),
+        ([b'a', 'b']),
+        ([b'a', [b'b', [b'c', 'd'], b'e']]),
+    ])
+    def test_is_not_treelike(self, obj):
+        assert not Tree.is_treelike(obj)
+
     @pytest.mark.parametrize("arg1, arg2", [
         ([b''], ['']),
         ([b''], ['ABC']),

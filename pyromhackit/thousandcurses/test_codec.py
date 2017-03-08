@@ -207,6 +207,7 @@ class TestTree(object):
     @pytest.mark.parametrize("obj", [
         ([b'']),
         (['']),
+        (Tree([''])),
         (['ABC']),
         ([b'a', b'b']),
         ([b'a', [b'b', [b'c', b'd'], b'e']]),

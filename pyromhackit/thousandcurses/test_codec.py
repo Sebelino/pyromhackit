@@ -244,9 +244,9 @@ class TestTree(object):
     def test_invert(self, arg, expected):
         t = Tree(arg)
         t.invert()
-        assert t.structurally_equals(Tree(expected))
+        assert t.deeply_equals(Tree(expected))
         t.invert()
-        assert t.structurally_equals(Tree(arg))
+        assert t.deeply_equals(Tree(arg))
 
     @pytest.mark.parametrize("content, fn, expected", [
         ([b'Sebelino'], bytes.upper, Tree([b'SEBELINO'])),

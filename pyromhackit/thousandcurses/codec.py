@@ -148,12 +148,9 @@ class Tree(object):
         return hook
 
     def __getitem__(self, idx):
-        err = IndexError("Tree index out of range.")
-        if not self.children and idx == 0:
-            return self.content
-        elif self.children:
+        if 0 <= idx < len(self.children):
             return self.children[idx]
-        raise err
+        raise IndexError("Tree index out of range: {} in tree with {} elements".format(idx, len(self.children)))
 
     @staticmethod
     def zip(t1: 'Tree', t2: 'Tree'):

@@ -28,7 +28,10 @@ clean:
 	rm -rf .ropeproject
 	find . -name .coverage | xargs rm -f
 	rm -f coverage.xml
+	rm -f .coverage.xml
 	rm -rf htmlcov
+	rm -f .syspath.txt
+	rm -f .coverage.syspath.txt
 
 majin-tensei-ii.ips:
 	python majin-tensei-ii/majin-tensei-ii.py

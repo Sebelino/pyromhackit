@@ -46,9 +46,6 @@ class Tree(object):
         self.positions = tuple(positions)
         typeset = {c.type if isinstance(c, Tree) else type(c) for c in self.children}
         self.type = typeset.pop()
-        if typeset:
-            t = typeset.pop()
-            raise TypeError("Tree contains elements of both type {} and {}.".format(self.type, t))
         self.numleaves = sum(1 if not isinstance(c, Tree) else c.numleaves for c in self.children)
 
     @staticmethod

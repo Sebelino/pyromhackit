@@ -267,3 +267,11 @@ class TestTree(object):
         t = Tree(content)
         t2 = t.map(fn)
         assert t2 == expected
+
+    @pytest.mark.parametrize("content, expected", [
+        ([''], "('')"),
+        ([b''], "(b'')"),
+        (['ab', ['hey', 'yo']], "('ab',('hey','yo'))"),
+    ])
+    def test_repr(self, content, expected):
+        assert repr(Tree(content)) == expected

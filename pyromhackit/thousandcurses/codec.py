@@ -26,32 +26,30 @@ package_dir = os.path.dirname(os.path.abspath(__file__))
 
 class Tree(object):
     def __init__(self, arg, _position=0):
+        if not self.is_treelike(arg):
+            raise ValueError("A tree is constructed from a non-empty nested sequence of trees, strings, or bytestrings."
+                             " The presence of a string is mutually exclusive with the presence of a bytestring.")
         container_types = {tuple, list, Tree}
-        if any(isinstance(arg, tpe) for tpe in container_types) and len(arg) >= 1:
-            self.type = None
-            children = list(arg)
-            self.children = []
-            delta = 0
-            positions = []
-            for c in children:
-                positions.append(delta)
-                if any(isinstance(c, tpe) for tpe in container_types):
-                    infant = Tree(c, _position=_position + delta)
-                    self.children.append(infant)
-                    delta += infant.numleaves
-                else:
-                    self.children.append(c)
-                    delta += 1
-            self.positions = tuple(positions)
-            typeset = {c.type if isinstance(c, Tree) else type(c) for c in self.children}
-            self.type = typeset.pop()
-            if typeset:
-                t = typeset.pop()
-                raise TypeError("Tree contains elements of both type {} and {}.".format(self.type, t))
-            self.numleaves = sum(1 if not isinstance(c, Tree) else c.numleaves for c in self.children)
-        else:
-            raise ValueError("A tree is constructed from a non-empty list/tuple of trees, strings, or bytestrings. "
-                             "The presence of a string is mutually exclusive with the presence of a bytestring.")
+        self.type = None
+        positions = []
+        delta = 0
+        self.children = []
+        for c in arg:
+            positions.append(delta)
+            if any(isinstance(c, tpe) for tpe in container_types):
+                infant = Tree(c, _position=_position + delta)
+                self.children.append(infant)
+                delta += infant.numleaves
+            else:
+                self.children.append(c)
+                delta += 1
+        self.positions = tuple(positions)
+        typeset = {c.type if isinstance(c, Tree) else type(c) for c in self.children}
+        self.type = typeset.pop()
+        if typeset:
+            t = typeset.pop()
+            raise TypeError("Tree contains elements of both type {} and {}.".format(self.type, t))
+        self.numleaves = sum(1 if not isinstance(c, Tree) else c.numleaves for c in self.children)
 
     @staticmethod
     def is_treelike(arg):

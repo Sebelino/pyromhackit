@@ -1,3 +1,4 @@
+treelib
 pytest
 pytest-cov
 nose==1.3.7

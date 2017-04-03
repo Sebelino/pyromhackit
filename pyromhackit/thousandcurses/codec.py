@@ -50,6 +50,20 @@ class Tree(object):
         self.type = typeset.pop()
         self.numleaves = sum(1 if not isinstance(c, Tree) else c.numleaves for c in self.children)
 
+    @classmethod
+    def universal_type(cls, arg, leaf_predicate=lambda _: False):
+        """ Returns the type common for all leaves in the tree-like (nested iterable) object, or None there is none. """
+        def is_iterable(element)
+            try:
+                iter(element)
+            except TypeError:
+                return type(element)  # Leaf
+        if is_iterable(arg)
+        childtypes = [cls.universal_type(child) for child in arg]
+        if any(t is None for t in childtypes) or len(set(childtypes)) > 1:
+            return None
+        return childtypes.pop()
+
     @staticmethod
     def is_treelike(arg):
         """ True iff a tree can be constructed from the given object. """

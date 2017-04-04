@@ -53,13 +53,16 @@ class Tree(object):
     @classmethod
     def universal_type(cls, arg, leaf_predicate=lambda _: False):
         """ Returns the type common for all leaves in the tree-like (nested iterable) object, or None there is none. """
-        def is_iterable(element)
+        def is_iterable(element):
             try:
                 iter(element)
+                return True
             except TypeError:
-                return type(element)  # Leaf
-        if is_iterable(arg)
-        childtypes = [cls.universal_type(child) for child in arg]
+                return False
+
+        if not is_iterable(arg) or leaf_predicate(arg):
+            return type(arg)
+        childtypes = [cls.universal_type(child, leaf_predicate) for child in arg]
         if any(t is None for t in childtypes) or len(set(childtypes)) > 1:
             return None
         return childtypes.pop()

@@ -119,6 +119,9 @@ class TestTree(object):
     @pytest.mark.parametrize("arg, expected", [
         ([b'abc'], "(b'abc')"),
         (['abc'], "('abc')"),
+        (['abc', 'edf'], "('abc','edf')"),
+        (['abc', ['ed', 'f']], "('abc',('ed','f'))"),
+        (['a', [['c', 'd'], 'e'], 'b'], "('a',(('c','d'),'e'),'b')"),
     ])
     def test_str(self, arg, expected):
         t = Tree(arg)

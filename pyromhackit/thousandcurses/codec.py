@@ -227,6 +227,10 @@ class Tree(object):
         treestr = "({})".format(childrenstr)
         return treestr
 
+    def graphic(self):
+        return str(self.tree)
+
+
 # def __repr__(self):
 #        childrenstr = ",".join("{}:{}".format(repr(c), p) for c, p in zip(self.children, self.positions))
 #        treestr = "({})".format(childrenstr)

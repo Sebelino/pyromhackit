@@ -36,7 +36,7 @@ class Tree(object):
 
     def _build_tree(self, arg, parent: treelib.Node = None):
         node = self.tree.create_node(tag=repr(arg), identifier=repr(arg), parent=parent.identifier if parent else None,
-                                     data=None)
+                                     data=arg if isinstance(arg, str) or isinstance(arg, bytes) else None)
         if isinstance(arg, self.type()):
             return
         for element in arg:
@@ -86,9 +86,13 @@ class Tree(object):
                     q.put(child)
         return True
 
+    def type(self):
+        return self._type
+
     def flatten(self):
-        empty = self.type()
-        return empty.join(c.flatten() if isinstance(c, Tree) else c for c in self.children)
+        tipe = self.type()
+        empty = tipe()
+        return empty.join(leaf.data for leaf in self.tree.leaves())
 
     def list(self):
         return [c.list() if isinstance(c, Tree) else c for c in self.children]

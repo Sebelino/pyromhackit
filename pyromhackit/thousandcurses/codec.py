@@ -95,11 +95,7 @@ class Tree(object):
         return empty.join(leaf.data for leaf in self.tree.leaves())
 
     def list(self):
-        def lrecurse(node_id):
-            return [c.data if self.tree.get_node(node_id).is_leaf() else lrecurse(c.identifier) for c in
-                    self.tree.children(node_id)]
-
-        return lrecurse(self.tree.root)
+        return self.list_recurse()
 
     def invert(self):  # Mutability
         self.children.reverse()

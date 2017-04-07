@@ -231,6 +231,19 @@ class Tree(object):
         treestr = "({})".format(childrenstr)
         return treestr
 
+    def list_recurse(self, recursivecase=lambda lst: lst, basecase=lambda node: node.data):
+        """ Performs recursion on a list of children of a node in the tree starting from the root node, applying
+        function @basecase on each leaf and function @recursivecase on each list of children. """
+
+        def recurser(node_id):
+            return [basecase(c) if c.is_leaf() else recursivecase(recurser(c.identifier)) for c in self.tree.children(node_id)]
+
+        root = self.tree.get_node(self.tree.root)
+        if root.is_leaf():
+            return basecase(root)
+        else:
+            return recursivecase(recurser(root.identifier))
+
     def graphic(self):
         return str(self.tree)
 

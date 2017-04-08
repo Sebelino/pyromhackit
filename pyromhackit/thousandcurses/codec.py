@@ -153,11 +153,11 @@ class Tree(object):
             grph[tuple(originalpath)] = path
         return grph
 
-    def reel_in(self, *args):
-        hook = self
-        for i in args:
-            hook = hook.children[i]
-        return hook
+    def reel_in(self, *indices):
+        hook = self.tree
+        for i in indices:
+            hook = hook.subtree(hook.children(hook.root)[i].identifier)
+        return hook[hook.root].data
 
     def __getitem__(self, idx):
         if 0 <= idx < len(self.children):

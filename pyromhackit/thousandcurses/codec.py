@@ -35,7 +35,7 @@ class Tree(object):
         self._build_tree(arg)
 
     def _build_tree(self, arg, parent: treelib.Node = None):
-        node = self.tree.create_node(tag=repr(arg), identifier=repr(arg), parent=parent.identifier if parent else None,
+        node = self.tree.create_node(tag=repr(arg), parent=parent.identifier if parent else None,
                                      data=arg if isinstance(arg, str) or isinstance(arg, bytes) else None)
         if isinstance(arg, self.type()):
             return

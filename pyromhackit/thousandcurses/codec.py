@@ -20,7 +20,6 @@ import numpy
 import yaml
 from abc import ABC, abstractmethod
 import inspect
-import treelib
 
 package_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -30,7 +29,6 @@ class Tree(object):
         if not self.is_treelike(arg):
             raise ValueError("A tree is constructed from a non-empty nested sequence of trees, strings, or bytestrings."
                              " The presence of a string is mutually exclusive with the presence of a bytestring.")
-        self.tree = Tree()
         container_types = {tuple, list, Tree}
         self.type = None
         positions = []

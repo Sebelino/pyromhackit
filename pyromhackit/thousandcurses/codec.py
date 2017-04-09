@@ -223,7 +223,9 @@ class Tree(object):
         return len(self.tree.children(self.tree.root))
 
     def __str__(self):
-        return self.list_recurse(lambda lst: "({})".format(",".join(lst)), lambda node: repr(node.data))
+        childrenstr = ",".join(c.identifier for c in self.tree.children(self.tree.root))
+        treestr = "({})".format(childrenstr)
+        return treestr
 
     def list_recurse(self, recursivecase=lambda lst: lst, basecase=lambda node: node.data):
         """ Performs recursion on a list of children of a node in the tree starting from the root node, applying

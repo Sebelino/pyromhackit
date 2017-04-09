@@ -219,18 +219,16 @@ class Tree(object):
     def __ne__(self, other):
         return not self.__eq__(other)
 
-    def __len__(self):  # TODO Align with treelib behavior
-        return len(self.tree.children(self.tree.root))
+    def __len__(self):
+        return len(self.children)
 
     def __str__(self):
-        childrenstr = ",".join(c.identifier for c in self.tree.children(self.tree.root))
+        childrenstr = ",".join(repr(c) for c in self.children)
         treestr = "({})".format(childrenstr)
         return treestr
 
-# def __repr__(self):
-#        childrenstr = ",".join("{}:{}".format(repr(c), p) for c, p in zip(self.children, self.positions))
-#        treestr = "({})".format(childrenstr)
-#        return treestr
+    def __repr__(self):
+        return self.__str__()
 
 
 def identity_dict(n):

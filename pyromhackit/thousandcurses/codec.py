@@ -30,7 +30,7 @@ class Tree(object):
         if not self.is_treelike(arg):
             raise ValueError("A tree is constructed from a non-empty nested sequence of trees, strings, or bytestrings."
                              " The presence of a string is mutually exclusive with the presence of a bytestring.")
-        self.tree = treelib.Tree()
+        self.tree = Tree()
         container_types = {tuple, list, Tree}
         self.type = None
         positions = []

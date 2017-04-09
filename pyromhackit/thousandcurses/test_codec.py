@@ -150,17 +150,16 @@ class TestTree(object):
         returned = Tree(expected).list()
         assert returned == expected
 
-# TODO obsolete?
-#    @pytest.mark.parametrize("arg, expected", [
-#        ([b'a'], (0,)),
-#        ([b'ab', b'c'], (0, 1)),
-#        ([[b'hoy'], b'ab', b'c'], (0, 1, 2)),
-#        ([[b'hoy', b'yo'], b'ab', b'c'], (0, 2, 3)),
-#        ([[b'hoy', b'yo'], b'ab', [b'oy', b'yoh', b's'], b'c'], (0, 2, 3, 6)),
-#    ])
-#    def test_offsets(self, arg, expected):
-#        t = Tree(arg)
-#        assert t.offsets() == expected
+    @pytest.mark.parametrize("arg, expected", [
+        ([b'a'], (0,)),
+        ([b'ab', b'c'], (0, 1)),
+        ([[b'hoy'], b'ab', b'c'], (0, 1, 2)),
+        ([[b'hoy', b'yo'], b'ab', b'c'], (0, 2, 3)),
+        ([[b'hoy', b'yo'], b'ab', [b'oy', b'yoh', b's'], b'c'], (0, 2, 3, 6)),
+    ])
+    def test_offsets(self, arg, expected):
+        t = Tree(arg)
+        assert t.offsets() == expected
 
     def test_reel_in(self):
         assert Tree([b'a']).reel_in(0) == b'a'

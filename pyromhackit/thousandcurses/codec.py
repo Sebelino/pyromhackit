@@ -104,11 +104,10 @@ class Tree(object):
             if isinstance(c, Tree):
                 c.invert()
 
-# TODO obsolete?
-#    def offsets(self):
-#        t = tuple(c.numleaves if isinstance(c, Tree) else 1 for c in self)
-#        offsets = tuple(numpy.cumsum(t) - t)
-#        return offsets
+    def offsets(self):
+        t = tuple(c.numleaves if isinstance(c, Tree) else 1 for c in self)
+        offsets = tuple(numpy.cumsum(t) - t)
+        return offsets
 
     def map(self, fn):  # TODO Memory complexity
         """ Applies the given unary function to every leaf in this tree. """

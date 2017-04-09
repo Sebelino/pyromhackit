@@ -26,26 +26,33 @@ package_dir = os.path.dirname(os.path.abspath(__file__))
 
 
 class Tree(object):
-    def __init__(self, arg):
+    def __init__(self, arg, _position=0):
         if not self.is_treelike(arg):
             raise ValueError("A tree is constructed from a non-empty nested sequence of trees, strings, or bytestrings."
                              " The presence of a string is mutually exclusive with the presence of a bytestring.")
-        self._type = self.universal_type(arg, leaf_predicate=lambda e: isinstance(e, str) or isinstance(e, bytes))
         self.tree = treelib.Tree()
-        self._build_tree(arg)
-
-    def _build_tree(self, arg, parent: treelib.Node = None):
-        node = self.tree.create_node(tag=repr(arg), identifier=repr(arg), parent=parent.identifier if parent else None,
-                                     data=None)
-        if isinstance(arg, self.type()):
-            return
-        for element in arg:
-            self._build_tree(element, parent=node)
+        container_types = {tuple, list, Tree}
+        self.type = None
+        positions = []
+        delta = 0
+        self.children = []
+        for c in arg:
+            positions.append(delta)
+            if any(isinstance(c, tpe) for tpe in container_types):
+                infant = Tree(c, _position=_position + delta)
+                self.children.append(infant)
+                delta += infant.numleaves
+            else:
+                self.children.append(c)
+                delta += 1
+        self.positions = tuple(positions)
+        typeset = {c.type if isinstance(c, Tree) else type(c) for c in self.children}
+        self.type = typeset.pop()
+        self.numleaves = sum(1 if not isinstance(c, Tree) else c.numleaves for c in self.children)
 
     @classmethod
     def universal_type(cls, arg, leaf_predicate=lambda _: False):
         """ Returns the type common for all leaves in the tree-like (nested iterable) object, or None there is none. """
-
         def is_iterable(element):
             try:
                 iter(element)

@@ -224,7 +224,7 @@ class Tree(object):
         return len(self.children)
 
     def __str__(self):
-        childrenstr = ",".join(repr(c) for c in self.children)
+        childrenstr = ",".join(str(c) if isinstance(c, Tree) else repr(c) for c in self.children)
         treestr = "({})".format(childrenstr)
         return treestr
 

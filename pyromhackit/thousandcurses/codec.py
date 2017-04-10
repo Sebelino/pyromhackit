@@ -185,7 +185,7 @@ class Tree(object):
         return self.flatten() == other.flatten()
 
     def graphically_equals(self, other: 'Tree'):
-        """ True iff the trees have the same set of vertices and set of edges, disregarding all labels. """
+        """ True iff the trees have the same set of vertices and same set of edges, disregarding all labels. """
         if len(other) != len(self):
             return False
         for a, b in zip(self, other):

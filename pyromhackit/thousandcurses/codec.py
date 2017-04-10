@@ -168,7 +168,7 @@ class Tree(object):
     def zip(t1: 'Tree', t2: 'Tree'):
         """ Merges two trees with equal structure into one, where each leaf is a pair (A, B), where A is the
         corresponding leaf from the first tree and B is the corresponding leaf from the second. """
-        if t1.structurally_equals(t2):
+        if t1.graphically_equals(t2):
             return Tree._zip(t1, t2)
         else:
             raise ValueError("The structure of the trees differ.")

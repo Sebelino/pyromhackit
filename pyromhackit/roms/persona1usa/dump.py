@@ -12,8 +12,13 @@ rom_path = os.path.join(package_dir, "resources/copyrighted/TENSI.BIN")
 
 
 class Persona1Codec(codec.Decoder):
-    def decode(bytestr):
-        return "".join(transliter[bytestr[i:i+2]] for i in range(0, len(bytestr), 2))
+    @classmethod
+    def domain(cls, bytestr: bytes):
+        return codec.Tree([bytestr[i:i + 2] for i in range(0, len(bytestr), 2)])
+
+    @classmethod
+    def decode(cls, btree: codec.Tree):
+        return btree.transliterate(transliter)
 
 
 if __name__ == '__main__':

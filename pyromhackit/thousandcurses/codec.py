@@ -229,7 +229,10 @@ class Tree(object):
         return treestr
 
     def __repr__(self):
-        return self.__str__()
+        childstrings = ["{}:{}".format(repr(c), p) for c, p in zip(self.children, self.positions)]
+        childrenstr = ",".join(childstrings)
+        treestr = "({})".format(childrenstr, self.positions)
+        return treestr
 
 
 def identity_dict(n):

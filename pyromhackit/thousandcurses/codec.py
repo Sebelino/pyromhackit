@@ -146,10 +146,10 @@ class Tree(object):
         for path in self.leaf_indices():
             originalpath = []
             subtree = self
-            for node in path:
-                orgnode = subtree.positions[node]
-                originalpath.append(orgnode)
-                subtree = subtree[node]
+            for nodeidx in path:
+                orgnodepos = subtree.positions[nodeidx]
+                originalpath.append(orgnodepos)
+                subtree = subtree[nodeidx]
             grph[tuple(originalpath)] = path
         return grph
 

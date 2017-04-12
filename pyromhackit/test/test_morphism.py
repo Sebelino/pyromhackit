@@ -8,7 +8,7 @@ import pytest
 
 from ..rom import ROM
 from ..morphism import Morphism
-from ..thousandcurses.codec import ASCII
+from ..thousandcurses.codec import ASCII, ReverseASCII
 
 package_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -89,3 +89,26 @@ class TestASCIIMorphism:
     def test_impose_decoding(self):
         newdecoder = self.morphism.impose_decoding(97, 'b')
         assert newdecoder
+
+
+class TestReverseASCIIMorphism:
+    def setup(self):
+        self.morphism = Morphism(b"hello", ReverseASCII)
+
+    def test_str(self):
+        expected = ("Morphism(b'hello',\n"
+                    "          'olleh')")
+        assert str(self.morphism) == expected
+
+    @pytest.mark.parametrize("searchitem, expected", [
+        ("", (0, 0)),
+        ("h", (0, 0)),
+        ("ll", (2, 0)),
+        ("bcdefghi", (1, 1)),
+        ("fgh", (5, 5)),
+    ])
+    @pytest.mark.skip()
+    def test_index(self, searchitem, expected):
+        returned = self.morphism.index(searchitem)
+        assert returned == expected
+

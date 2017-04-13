@@ -24,6 +24,8 @@ import inspect
 package_dir = os.path.dirname(os.path.abspath(__file__))
 
 
+# The 'position' of a leaf is n iff it is the nth leaf of the tree.
+# The 'position' of an internal node is the minimum 'position' of its decendant leaves.
 class Tree(object):
     def __init__(self, arg, _position=0):
         if not self.is_treelike(arg):

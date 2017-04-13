@@ -284,7 +284,8 @@ class TestTree(object):
     @pytest.mark.parametrize("content, expected", [
         ([''], "('':0)"),
         ([b''], "(b'':0)"),
-        (['ab', ['hey', 'yo']], "('ab':0,('hey':0,'yo':1):1)"),
+        (['ab', ['hey', 'yo']], "('ab':0,('hey':1,'yo':2):1)"),
+        (['ab', ['hey', 'yo'], 'c'], "('ab':0,('hey':1,'yo':2):1,'c':3)"),
     ])
     def test_repr(self, content, expected):
         assert repr(Tree(content)) == expected

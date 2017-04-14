@@ -25,7 +25,7 @@ package_dir = os.path.dirname(os.path.abspath(__file__))
 
 
 # The 'position' of a leaf is n iff it is the nth leaf of the tree.
-# The 'position' of an internal node is the minimum 'position' of its decendant leaves.
+# The 'position' of an internal node is the minimum 'position' of its descendant leaves.
 class Tree(object):
     def __init__(self, arg, _position=0):
         if not self.is_treelike(arg):
@@ -262,22 +262,23 @@ def treemap(fn, element):  # TODO Memory complexity
 
 class Decoder(ABC):
     @classmethod
-    def domain(cls, bytestr):
+    def domain(cls, bytestr: bytes) -> Tree:
         """ Returns any bytestring tree such that the flattening of it is equal to bytestr. By default returns a
         bytestring tree containing a single leaf. """
         return Tree([bytestr])
 
     @classmethod
-    def operate(cls, tree):
-        """ Performs any number of operations on the tree and returns the result. Note that the original tree
-        contains a 'position' attribute which the new tree and each of its nested subtrees will possess
-        which is the position of the original (sub-)tree it corresponds to. By default performs no operation. """
-        return tree
+    def operate(cls, tree: Tree):
+        """ Performs any number of operations on the bytestring tree (mutates the object). Note that the original tree
+        contains a 'position' attribute which the new tree and each of its nested subtrees will possess which is the
+        position of the original (sub-)tree it corresponds to. By default performs no operation. """
+        pass
 
     @classmethod
     @abstractmethod
-    def decode(cls, bytestr) -> typing.Union[bytes, Tree]:
-        """ Decodes a bytestring into a string, or a bytestring tree into a string tree. """
+    def decode(cls, bytestr: typing.Union[bytes, Tree]) -> typing.Union[str, Tree]:
+        """ Decodes a bytestring into a string, or a bytestring tree into a string tree. In the case of a bytestring
+         tree, the structure of the tree shall remain unchanged. """
         raise NotImplementedError("Decoder for {0} not implemented.".format(cls.__name__))
 
     @classmethod
@@ -296,7 +297,8 @@ class Decoder(ABC):
         There should be no reason to override this method.
         """
         btree = cls.domain(bytestr)
-        newbtree = cls.operate(btree)
+        newbtree = Tree(btree)
+        cls.operate(newbtree)
         stree = cls.decode(newbtree)
         graph = stree.graph()
         return btree, stree, graph

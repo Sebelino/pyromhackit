@@ -268,7 +268,7 @@ class Decoder(ABC):
         return Tree([bytestr])
 
     @classmethod
-    def operate(cls, tree: Tree):
+    def operate(cls, tree: Tree):  # FIXME? Could take a MutableTree inheriting Tree as a parameter, including positions
         """ Performs any number of operations on the bytestring tree (mutates the object). Note that the original tree
         contains a 'position' attribute which the new tree and each of its nested subtrees will possess which is the
         position of the original (sub-)tree it corresponds to. By default performs no operation. """
@@ -285,16 +285,16 @@ class Decoder(ABC):
     def mapping(cls, bytestr: bytes) -> (Tree, Tree, dict):
         """ Returns any triplet (B, S, F) which satisfies the following conditions:
         * B is a bytestring tree (nested list of bytestrings).
-        * The flattening of B is equal to bytestr.
+        * The flattening of B is equal to @bytestr.
         * S is a string tree (nested list of strings).
-        * The flattening of S is equal to decode(bytestr).
+        * The flattening of S is equal to decode(@bytestr).
         * F is a dictionary mapping each leaf in B to a set of leaves in S. F is formally a dict mapping a tuple of
           integers to other tuples of integers so that each key tuple is a path of indices leading to a leaf in B and
           its associated value tuple is a path of indices leading to the corresponding leaf in S.
         * Each leaf L in B holds the property that, when modified, every leaf in S will remain unchanged except those
           in the set of leaves that F maps L to.
         * The algorithm is deterministic.
-        There should be no reason to override this method.
+        There should be no reason to override this method. Please override domain, operate and decode instead.
         """
         btree = cls.domain(bytestr)
         newbtree = Tree(btree)

@@ -277,8 +277,7 @@ class Decoder(ABC):
     @classmethod
     @abstractmethod
     def decode(cls, bytetree: Tree) -> Tree:
-        """ Decodes a bytestring into a string, or a bytestring tree into a string tree. In the case of a bytestring
-         tree, the structure of the tree shall remain unchanged. """
+        """ Decodes a bytestring tree into a string tree. The structure of the tree shall remain unchanged. """
         raise NotImplementedError("Decoder for {0} not implemented.".format(cls.__name__))
 
     @classmethod
@@ -295,10 +294,10 @@ class Decoder(ABC):
         * B is a bytestring tree (nested list of bytestrings).
         * The flattening of B is equal to @bytestr.
         * S is a string tree (nested list of strings).
-        * The flattening of S is equal to decode(@bytestr).
-        * F is a dictionary mapping each leaf in B to a set of leaves in S. F is formally a dict mapping a tuple of
-          integers to other tuples of integers so that each key tuple is a path of indices leading to a leaf in B and
-          its associated value tuple is a path of indices leading to the corresponding leaf in S.
+        * The flattening of S is equal to decode([@bytestr]).
+        * F is a dictionary mapping each leaf in any subset of B to a set of leaves in S. F is formally a dict mapping
+          a tuple of integers to other tuples of integers so that each key tuple is a path of indices leading to a leaf
+          in B and its associated value tuple is a path of indices leading to the corresponding leaf in S.
         * Each leaf L in B holds the property that, when modified, every leaf in S will remain unchanged except those
           in the set of leaves that F maps L to.
         * The algorithm is deterministic.

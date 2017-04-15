@@ -276,10 +276,18 @@ class Decoder(ABC):
 
     @classmethod
     @abstractmethod
-    def decode(cls, bytestr: typing.Union[bytes, Tree]) -> typing.Union[str, Tree]:
+    def decode(cls, bytetree: Tree) -> Tree:
         """ Decodes a bytestring into a string, or a bytestring tree into a string tree. In the case of a bytestring
          tree, the structure of the tree shall remain unchanged. """
         raise NotImplementedError("Decoder for {0} not implemented.".format(cls.__name__))
+
+    @classmethod
+    def decode_bytes(cls, bytestr: bytes) -> str:
+        """ Decodes a bytestring into a string. There should be no reason to override this method. """
+        singleton_btree = Tree([bytestr])
+        singleton_stree = cls.decode(singleton_btree)
+        assert len(singleton_stree) == 1  # Defense
+        return singleton_stree.flatten()
 
     @classmethod
     def mapping(cls, bytestr: bytes) -> (Tree, Tree, dict):

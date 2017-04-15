@@ -283,10 +283,10 @@ class Decoder(ABC):
     @classmethod
     def decode_bytes(cls, bytestr: bytes) -> str:
         """ Decodes a bytestring into a string. There should be no reason to override this method. """
-        singleton_btree = Tree([bytestr])
-        singleton_stree = cls.decode(singleton_btree)
-        assert len(singleton_stree) == 1  # Defense
-        return singleton_stree.flatten()
+        btree = cls.domain(bytestr)
+        cls.operate(btree)
+        stree = cls.decode(btree)
+        return stree.flatten()
 
     @classmethod
     def mapping(cls, bytestr: bytes) -> (Tree, Tree, dict):
@@ -294,7 +294,7 @@ class Decoder(ABC):
         * B is a bytestring tree (nested list of bytestrings).
         * The flattening of B is equal to @bytestr.
         * S is a string tree (nested list of strings).
-        * The flattening of S is equal to decode([@bytestr]).
+        * The flattening of S is equal to decode_bytes(@bytestr).
         * F is a dictionary mapping each leaf in any subset of B to a set of leaves in S. F is formally a dict mapping
           a tuple of integers to other tuples of integers so that each key tuple is a path of indices leading to a leaf
           in B and its associated value tuple is a path of indices leading to the corresponding leaf in S.

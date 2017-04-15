@@ -289,7 +289,7 @@ class Decoder(ABC):
         return stree.flatten()
 
     @classmethod
-    def mapping(cls, bytestr: bytes) -> (Tree, Tree, dict):
+    def correspondence(cls, bytestr: bytes) -> (Tree, Tree, dict):
         """ Returns any triplet (B, S, F) which satisfies the following conditions:
         * B is a bytestring tree (nested list of bytestrings).
         * The flattening of B is equal to @bytestr.
@@ -338,7 +338,7 @@ class ASCII(Decoder):
     def decode(bytestr):
         return "".join(chr(b) for b in bytestr)
 
-    def mapping(bytestr):
+    def correspondence(bytestr):
         btree = Tree([bytes([b]) for b in bytestr]) if bytestr else Tree([b''])
         stree = treemap(ASCII.decode, btree)
         indexmap = identity_dict(len(btree.flatten()))
@@ -372,7 +372,7 @@ class UppercaseASCII(Decoder):
     def decode(bytestr):
         return "".join(MonospaceASCIIByte.decode(bytes([b]).upper()) for b in bytestr)
 
-    def mapping(bytestr):
+    def correspondence(bytestr):
         btree = Tree([bytes([b]) for b in bytestr]) if bytestr else Tree([b''])
         stree = treemap(UppercaseASCII.decode, btree)
         indexmap = identity_dict(len(btree.flatten()))

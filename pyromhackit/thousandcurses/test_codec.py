@@ -77,7 +77,7 @@ def test_instantiate_abstract():
      ([b'A', b'b', b'C', b'D'], ["A", "B", "C", "D"], {(0,): {(0,)}, (1,): {(1,)}, (2,): {(2,)}, (3,): {(3,)}})),
 ])
 def test_mapping_UppercaseASCII(bytestr, expected):
-    b, s, f = UppercaseASCII.mapping(bytestr)
+    b, s, f = UppercaseASCII.correspondence(bytestr)
     assert_mapping(bytestr, UppercaseASCII, (Tree(b), Tree(s), f))
     assert (b, s, f) == expected
 

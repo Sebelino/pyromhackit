@@ -16,7 +16,7 @@ class Morphism(object):
     def __init__(self, rom_specifier, decoder):
         self.src = ROM(rom_specifier)
         self.decoder = decoder
-        self.srctree, self.dsttree, self.graph = decoder.mapping(bytes(self.src))
+        self.srctree, self.dsttree, self.graph = decoder.correspondence(bytes(self.src))
         try:
             self.dst = decoder.decode(bytes(self.src))
         except:  # FIXME

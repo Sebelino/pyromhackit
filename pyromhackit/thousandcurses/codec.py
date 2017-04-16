@@ -301,6 +301,8 @@ class Decoder(ABC):
         * Each leaf L in B holds the property that, when modified, every leaf in S will remain unchanged except those
           in the set of leaves that F maps L to.
         * The algorithm is deterministic.
+        That is, F is a "may affect only" relation from B to S. To include a pair (L1, L2) in F is to state that
+        "The content of L2 is solely dependent on the content of L1".
         There should be no reason to override this method. Please override domain, operate and decode instead.
         """
         btree = cls.domain(bytestr)

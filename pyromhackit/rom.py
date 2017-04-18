@@ -6,37 +6,43 @@ from ast import literal_eval
 
 from .reader import write
 from .thousandcurses import codec
-from .thousandcurses.codec import read_yaml
+from .thousandcurses.codec import read_yaml, Tree
 
 """
 Class representing a ROM.
 """
 
 
+def singleton_structure(bytestr):
+    return [bytestr]
+
+
 class ROM(object):
     """ A fancier kind of bytestring, bytestream, or handle to a file, designed to be easier to read and edit. """
 
-    def __init__(self, rom_specifier):
+    def __init__(self, rom_specifier, structure=singleton_structure):
+        """ Constructs a ROM object from either a sequence of bytes or a path to a file to be read. You may define a
+        hierarchical structure on the ROM by passing a function which takes a bytestring and returns a nested list
+        of bytestrings. """
         if isinstance(rom_specifier, str):
             path = rom_specifier
             with open(path, 'rb') as f:
-                self.content = f.read()
-        elif isinstance(rom_specifier, bytes):
-            self.content = rom_specifier
-        elif isinstance(rom_specifier, ROM):
-            self.content = bytes(rom_specifier)
-        elif isinstance(rom_specifier, list):
-            self.content = bytes(rom_specifier)
+                bytestr = f.read()
         else:
-            raise ValueError("ROM constructor expected a bytestring or path, got: {}".format(type(rom_specifier)))
+            try:
+                bytestr = bytes(rom_specifier)
+            except:
+                raise ValueError("ROM constructor expected a bytestring-compatible object or path, got: {}".format(
+                    type(rom_specifier)))
+        self.content = Tree(structure(bytestr))
 
     def index(self, bstring):
-        return self.content.index(bstring)
+        return self.content[0].index(bstring)
 
     def index_regex(self, bregex):
         """ Returns a pair (a, b) which are the start and end indices of the first string found when searching the ROM
         using the specified regex, or None if there is none. """
-        match = re.search(bregex, self.content)
+        match = re.search(bregex, self.content[0])
         if match:
             return match.span()
 
@@ -58,13 +64,13 @@ class ROM(object):
         """ List of bytestring lines with the specified width """
         if width:
             w = width
-            tbl = [self.content[i * w:(i + 1) * w]
+            tbl = [self.content[0][i * w:(i + 1) * w]
                    for i in range(int(len(self) / w) + 1)]
             if tbl[-1] == b'':
                 return tbl[:-1]
             return tbl
         else:
-            return [self.content]
+            return [self.content[0]]
 
     @staticmethod
     def labeltable(tbl):
@@ -146,7 +152,7 @@ class ROM(object):
             return lambda s: ROM.tabulate(s, cols, label, border, padding)
         elif positionals[0] == "save":
             path = positionals[1]
-            return lambda s: write(s.content, path) if \
+            return lambda s: write(s.content[0], path) if \
                 isinstance(s, ROM) else write(s, path)
         raise Exception("Could not execute: {}".format(execstr))
 
@@ -167,29 +173,29 @@ class ROM(object):
         return stream
 
     def __len__(self):
-        return len(self.content)
+        return len(self.content[0])
 
     def __eq__(self, other):
-        return isinstance(other, ROM) and self.content == other.content
+        return isinstance(other, ROM) and self.content[0] == other.content[0]
 
     def __ne__(self, other):
         return not self.__eq__(other)
 
     def __lt__(self, other):
-        return self.content.__lt__(other.content)
+        return self.content[0].__lt__(other.content[0])
 
     def __getitem__(self, val):
         if isinstance(val, int):
-            return self.content[val]
+            return self.content[0][val]
         if isinstance(val, slice):
-            return ROM(self.content[val.start:val.stop:val.step])
+            return ROM(self.content[0][val.start:val.stop:val.step])
         raise TypeError("ROM indices must be integers or slices, not {}".format(type(val).__name__))
 
     def __add__(self, operand):
-        return ROM(self.content + operand)
+        return ROM(self.content[0] + operand)
 
     def __radd__(self, operand):
-        return ROM(operand + self.content)
+        return ROM(operand + self.content[0])
 
     def __hash__(self):
         return hash(str(self))
@@ -203,15 +209,15 @@ class ROM(object):
         if len(str(self)) <= max_width:
             return str(self)
         # If no bytestring fits:
-        if max_width < len("ROM(...)") + len(repr(bytes([self.content[0]]))):
+        if max_width < len("ROM(...)") + len(repr(bytes([self.content[0][0]]))):
             return "ROM(...)"
         left_weight = 2  # Soft-code? Probably not worth the effort.
         # If non-empty head bytestring:
         result = list("ROM(b''...)")
         head = []
         tail = []
-        it = iter(self.content)
-        rit = reversed(self.content)
+        it = iter(self.content[0])
+        rit = reversed(self.content[0])
         byte_iter = zip(*[it] * left_weight, rit)
         byte_iter = iter(y for x in byte_iter for y in x)
         tail_surroundings_len = 0
@@ -236,4 +242,4 @@ class ROM(object):
         return "".join(result)
 
     def __str__(self):
-        return "ROM({})".format(self.content)
+        return "ROM({})".format(self.content[0])

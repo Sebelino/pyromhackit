@@ -29,4 +29,5 @@ class Topology(object):
             path.append(childidx)
         return tuple(path)
 
-
+    def __str__(self):
+        return "{}({})".format(self.__class__.__name__, self.sizes)

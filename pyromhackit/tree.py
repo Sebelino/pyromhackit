@@ -1,11 +1,9 @@
 #!/usr/bin/env python
-import operator
 import os
 from abc import abstractmethod
 
-from functools import reduce
-
 package_dir = os.path.dirname(os.path.abspath(__file__))
+
 
 class Topology(object):
     """ A way to transform a (byte-)string into a nested list of (byte-)strings. """

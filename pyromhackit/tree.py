@@ -20,6 +20,14 @@ class Topology(object):
         raise NotImplementedError()
 
 
+class SingletonTopology(object):
+    def structure(self, stringlike):
+        return [stringlike]
+
+    def indexpath(self, idx):
+        return 0,
+
+
 class SimpleTopology(object):
     def __init__(self, stringrepr: str):
         """ Encompasses the set of trees that consist of any number of children where each child is either a

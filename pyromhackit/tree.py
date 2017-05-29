@@ -24,12 +24,10 @@ class SimpleTopology(object):
     def __init__(self, stringrepr: str):
         """ Encompasses the set of trees that consist of any number of children where each child is either a
         sub(-byte-)string or a subtree with a set structure common for all children. All leaves share the same length.
-        """
-        """ @stringrepr is the string representation of a certain Tree structure. @stringrepr is a '-' separated string
-        where each token is either a positive integer or the character '*'. If the ith token is an integer n, each
-        subtree in the (i-1)th level of any Tree belonging to this Topology will contain n children. If the token is
-        '*', the ith level will consist of any number of nodes. You can use this class to create a Tree from a
-        (byte-)string. """
+        @stringrepr is the string representation of a certain Tree structure. @stringrepr is a '-' separated string
+        where each token is a positive integer. If the last token is n, each leaf in any Tree belonging to this Topology
+        will be a string of length n. If the ith token is n, each subtree at the (i-1)th level of the tree will have
+        n children (level zero being the root). """
 
         self.sizes = [int(t) for t in stringrepr.split("-")]
         for s in self.sizes[1:]:

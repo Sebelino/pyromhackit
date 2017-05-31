@@ -31,7 +31,8 @@ def test_init_path():
     """ Call constructor with sample path """
     ROM(ROMPATH)
 
-def test_init_path():
+
+def test_init_intlist():
     """ Call constructor with list of byte values """
     ROM([0, 97, 98, 99, 255])
 

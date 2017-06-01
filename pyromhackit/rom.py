@@ -3,10 +3,14 @@
 from prettytable import PrettyTable
 import re
 from ast import literal_eval
+import os
+import mmap
 
-from .reader import write
-from .thousandcurses import codec
-from .thousandcurses.codec import read_yaml, Tree
+from pyromhackit.reader import write
+from pyromhackit.thousandcurses import codec
+from pyromhackit.thousandcurses.codec import read_yaml, Tree
+from selection import Selection
+from tree import SingletonTopology
 
 """
 Class representing a ROM.
@@ -18,31 +22,62 @@ def singleton_structure(bytestr):
 
 
 class ROM(object):
-    """ A fancier kind of bytestring, bytestream, or handle to a file, designed to be easier to read and edit. """
+    """ Read-only memory image. Basically a handle to a file, designed to be easy to read. As you might not be
+    interested in reading the whole file, you may optionally select the portions of the file that should be revealed.
+    By default, the whole file is revealed. """
 
-    def __init__(self, rom_specifier, structure=singleton_structure):
-        """ Constructs a ROM object from either a sequence of bytes or a path to a file to be read. You may define a
-        hierarchical structure on the ROM by passing a function which takes a bytestring and returns a nested list
-        of bytestrings. """
+    def __init__(self, rom_specifier, structure=SingletonTopology):
+        """ Constructs a ROM object from a path to a file to be read. You may define a hierarchical structure on the
+        ROM by passing a function which takes a bytestring and returns a nested list of bytestrings. """
+        # TODO ...or a BNF grammar
+        self.structure = structure
         if isinstance(rom_specifier, str):
             path = rom_specifier
-            with open(path, 'rb') as f:
-                bytestr = f.read()
+            filesize = os.path.getsize(path)
+            file = open(path, 'r')
+            content = mmap.mmap(file.fileno(), 0, access=mmap.ACCESS_READ)
+            self.source = {
+                'path': path,
+                'size': filesize,
+                'file': file,
+                'content': content,
+            }
+            self.selection = Selection(slice(0, filesize))
         else:
             try:
                 bytestr = bytes(rom_specifier)
+                content = mmap.mmap(-1, len(bytestr))  # Anonymous memory
+                content.write(bytestr)
+                content.seek(0)
+                size = len(bytestr)
+                self.source = {
+                    'size': size,
+                    'content': content,
+                }
+                self.selection = Selection(slice(0, len(bytestr)))
             except:
                 raise ValueError("ROM constructor expected a bytestring-compatible object or path, got: {}".format(
                     type(rom_specifier)))
-        self.content = Tree(structure(bytestr))
+
+    def coverup(self, from_index, to_index, virtual=False):  # Mutability
+        self.selection.coverup(from_index, to_index)
+
+    def reveal(self, from_index, to_index, virtual=False):  # Mutability
+        self.selection.reveal(from_index, to_index)
+
+    def show(self):
+        return self.selection[self.content]
+
+    def flatten_without_joining(self):
+        return self.content.flatten_without_joining()
 
     def index(self, bstring):
-        return self.content[0].index(bstring)
+        return bytes(self.source['content']).index(bstring)
 
     def index_regex(self, bregex):
         """ Returns a pair (a, b) which are the start and end indices of the first string found when searching the ROM
         using the specified regex, or None if there is none. """
-        match = re.search(bregex, self.content[0])
+        match = re.search(bregex, bytes(self.source['content']))
         if match:
             return match.span()
 
@@ -64,13 +99,13 @@ class ROM(object):
         """ List of bytestring lines with the specified width """
         if width:
             w = width
-            tbl = [self.content[0][i * w:(i + 1) * w]
+            tbl = [bytes(self.source['content'])[i * w:(i + 1) * w]
                    for i in range(int(len(self) / w) + 1)]
             if tbl[-1] == b'':
                 return tbl[:-1]
             return tbl
         else:
-            return [self.content[0]]
+            return [bytes(self.source['content'])]
 
     @staticmethod
     def labeltable(tbl):
@@ -152,7 +187,7 @@ class ROM(object):
             return lambda s: ROM.tabulate(s, cols, label, border, padding)
         elif positionals[0] == "save":
             path = positionals[1]
-            return lambda s: write(s.content[0], path) if \
+            return lambda s: write(s.content.flatten(), path) if \
                 isinstance(s, ROM) else write(s, path)
         raise Exception("Could not execute: {}".format(execstr))
 
@@ -173,29 +208,30 @@ class ROM(object):
         return stream
 
     def __len__(self):
-        return len(self.content[0])
+        return self.source['size']
 
     def __eq__(self, other):
-        return isinstance(other, ROM) and self.content[0] == other.content[0]
+        # TODO Should the paths also be equal? What about the selections?
+        return isinstance(other, ROM) and bytes(self) == bytes(other)
 
     def __ne__(self, other):
         return not self.__eq__(other)
 
-    def __lt__(self, other):
-        return self.content[0].__lt__(other.content[0])
+    def __lt__(self, other: 'ROM'):
+        return bytes(self.source['content']).__lt__(bytes(other.source['content']))
 
     def __getitem__(self, val):
         if isinstance(val, int):
-            return self.content[0][val]
+            return self.source['content'][val]
         if isinstance(val, slice):
-            return ROM(self.content[0][val.start:val.stop:val.step])
+            return ROM(self.source['content'][val.start:val.stop:val.step])
         raise TypeError("ROM indices must be integers or slices, not {}".format(type(val).__name__))
 
     def __add__(self, operand):
-        return ROM(self.content[0] + operand)
+        return ROM(bytes(self.source['content']) + operand)
 
     def __radd__(self, operand):
-        return ROM(operand + self.content[0])
+        return ROM(operand + self.source['content'])
 
     def __hash__(self):
         return hash(str(self))
@@ -209,15 +245,15 @@ class ROM(object):
         if len(str(self)) <= max_width:
             return str(self)
         # If no bytestring fits:
-        if max_width < len("ROM(...)") + len(repr(bytes([self.content[0][0]]))):
+        if max_width < len("ROM(...)") + len(repr(bytes([self.source['content'][0]]))):
             return "ROM(...)"
         left_weight = 2  # Soft-code? Probably not worth the effort.
         # If non-empty head bytestring:
         result = list("ROM(b''...)")
         head = []
         tail = []
-        it = iter(self.content[0])
-        rit = reversed(self.content[0])
+        it = iter(bytes(self.source['content']))
+        rit = reversed(bytes(self.source['content']))
         byte_iter = zip(*[it] * left_weight, rit)
         byte_iter = iter(y for x in byte_iter for y in x)
         tail_surroundings_len = 0
@@ -241,5 +277,13 @@ class ROM(object):
         result[-1:-1] = tail
         return "".join(result)
 
+    def __bytes__(self):
+        bs = self.source['content'].read()
+        self.source['content'].seek(0)
+        return bs
+
     def __str__(self):
-        return "ROM({})".format(self.content[0])
+        if 'path' in self.source:
+            return "ROM({})".format(repr(self.source['path']))
+        else:
+            return "ROM({})".format(bytes(self.source['content']))

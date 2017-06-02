@@ -46,6 +46,8 @@ class ROM(object):
         else:
             try:
                 bytestr = bytes(rom_specifier)
+                if not bytestr:  # mmaps cannot have zero length
+                    raise NotImplementedError("The bytestring's length cannot be zero.")
                 content = mmap.mmap(-1, len(bytestr))  # Anonymous memory
                 content.write(bytestr)
                 content.seek(0)
@@ -56,7 +58,7 @@ class ROM(object):
                 }
                 self.selection = Selection(slice(0, len(bytestr)))
             except:
-                raise ValueError("ROM constructor expected a bytestring-compatible object or path, got: {}".format(
+                raise ValueError("ROM constructor expected a bytestring-convertible object or path, got: {}".format(
                     type(rom_specifier)))
 
     def coverup(self, from_index, to_index, virtual=False):  # Mutability

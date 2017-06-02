@@ -187,7 +187,7 @@ class ROM(object):
             return lambda s: ROM.tabulate(s, cols, label, border, padding)
         elif positionals[0] == "save":
             path = positionals[1]
-            return lambda s: write(s.content.flatten(), path) if \
+            return lambda s: write(bytes(s.source['content']), path) if \
                 isinstance(s, ROM) else write(s, path)
         raise Exception("Could not execute: {}".format(execstr))
 
@@ -195,13 +195,13 @@ class ROM(object):
         filters = []
         for subpipeline in pipeline:
             if not isinstance(subpipeline, str):
-                filter = subpipeline
-                filters.append(filter)
+                pipe_filter = subpipeline
+                filters.append(pipe_filter)
                 continue
             pline = [f.strip() for f in subpipeline.split("|")]
             for execstr in pline:
-                filter = ROM.execute(execstr)
-                filters.append(filter)
+                pipe_filter = ROM.execute(execstr)
+                filters.append(pipe_filter)
         stream = self
         for f in filters:
             stream = f(stream)

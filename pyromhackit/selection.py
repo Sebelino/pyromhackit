@@ -79,8 +79,8 @@ class Selection(object):
             i += 1
 
     def __iter__(self):
-        for k, v in self.revealed:
-            yield (k, v)
+        for sl in self.revealed:
+            yield (sl.start, sl.end)
 
     def __str__(self):
         return "{}(universe={}, revealed={})".format(self.__class__.__name__, self.universe, self.revealed)

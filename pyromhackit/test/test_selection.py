@@ -18,6 +18,11 @@ def test_simple():
     assert v.revealed == [slice(0, 10)]
 
 
+def test_init2():
+    v = Selection(slice(0, 10), revealed=[slice(3, 5)])
+    assert v.revealed == [slice(3, 5)]
+
+
 class TestCoverup(object):
     def setup(self):
         self.v = Selection(slice(0, 10))
@@ -132,3 +137,49 @@ class TestReveal(object):
     def test_gt_b_gt_b(self):
         self.v.reveal(8, 9)
         assert self.v.revealed == [slice(3, 7), slice(8, 9)]
+
+
+class TestIndexing(object):
+    def setup(self):
+        self.v = Selection(slice(0, 10))
+        self.v.revealed = [slice(3, 7)]  # Poor man's mocking
+
+    @pytest.mark.parametrize("vindex, expected", [
+        (0, 3),
+        (3, 6),
+    ])
+    def test_v2p(self, vindex, expected):
+        assert self.v.virtual2physical(vindex) == expected
+
+    @pytest.mark.parametrize("vindex, expected", [
+        (-1, IndexError),
+        (4, IndexError),
+    ])
+    def test_v2p_raises(self, vindex, expected):
+        with pytest.raises(expected):
+            self.v.virtual2physical(vindex)
+
+    @pytest.mark.parametrize("pindex, expected", [
+        (3, 0),
+        (6, 3),
+    ])
+    def test_p2v(self, pindex, expected):
+        assert self.v.physical2virtual(pindex) == expected
+
+    @pytest.mark.parametrize("pindex, expected", [
+        (-1, IndexError),
+        (2, IndexError),
+        (7, IndexError),
+        (10, IndexError),
+    ])
+    def test_p2v_raises(self, pindex, expected):
+        with pytest.raises(expected):
+            self.v.physical2virtual(pindex)
+
+    def test_getitem(self):
+        assert self.v[0] == 3
+
+    def test_select(self):
+        content = "HelloWorld"
+        assert self.v.select(content) == "loWo"
+

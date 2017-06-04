@@ -37,7 +37,7 @@ class Selection(object):
                     self.revealed.pop(i)
             elif a < from_index < b:
                 if to_index < b:
-                    self.revealed[i:i+1] = [slice(a, from_index), slice(to_index, b)]
+                    self.revealed[i:i + 1] = [slice(a, from_index), slice(to_index, b)]
                     i += 1
                 elif b <= to_index:
                     self.revealed[i] = slice(a, from_index)

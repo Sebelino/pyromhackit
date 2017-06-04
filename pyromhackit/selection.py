@@ -80,7 +80,44 @@ class Selection(object):
 
     def __iter__(self):
         for sl in self.revealed:
-            yield (sl.start, sl.end)
+            yield (sl.start, sl.stop)
+
+    def select(self, listlike):
+        """ Returns the selection of the subscriptable object @listlike. """
+        # TODO only works for stringlike objects
+        lst = []
+        for interval in self.revealed:
+            lst.append(listlike[interval])
+        selection = listlike[0:0].join(lst)
+        return selection
+
+    def physical2virtual(self, pindex):
+        vindex = 0
+        for a, b in self:
+            if a <= pindex < b:
+                vindex += pindex - a
+                return vindex
+            vindex += b - a
+        raise IndexError("Physical index {} out of bounds for selection {}".format(pindex, self))
+
+    def virtual2physical(self, vindex):
+        pindex = self.revealed[0].start
+        cumlength = 0
+        for a, b in self:
+            cumlength += b - a
+            if vindex < cumlength:
+                pindex = b - (cumlength - vindex)
+                if a <= pindex < b:
+                    return pindex
+                else:
+                    break
+        raise IndexError("Virtual index {} out of bounds for selection {}".format(vindex, self))
+
+    def __getitem__(self, item):
+        return self.virtual2physical(item)
+
+    def __repr__(self):
+        return "{}(universe={}, revealed={})".format(self.__class__.__name__, self.universe, self.revealed)
 
     def __str__(self):
-        return "{}(universe={}, revealed={})".format(self.__class__.__name__, self.universe, self.revealed)
+        return repr(self)

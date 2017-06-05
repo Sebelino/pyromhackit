@@ -144,15 +144,15 @@ class TestTinyROM:
         (slice(None, 1), ROM(b'a')),
         (slice(1, 3), ROM(b'\xffc')),
         (slice(None, None), ROM(b'a\xffc')),
-        ((1, 3), TypeError),
     ])
     def test_subscripting(self, tinyrom, arg, expected):
         """ Subscripting support is isomorphic to bytestrings """
-        if inspect.isclass(expected) and issubclass(expected, Exception):
-            with pytest.raises(TypeError) as excinfo:
-                tinyrom[arg]
-        else:
-            assert tinyrom[arg] == expected
+        assert tinyrom[arg] == expected
+
+    def test_subscripting_raises(self, tinyrom):
+        """ Subscripting support is isomorphic to bytestrings """
+        with pytest.raises(TypeError) as excinfo:
+            tinyrom[(1, 3)]
 
     def test_convert_to_bytes(self, tinyrom):
         assert bytes(tinyrom) == b"a\xffc"

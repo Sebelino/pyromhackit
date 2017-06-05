@@ -144,6 +144,14 @@ class TestIndexing(object):
         self.v = Selection(slice(0, 10))
         self.v.revealed = [slice(3, 7)]  # Poor man's mocking
 
+    def test_index(self):
+        assert self.v.index(5) == slice(3, 7)
+
+    @pytest.mark.parametrize("pindex", [2, 7])
+    def test_index_raises(self, pindex):
+        with pytest.raises(ValueError):
+            self.v.index(pindex)
+
     @pytest.mark.parametrize("vindex, expected", [
         (0, 3),
         (3, 6),

@@ -183,3 +183,12 @@ class TestIndexing(object):
         content = "HelloWorld"
         assert self.v.select(content) == "loWo"
 
+    @pytest.mark.parametrize("vslice, expected", [
+        (slice(0, None), Selection(slice(0, 10), [slice(3, 7)])),
+        (slice(None, 4), Selection(slice(0, 10), [slice(3, 7)])),
+        (slice(None, None), Selection(slice(0, 10), [slice(3, 7)])),
+        (slice(1, 3), Selection(slice(0, 10), [slice(4, 6)])),
+    ])
+    def test_v2p_selection(self, vslice, expected):
+        assert self.v.virtual2physicalselection(vslice) == expected
+

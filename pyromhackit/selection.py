@@ -2,7 +2,7 @@
 
 
 class Selection(object):
-    def __init__(self, universe: slice, revealed=None):
+    def __init__(self, universe: slice, revealed: list = None):
         assert isinstance(universe, slice)
         assert universe.start == 0
         assert isinstance(universe.stop, int)
@@ -82,6 +82,23 @@ class Selection(object):
         for sl in self.revealed:
             yield (sl.start, sl.stop)
 
+    def _slice_index(self, pindex):
+        """ Returns n if @pindex is in the nth slice. """
+        i = 0
+        for a, b in self:
+            if a <= pindex:
+                if pindex < b:
+                    return i
+                else:
+                    break
+            i += 1
+        raise ValueError("{} is not in any interval.".format(pindex))
+
+    def index(self, pindex):
+        """ Returns the slice that @pindex is in. """
+        sliceindex = self._slice_index(pindex)
+        return self.revealed[sliceindex]
+
     def select(self, listlike):
         """ Returns the selection of the subscriptable object @listlike. """
         # TODO only works for stringlike objects
@@ -113,8 +130,22 @@ class Selection(object):
                     break
         raise IndexError("Virtual index {} out of bounds for selection {}".format(vindex, self))
 
+    def virtual2physicalselection(self, vslice: slice):
+        """ Returns the minimum sub-Selection such that every index in @vslice lies on it. """
+        a = self.virtual2physical(vslice.start) if vslice.start else self.revealed[0].start
+        b = self.virtual2physical(vslice.stop-1) if vslice.stop else self.revealed[-1].stop-1
+        m = self._slice_index(a)
+        n = self._slice_index(b)
+        intervals = self.revealed[m:n + 1]
+        intervals[0] = slice(a, intervals[0].stop)
+        intervals[-1] = slice(intervals[-1].start, b+1)
+        return Selection(universe=self.universe, revealed=intervals)
+
     def __getitem__(self, item):
         return self.virtual2physical(item)
+
+    def __eq__(self, other):
+        return repr(self) == repr(other)
 
     def __repr__(self):
         return "{}(universe={}, revealed={})".format(self.__class__.__name__, self.universe, self.revealed)

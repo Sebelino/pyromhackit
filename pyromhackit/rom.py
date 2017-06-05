@@ -17,10 +17,6 @@ Class representing a ROM.
 """
 
 
-def singleton_structure(bytestr):
-    return [bytestr]
-
-
 class ROM(object):
     """ Read-only memory image. Basically a handle to a file, designed to be easy to read. As you might not be
     interested in reading the whole file, you may optionally select the portions of the file that should be revealed.
@@ -68,7 +64,7 @@ class ROM(object):
         self.selection.reveal(from_index, to_index)
 
     def show(self):
-        return self.selection[self.content]
+        return self.selection.select(self.source['content'])
 
     def flatten_without_joining(self):
         return self.content.flatten_without_joining()
@@ -224,9 +220,11 @@ class ROM(object):
 
     def __getitem__(self, val):
         if isinstance(val, int):
-            return self.source['content'][val]
+            return self.source['content'][self.selection.virtual2physical(val)]
         if isinstance(val, slice):
-            return ROM(self.source['content'][val.start:val.stop:val.step])
+            subselection = self.selection.virtual2physicalselection(val)
+            bs = subselection.select(self.source['content'])
+            return ROM(bs)
         raise TypeError("ROM indices must be integers or slices, not {}".format(type(val).__name__))
 
     def __add__(self, operand):
@@ -247,7 +245,7 @@ class ROM(object):
         if len(str(self)) <= max_width:
             return str(self)
         # If no bytestring fits:
-        if max_width < len("ROM(...)") + len(repr(bytes([self.source['content'][0]]))):
+        if max_width < len("ROM(...)") + len(repr(bytes([self[0]]))):
             return "ROM(...)"
         left_weight = 2  # Soft-code? Probably not worth the effort.
         # If non-empty head bytestring:
@@ -255,7 +253,7 @@ class ROM(object):
         head = []
         tail = []
         it = iter(bytes(self.source['content']))
-        rit = reversed(bytes(self.source['content']))
+        rit = reversed(bytes(self))
         byte_iter = zip(*[it] * left_weight, rit)
         byte_iter = iter(y for x in byte_iter for y in x)
         tail_surroundings_len = 0
@@ -280,7 +278,9 @@ class ROM(object):
         return "".join(result)
 
     def __bytes__(self):
-        bs = self.source['content'].read()
+        m = self.source['content']
+        s = self.selection.select(m)
+        bs = s[:]
         self.source['content'].seek(0)
         return bs
 

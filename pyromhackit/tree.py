@@ -38,8 +38,6 @@ class SimpleTopology(object):
         n children (level zero being the root). """
 
         self.sizes = [int(t) for t in stringrepr.split("-")]
-        for s in self.sizes[1:]:
-            assert isinstance(s, int)
 
     def maketree(self, iterable):
         if len(self.sizes) == 1:

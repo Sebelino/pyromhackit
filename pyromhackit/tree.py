@@ -20,7 +20,7 @@ class Topology(object):
         raise NotImplementedError()
 
 
-class SingletonTopology(object):
+class SingletonTopology(Topology):
     def structure(self, stringlike):
         return [stringlike]
 
@@ -28,7 +28,7 @@ class SingletonTopology(object):
         return 0,
 
 
-class SimpleTopology(object):
+class SimpleTopology(Topology):
     def __init__(self, stringrepr: str):
         """ Encompasses the set of trees that consist of any number of children where each child is either a
         sub(-byte-)string or a subtree with a set structure common for all children. All leaves share the same length.

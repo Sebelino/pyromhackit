@@ -22,7 +22,7 @@ class ROM(object):
     interested in reading the whole file, you may optionally select the portions of the file that should be revealed.
     By default, the whole file is revealed. """
 
-    def __init__(self, rom_specifier, structure=SingletonTopology):
+    def __init__(self, rom_specifier, structure=SingletonTopology()):
         """ Constructs a ROM object from a path to a file to be read. You may define a hierarchical structure on the
         ROM by passing a function which takes a bytestring and returns a nested list of bytestrings. """
         # TODO ...or a BNF grammar

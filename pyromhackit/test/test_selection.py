@@ -139,6 +139,14 @@ class TestReveal(object):
         assert self.v.revealed == [slice(3, 7), slice(8, 9)]
 
 
+def test_empty_revealed():
+    v = Selection(slice(0, 10))
+    v.coverup(0, 10)
+    assert v.revealed == []
+    v.reveal(3, 7)
+    assert v.revealed == [slice(3, 7)]
+
+
 class TestIndexing(object):
     def setup(self):
         self.v = Selection(slice(0, 10))

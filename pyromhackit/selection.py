@@ -56,6 +56,9 @@ class Selection(object):
             from_index = self.universe.start
         if to_index is None:
             to_index = self.universe.stop
+        if not self.revealed:
+            self.revealed.append(slice(from_index, to_index))
+            return
         i = 0
         while i < len(self.revealed):
             sl = self.revealed[i]

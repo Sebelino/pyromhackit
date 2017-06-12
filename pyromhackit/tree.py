@@ -9,15 +9,27 @@ class Topology(object):
     """ A way to transform a (byte-)string into a nested list of (byte-)strings. """
 
     @abstractmethod
-    def structure(self, stringlike):
-        """ Returns a nested list such that its flattening equals @stringlike, structured according to this Topology. """
-        raise NotImplementedError()
-
-    @abstractmethod
     def indexpath(self, idx):
         """ For any tree belonging to this Topology, returns the index path to the leaf containing the byte/character
         at index @idx in the flattened (byte-)string. """
         raise NotImplementedError()
+
+    @abstractmethod
+    def structure(self, stringlike):
+        """ Returns a nested list such that its flattening equals @stringlike, structured according to this Topology. """
+        raise NotImplementedError()
+
+    def traverse_preorder(self, stringlike):
+        """ Returns a generator for a pair (p, a) where p is the index path from the root of a tree to one of its
+        leaves, where the tree belongs this Topology, is flattened into @stringlike, and a is the leaf content. """
+        last_path = None
+        a = 0
+        for i in range(len(stringlike)):
+            p = self.indexpath(i)
+            if p == last_path:
+                continue
+            else:
+                yield (p, stringlike[a:i + 1])
 
 
 class SingletonTopology(Topology):

@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from abc import abstractmethod
 
 from prettytable import PrettyTable
 import re
@@ -9,22 +10,54 @@ import mmap
 from pyromhackit.reader import write
 from pyromhackit.thousandcurses import codec
 from pyromhackit.thousandcurses.codec import read_yaml, Tree
-from selection import Selection
-from tree import SingletonTopology
+from pyromhackit.selection import Selection
+from pyromhackit.tree import SingletonTopology
 
 """
 Class representing a ROM.
 """
 
 
-class ROM(object):
+class Memory(object):
+    @abstractmethod
+    def __len__(self):
+        raise NotImplementedError()
+
+    @abstractmethod
+    def __eq__(self, other):
+        raise NotImplementedError()
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    @abstractmethod
+    def __lt__(self, other):
+        raise NotImplementedError()
+
+    @abstractmethod
+    def __getitem__(self, val):
+        raise NotImplementedError()
+
+    @abstractmethod
+    def __add__(self, operand):
+        raise NotImplementedError()
+
+    @abstractmethod
+    def __radd__(self, operand):
+        raise NotImplementedError()
+
+    def __hash__(self):
+        return hash(repr(self))
+
+
+class ROM(Memory):
     """ Read-only memory image. Basically a handle to a file, designed to be easy to read. As you might not be
     interested in reading the whole file, you may optionally select the portions of the file that should be revealed.
     By default, the whole file is revealed. """
 
     def __init__(self, rom_specifier, structure=SingletonTopology()):
         """ Constructs a ROM object from a path to a file to be read. You may define a hierarchical structure on the
-        ROM by passing a function which takes a bytestring and returns a nested list of bytestrings. """
+        ROM by passing a Topology instance. """
         # TODO ...or a BNF grammar
         self.structure = structure
         if isinstance(rom_specifier, str):
@@ -63,8 +96,14 @@ class ROM(object):
     def reveal(self, from_index, to_index, virtual=False):  # Mutability
         self.selection.reveal(from_index, to_index)
 
-    def show(self):
-        return self.selection.select(self.source['content'])
+    def tree(self):
+        """ Returns a Tree consisting of the revealed portions of the ROM according to the ROM's topology. """
+        bs = self.selection.select(self.source['content'])
+        t = self.structure.structure(bs)
+        return Tree(t)
+
+    def traverse_preorder(self):
+        return self.structure.traverse_preorder(self.source['content'])
 
     def flatten_without_joining(self):
         return self.content.flatten_without_joining()
@@ -233,9 +272,6 @@ class ROM(object):
     def __radd__(self, operand):
         return ROM(operand + self.source['content'])
 
-    def __hash__(self):
-        return hash(str(self))
-
     def str_contracted(self, max_width):
         """ Returns a string displaying the ROM with at most max_width characters. """
         # If too cramped:
@@ -285,7 +321,25 @@ class ROM(object):
         return bs
 
     def __str__(self):
+        """ Presents the content or path of the ROM. """
         if 'path' in self.source:
-            return "ROM({})".format(repr(self.source['path']))
+            return "ROM(path={})".format(self.structure.__class__.__name__, repr(self.source['path']))
         else:
-            return "ROM({})".format(bytes(self.source['content']))
+            return "ROM({})".format(bytes(self))
+
+class IROM(Memory):
+    """ Isomorphism of a ROM. Basically a Unicode string with a structure defined on it. """
+    def __init__(self, rom: 'ROM', codec):
+        """ Constructs an IROM object from a ROM and a codec transliterating every ROM atom into an IROM atom. """
+        content = mmap.mmap(-1, 1)  # Anonymous memory
+        size = 0
+        for _, atom in rom.traverse_preorder():
+            s = codec[atom]
+            size += len(s)
+            content.resize(size)
+            content.write(atom)
+        content.seek(0)
+        self.source = {
+            'size': size,
+            'content': content,
+        }

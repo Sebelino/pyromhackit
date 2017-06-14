@@ -1,3 +1,4 @@
+bidict
 treelib
 pytest
 pytest-cov

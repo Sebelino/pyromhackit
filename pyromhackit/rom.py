@@ -333,13 +333,22 @@ class IROM(Memory):
         """ Constructs an IROM object from a ROM and a codec transliterating every ROM atom into an IROM atom. """
         content = mmap.mmap(-1, 1)  # Anonymous memory
         size = 0
+        self.char_width = 8
         for _, atom in rom.traverse_preorder():
             s = codec[atom]
-            size += len(s)
+            size += len(s) * self.char_width
             content.resize(size)
-            content.write(atom)
+            content.write(s.encode('utf32'))
         content.seek(0)
         self.source = {
             'size': size,
             'content': content,
         }
+
+    def __getitem__(self, val):
+        if isinstance(val, int):
+            return self.source['content'][self.char_width]
+        if isinstance(val, slice):
+            raise NotImplementedError()
+        raise TypeError("ROM indices must be integers or slices, not {}".format(type(val).__name__))
+

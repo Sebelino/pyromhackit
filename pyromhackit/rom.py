@@ -323,21 +323,20 @@ class ROM(Memory):
     def __str__(self):
         """ Presents the content or path of the ROM. """
         if 'path' in self.source:
-            return "ROM(path={})".format(self.structure.__class__.__name__, repr(self.source['path']))
+            return "ROM(path={}, structure={})".format(repr(self.source['path']), self.structure)
         else:
-            return "ROM({})".format(bytes(self))
+            return "ROM({}, structure={})".format(bytes(self), self.structure)
 
 class IROM(Memory):
     """ Isomorphism of a ROM. Basically a Unicode string with a structure defined on it. """
     def __init__(self, rom: 'ROM', codec):
         """ Constructs an IROM object from a ROM and a codec transliterating every ROM atom into an IROM atom. """
-        content = mmap.mmap(-1, 1)  # Anonymous memory
-        size = 0
+        self.structure = rom.structure
         self.char_width = 8
-        for _, atom in rom.traverse_preorder():
+        size = len(rom) * self.char_width
+        content = mmap.mmap(-1, size)  # Anonymous memory
+        for p, atom in rom.traverse_preorder():
             s = codec[atom]
-            size += len(s) * self.char_width
-            content.resize(size)
             content.write(s.encode('utf32'))
         content.seek(0)
         self.source = {
@@ -345,10 +344,26 @@ class IROM(Memory):
             'content': content,
         }
 
+    def tree(self):
+        t = self.structure.structure(self.source['content'])
+        return Tree(t)
+
     def __getitem__(self, val):
         if isinstance(val, int):
-            return self.source['content'][self.char_width]
+            a = val * self.char_width
+            b = (val + 1) * self.char_width
+            return self.source['content'][a:b].decode('utf32')
         if isinstance(val, slice):
-            raise NotImplementedError()
+            a = val.start * self.char_width if val.start else None
+            b = val.stop * self.char_width if val.stop else None
+            return self.source['content'][a:b].decode('utf32')
         raise TypeError("ROM indices must be integers or slices, not {}".format(type(val).__name__))
 
+    def __len__(self):
+        """ Returns the number of characters in this IROM. """
+        return self.source
+
+    def __str__(self):
+        if len(self) > 100:
+            raise MemoryError("IROM too large to convert to string")
+        return self[:]

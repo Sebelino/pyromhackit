@@ -22,14 +22,18 @@ class Topology(object):
     def traverse_preorder(self, stringlike):
         """ Returns a generator for a pair (p, a) where p is the index path from the root of a tree to one of its
         leaves, where the tree belongs this Topology, is flattened into @stringlike, and a is the leaf content. """
-        last_path = None
+        if not stringlike:
+            return iter([])
+        last_path = self.indexpath(0)
         a = 0
         for i in range(len(stringlike)):
             p = self.indexpath(i)
             if p == last_path:
                 continue
             else:
-                yield (p, stringlike[a:i + 1])
+                yield (last_path, stringlike[a:i])
+                last_path = p
+                a = i
 
 
 class SingletonTopology(Topology):

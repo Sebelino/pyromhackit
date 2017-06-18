@@ -6,7 +6,8 @@ package_dir = os.path.dirname(os.path.abspath(__file__))
 
 
 class Topology(object):
-    """ A way to transform a (byte-)string into a nested list of (byte-)strings. """
+    """ A way of transforming a stringlike object into a list of stringlike objects, taking in account only the length
+    of the object. """
 
     @abstractmethod
     def indexpath(self, idx):
@@ -34,6 +35,22 @@ class Topology(object):
                 yield (last_path, stringlike[a:i])
                 last_path = p
                 a = i
+
+    def length(self, size):
+        """ Returns the number of leaves in a tree for a stringlike object of size @size structured according to this
+        Topology. """
+        count = 0
+        lastitem = None
+        for i in range(size):
+            if lastitem != self.indexpath(i):
+                count += 1
+        return count
+
+    def __call__(self, *args, **kwargs):
+        return self.structure(*args)
+
+    def __str__(self):
+        return self.__class__.__name__
 
 
 class SingletonTopology(Topology):

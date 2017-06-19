@@ -134,14 +134,29 @@ class Selection(object):
         raise IndexError("Virtual index {} out of bounds for selection {}".format(vindex, self))
 
     def virtual2physicalselection(self, vslice: slice):
-        """ Returns the minimum sub-Selection such that every index in @vslice lies on it. """
-        a = self.virtual2physical(vslice.start) if vslice.start else self.revealed[0].start
-        b = self.virtual2physical(vslice.stop-1) if vslice.stop else self.revealed[-1].stop-1
+        """ Returns the sub-Selection that is the intersection of this selection and @vslice. """
+        if vslice.start is None:
+            a = self.revealed[0].start
+        elif 0 <= vslice.start < len(self):
+            a = self.virtual2physical(vslice.start)
+        elif vslice.start >= len(self):
+            a = self.revealed[-1].stop
+        else:
+            raise ValueError("Unexpected slice start: {}".format(vslice))
+        if vslice.stop is None or vslice.stop >= len(self):
+            b = self.revealed[-1].stop
+        elif vslice.start <= vslice.stop < len(self):
+            b = self.virtual2physical(vslice.stop)
+        else:
+            raise ValueError("Unexpected slice stop: {}".format(vslice))
+        # INV: a is the physical index of the first element, b-1 is the physical index of the last element
+        if a == b:
+            return Selection(universe=self.universe, revealed=[])
         m = self._slice_index(a)
-        n = self._slice_index(b)
+        n = self._slice_index(b - 1)
         intervals = self.revealed[m:n + 1]
         intervals[0] = slice(a, intervals[0].stop)
-        intervals[-1] = slice(intervals[-1].start, b+1)
+        intervals[-1] = slice(intervals[-1].start, b)
         return Selection(universe=self.universe, revealed=intervals)
 
     def __getitem__(self, item):

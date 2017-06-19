@@ -148,7 +148,8 @@ class Selection(object):
         return self.virtual2physical(item)
 
     def __len__(self):
-        return len(self.revealed)
+        """ Returns the total number of revealed elements. """
+        return sum(segment.stop - segment.start for segment in self.revealed)
 
     def __eq__(self, other):
         return repr(self) == repr(other)

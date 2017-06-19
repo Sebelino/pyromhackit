@@ -147,6 +147,9 @@ class Selection(object):
     def __getitem__(self, item):
         return self.virtual2physical(item)
 
+    def __len__(self):
+        return len(self.revealed)
+
     def __eq__(self, other):
         return repr(self) == repr(other)
 

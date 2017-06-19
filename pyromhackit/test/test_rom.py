@@ -144,6 +144,8 @@ class TestTinyROM:
         (slice(None, 1), ROM(b'a')),
         (slice(1, 3), ROM(b'\xffc')),
         (slice(None, None), ROM(b'a\xffc')),
+        (slice(None, 5), ROM(b'a\xffc')),
+        #(slice(4, 5), ROM(b'')),  # mmap trouble
     ])
     def test_subscripting(self, tinyrom, arg, expected):
         """ Subscripting support is isomorphic to bytestrings """
@@ -258,6 +260,9 @@ class TestROM256:
         (slice(None, 1), ROM(b'\x00')),
         (slice(1, 3), ROM(b'\x01\x02')),
         (slice(None, None), ROM(bytes256)),
+        (slice(None, 1000), ROM(bytes256)),
+        (slice(255, 1000), ROM(b'\xff')),
+        #(slice(500, 1000), ROM(b'')),  # mmap trouble
     ])
     def test_subscripting(self, rom256, arg, expected):
         """ Subscripting support is isomorphic to bytestrings """

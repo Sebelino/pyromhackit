@@ -201,6 +201,7 @@ class TestIndexing(object):
 
     @pytest.mark.parametrize("vslice, expected", [
         (slice(0, None), Selection(slice(0, 10), [slice(3, 7)])),
+        (slice(None, 3), Selection(slice(0, 10), [slice(3, 6)])),
         (slice(None, 4), Selection(slice(0, 10), [slice(3, 7)])),
         (slice(None, None), Selection(slice(0, 10), [slice(3, 7)])),
         (slice(1, 3), Selection(slice(0, 10), [slice(4, 6)])),

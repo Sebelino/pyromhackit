@@ -145,12 +145,12 @@ class Selection(object):
             raise ValueError("Unexpected slice start: {}".format(vslice))
         if vslice.stop is None or vslice.stop >= len(self):
             b = self.revealed[-1].stop
-        elif vslice.start <= vslice.stop < len(self):
+        elif 0 <= vslice.stop < len(self):
             b = self.virtual2physical(vslice.stop)
         else:
             raise ValueError("Unexpected slice stop: {}".format(vslice))
         # INV: a is the physical index of the first element, b-1 is the physical index of the last element
-        if a == b:
+        if b <= a:
             return Selection(universe=self.universe, revealed=[])
         m = self._slice_index(a)
         n = self._slice_index(b - 1)

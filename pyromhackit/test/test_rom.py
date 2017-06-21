@@ -140,6 +140,12 @@ class TestTinyROM:
 
     @pytest.mark.parametrize("arg, expected", [
         (0, 97),
+    ])
+    def test_subscripting(self, tinyrom, arg, expected):
+        """ Subscripting support is isomorphic to bytestrings """
+        assert tinyrom[arg] == expected
+
+    @pytest.mark.parametrize("arg, expected", [
         #(slice(1, 1), b''),  # mmap trouble
         (slice(None, 1), b'a'),
         (slice(1, 3), b'\xffc'),
@@ -147,7 +153,7 @@ class TestTinyROM:
         (slice(None, 5), b'a\xffc'),
         #(slice(4, 5), b''),  # mmap trouble
     ])
-    def test_subscripting(self, tinyrom, arg, expected):
+    def test_subscripting_slices(self, tinyrom, arg, expected):
         """ Subscripting support is isomorphic to bytestrings """
         assert tinyrom[arg] == ROM(expected)
 
@@ -256,6 +262,12 @@ class TestROM256:
 
     @pytest.mark.parametrize("arg, expected", [
         (0, 0),
+    ])
+    def test_subscripting(self, rom256, arg, expected):
+        """ Subscripting support is isomorphic to bytestrings """
+        assert rom256[arg] == expected
+
+    @pytest.mark.parametrize("arg, expected", [
         #(slice(1, 1), b''),  # mmap trouble
         (slice(None, 1), b'\x00'),
         (slice(1, 3), b'\x01\x02'),
@@ -264,7 +276,7 @@ class TestROM256:
         (slice(255, 1000), b'\xff'),
         #(slice(500, 1000), b''),  # mmap trouble
     ])
-    def test_subscripting(self, rom256, arg, expected):
+    def test_subscripting_slices(self, rom256, arg, expected):
         """ Subscripting support is isomorphic to bytestrings """
         assert rom256[arg] == ROM(expected)
 
@@ -355,7 +367,7 @@ def test_pipe2(args, expected):
 
 def test_pipe3():
     rom = ROM(b'abc')
-    returned = rom.pipe(*args)
+    returned = rom.pipe()
     assert returned == ROM(b'abc')
 
 

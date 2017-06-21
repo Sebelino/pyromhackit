@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
 """ Test suite for ROM class. """
-import inspect
 import os
 from os.path import isfile
 import re
 import pytest
 
-from ..rom import ROM
+from pyromhackit.rom import ROM
+from pyromhackit.tree import SimpleTopology
 
 package_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -77,6 +77,9 @@ class TestTinyROM:
     def test_len(self, tinyrom):
         """ Call len(...) on ROM instance """
         assert len(tinyrom) == 3
+
+    def test_atomcount(self, tinyrom):
+        assert tinyrom.atomcount() == 1
 
     def test_eq(self, tinyrom):
         """ Two ROMs constructed from the same bytestring are equal """
@@ -342,6 +345,11 @@ def test_str_contracted(expected, max_width, rombytes):
     else:
         returned = rom.str_contracted(max_width)
         assert returned == expected
+
+
+def test_nontrivial_atomcount():
+    rom = ROM(b'1h0o0w', structure=SimpleTopology(2))
+    assert rom.atomcount() == 3
 
 
 @pytest.mark.parametrize("args, expected", [

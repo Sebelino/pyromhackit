@@ -114,13 +114,13 @@ class TestTinyROM:
         assert tinyrom.index_regex(bregex) == expected
 
     @pytest.mark.parametrize("n, expected", [
-        (0, ROM(b'a\xffc')),
-        (1, ROM(b'b\x00d')),
-        (255, ROM(b'`\xfeb')),
+        (0, b'a\xffc'),
+        (1, b'b\x00d'),
+        (255, b'`\xfeb'),
     ])
     def test_offset(self, tinyrom, n, expected):
         """ Find bytestring in ROM using relative search """
-        assert tinyrom.offset(n) == expected
+        assert tinyrom.offset(n) == ROM(expected)
 
     @pytest.mark.parametrize("bregex, stop_on_match, expected", [
         (b'not', False, dict()),
@@ -140,16 +140,16 @@ class TestTinyROM:
 
     @pytest.mark.parametrize("arg, expected", [
         (0, 97),
-        #(slice(1, 1), ROM(b'')),  # mmap trouble
-        (slice(None, 1), ROM(b'a')),
-        (slice(1, 3), ROM(b'\xffc')),
-        (slice(None, None), ROM(b'a\xffc')),
-        (slice(None, 5), ROM(b'a\xffc')),
-        #(slice(4, 5), ROM(b'')),  # mmap trouble
+        #(slice(1, 1), b''),  # mmap trouble
+        (slice(None, 1), b'a'),
+        (slice(1, 3), b'\xffc'),
+        (slice(None, None), b'a\xffc'),
+        (slice(None, 5), b'a\xffc'),
+        #(slice(4, 5), b''),  # mmap trouble
     ])
     def test_subscripting(self, tinyrom, arg, expected):
         """ Subscripting support is isomorphic to bytestrings """
-        assert tinyrom[arg] == expected
+        assert tinyrom[arg] == ROM(expected)
 
     def test_subscripting_raises(self, tinyrom):
         """ Subscripting support is isomorphic to bytestrings """
@@ -256,17 +256,17 @@ class TestROM256:
 
     @pytest.mark.parametrize("arg, expected", [
         (0, 0),
-        #(slice(1, 1), ROM(b'')),  # mmap trouble
-        (slice(None, 1), ROM(b'\x00')),
-        (slice(1, 3), ROM(b'\x01\x02')),
-        (slice(None, None), ROM(bytes256)),
-        (slice(None, 1000), ROM(bytes256)),
-        (slice(255, 1000), ROM(b'\xff')),
-        #(slice(500, 1000), ROM(b'')),  # mmap trouble
+        #(slice(1, 1), b''),  # mmap trouble
+        (slice(None, 1), b'\x00'),
+        (slice(1, 3), b'\x01\x02'),
+        (slice(None, None), bytes256),
+        (slice(None, 1000), bytes256),
+        (slice(255, 1000), b'\xff'),
+        #(slice(500, 1000), b''),  # mmap trouble
     ])
     def test_subscripting(self, rom256, arg, expected):
         """ Subscripting support is isomorphic to bytestrings """
-        assert rom256[arg] == expected
+        assert rom256[arg] == ROM(expected)
 
     @pytest.mark.parametrize("arg, expected", [
         (0, [bytes256]),
@@ -333,7 +333,6 @@ def test_str_contracted(expected, max_width, rombytes):
 
 
 @pytest.mark.parametrize("args, expected", [
-    ([lambda x: x], ROM(b"abc")),
     (["hex"], ["61", "62", "63"]),
     (["hex | join ' '"], "61 62 63"),
     (["hex", "join ' '"], "61 62 63"),
@@ -352,6 +351,12 @@ def test_pipe2(args, expected):
     rom = ROM(ROMPATH)[257:257 + 13]
     returned = rom.pipe(*args)
     assert returned == expected
+
+
+def test_pipe3():
+    rom = ROM(b'abc')
+    returned = rom.pipe(*args)
+    assert returned == ROM(b'abc')
 
 
 def remove_files():

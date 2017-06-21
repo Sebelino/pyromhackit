@@ -3,8 +3,6 @@
 import os
 import pytest
 
-from pyromhackit.rom import ROM
-from pyromhackit.morphism import Hacker
 from pyromhackit.tree import SimpleTopology
 
 package_dir = os.path.dirname(os.path.abspath(__file__))

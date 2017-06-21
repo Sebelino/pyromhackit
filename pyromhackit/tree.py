@@ -41,9 +41,10 @@ class Topology(object):
         Topology. """
         count = 0
         lastitem = None
-        for i in range(size):
-            if lastitem != self.indexpath(i):
+        for item in (self.indexpath(i) for i in range(size)):
+            if lastitem != item:
                 count += 1
+            lastitem = item
         return count
 
     def __call__(self, *args, **kwargs):

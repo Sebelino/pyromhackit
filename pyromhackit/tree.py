@@ -27,7 +27,7 @@ class Topology(object):
             return iter([])
         last_path = self.indexpath(0)
         a = 0
-        for i in range(len(stringlike)):
+        for i in range(1, len(stringlike) + 1):
             p = self.indexpath(i)
             if p == last_path:
                 continue

@@ -347,9 +347,15 @@ def test_str_contracted(expected, max_width, rombytes):
         assert returned == expected
 
 
-def test_nontrivial_atomcount():
-    rom = ROM(b'1h0o0w', structure=SimpleTopology(2))
-    assert rom.atomcount() == 3
+class TestStructuredROM(object):
+    def setup(self):
+        self.rom = ROM(b'1h0o0w', structure=SimpleTopology(2))
+
+    def test_atomcount(self):
+        assert self.rom.atomcount() == 3
+
+    def test_traverse_preorder(self):
+        assert list(self.rom.traverse_preorder()) == [((0,), b'1h'), ((1,), b'0o'), ((2,), b'0w')]
 
 
 @pytest.mark.parametrize("args, expected", [

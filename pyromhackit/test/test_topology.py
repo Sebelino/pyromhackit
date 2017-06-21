@@ -22,3 +22,11 @@ class TestSimpleTwoToplogy(object):
     ])
     def test_length(self, arg, expected):
         assert self.topology.length(arg) == expected
+
+    @pytest.mark.parametrize("arg, expected", [
+        (b'', []),
+        (b'ab', [((0,), b'ab')]),
+        (b'abcd', [((0,), b'ab'), ((1,), b'cd')]),
+    ])
+    def test_traverse_preorder(self, arg, expected):
+        assert list(self.topology.traverse_preorder(arg)) == expected

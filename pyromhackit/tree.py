@@ -58,12 +58,18 @@ class SingletonTopology(Topology):
     def structure(self, stringlike):
         return [stringlike]
 
-    def indexpath(self, idx):
+    def index2leafindex(self, idx):
+        return 0
+
+    def leafindex2indexpath(self, leafindex):
         return 0,
+
+    def indexpath2index(self, indexpath):
+        return 0
 
 
 class SimpleTopology(Topology):
-    def __init__(self, stringrepr: str):
+    def __init__(self, *sizes):
         """ Encompasses the set of trees that consist of any number of children where each child is either a
         sub(-byte-)string or a subtree with a set structure common for all children. All leaves share the same length.
         @stringrepr is the string representation of a certain Tree structure. @stringrepr is a '-' separated string
@@ -71,7 +77,9 @@ class SimpleTopology(Topology):
         will be a string of length n. If the ith token is n, each subtree at the (i-1)th level of the tree will have
         n children (level zero being the root). """
 
-        self.sizes = [int(t) for t in stringrepr.split("-")]
+        for s in sizes:
+            assert isinstance(s, int)
+        self.sizes = sizes
 
     def maketree(self, iterable):
         if len(self.sizes) == 1:

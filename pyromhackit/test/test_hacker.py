@@ -12,7 +12,7 @@ package_dir = os.path.dirname(os.path.abspath(__file__))
 rom = ROM(b'\x00\xe7\x01\x0f\x01\x17', structure=SimpleTopology(2))
 
 
-def init():
+def test_init():
     Hacker(rom)
 
 

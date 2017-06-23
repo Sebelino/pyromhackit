@@ -24,9 +24,29 @@ def test_str():
 class TestTinyHacker(object):
     def setup(self):
         self.hacker = Hacker(rom)
-        self.hacker.place(0, 'How')
 
+    def test_traverse_preorder(self):
+        assert len(list(self.hacker.traverse_preorder())) == 3
+        expected = [
+            (0, 0, (0,), 0, b'\x00\xe7', 0, 0, (0,), 4),
+            (2, 1, (1,), 2, b'\x01\x0f', 1, 1, (1,), 8),
+            (4, 2, (2,), 4, b'\x01\x17', 2, 2, (2,), 12),
+        ]
+        for entry, expected_entry in zip(list(self.hacker.traverse_preorder()), expected):
+            assert len(entry[:-1]) == len(expected_entry)
+            assert entry[:-1] == expected_entry
+
+    @pytest.mark.skip()
+    def test_set_destination_at(self):
+        self.hacker.set_destination_at()
+
+    @pytest.mark.skip(reason="Decide on a semantics for this (i.e. propagate changes to codec or ROM?)")
     def test_setitem(self):
         self.hacker[0] = 'c'
-        assert str(self.hacker) == 'cow'
+        assert str(self.hacker)[0] == 'c'
         assert self.hacker.codec[b'\x00\xe7'] == 'c'
+
+    @pytest.mark.skip(reason="Decide on a semantics for this (i.e. propagate changes to codec or ROM?)")
+    def test_place(self):
+        self.hacker.place(0, 'How')
+        assert str(self.hacker) == 'How'

@@ -1,17 +1,20 @@
 #!/usr/bin/env python
 from abc import abstractmethod
+from collections import namedtuple
 
 from prettytable import PrettyTable
 import re
 from ast import literal_eval
 import os
 import mmap
+from math import ceil
+from prettytable import PrettyTable
 
 from pyromhackit.reader import write
 from pyromhackit.thousandcurses import codec
 from pyromhackit.thousandcurses.codec import read_yaml, Tree
 from pyromhackit.selection import Selection
-from pyromhackit.tree import SingletonTopology
+from pyromhackit.tree import SingletonTopology, SimpleTopology
 
 """
 Class representing a ROM.
@@ -19,6 +22,10 @@ Class representing a ROM.
 
 
 class Memory(object):
+    @abstractmethod
+    def tree(self) -> Tree:
+        raise NotImplementedError()
+
     @abstractmethod
     def __len__(self):
         raise NotImplementedError()
@@ -46,9 +53,6 @@ class Memory(object):
     def __radd__(self, operand):
         raise NotImplementedError()
 
-    def __hash__(self):
-        return hash(repr(self))
-
 
 class ROM(Memory):
     """ Read-only memory image. Basically a handle to a file, designed to be easy to read. As you might not be
@@ -70,6 +74,7 @@ class ROM(Memory):
                 'size': filesize,
                 'file': file,
                 'content': content,
+                'atomcount': structure.length(filesize),
             }
             self.selection = Selection(slice(0, filesize))
         else:
@@ -77,13 +82,14 @@ class ROM(Memory):
                 bytestr = bytes(rom_specifier)
                 if not bytestr:  # mmaps cannot have zero length
                     raise NotImplementedError("The bytestring's length cannot be zero.")
-                content = mmap.mmap(-1, len(bytestr))  # Anonymous memory
+                size = len(bytestr)
+                content = mmap.mmap(-1, size)  # Anonymous memory
                 content.write(bytestr)
                 content.seek(0)
-                size = len(bytestr)
                 self.source = {
                     'size': size,
                     'content': content,
+                    'atomcount': structure.length(size),
                 }
                 self.selection = Selection(slice(0, len(bytestr)))
             except:
@@ -103,7 +109,10 @@ class ROM(Memory):
         return Tree(t)
 
     def traverse_preorder(self):
-        return self.structure.traverse_preorder(self.source['content'])
+        for idx, atomidx, idxpath, content in self.structure.traverse_preorder(self):
+            Atom = namedtuple("Atom", "index atomindex indexpath physindex content")
+            physidx = self.selection.virtual2physical(idx)
+            yield Atom(idx, atomidx, idxpath, physidx, bytes(content))
 
     def flatten_without_joining(self):
         return self.content.flatten_without_joining()
@@ -244,15 +253,25 @@ class ROM(Memory):
             stream = f(stream)
         return stream
 
+    def iterbytes(self):  # TODO only revealed
+        """ Returns a generator for every byte in the ROM. """
+        for b in self.source['content']:
+            yield b
+
     def __len__(self):
+        """ Returns the number of bytes in this ROM. """
         return self.source['size']
 
+    def atomcount(self):
+        return self.source['atomcount']
+
     def __eq__(self, other):
+        """ True of both are ROMs and their byte sequences are the same. """
         # TODO Should the paths also be equal? What about the selections?
         return isinstance(other, ROM) and bytes(self) == bytes(other)
 
-    def __ne__(self, other):
-        return not self.__eq__(other)
+    def __hash__(self):
+        return hash(bytes(self))
 
     def __lt__(self, other: 'ROM'):
         return bytes(self.source['content']).__lt__(bytes(other.source['content']))
@@ -263,8 +282,20 @@ class ROM(Memory):
         if isinstance(val, slice):
             subselection = self.selection.virtual2physicalselection(val)
             bs = subselection.select(self.source['content'])
-            return ROM(bs)
+            return ROM(bs, structure=self.structure)
         raise TypeError("ROM indices must be integers or slices, not {}".format(type(val).__name__))
+
+    def getatom(self, atomindex):
+        """ :return The @atomindex'th atom in this memory. """
+        return bytes(self.structure.getleaf(atomindex, self))
+
+    def indexpath2entry(self, indexpath):
+        Atom = namedtuple("Atom", "index atomindex indexpath physindex content")
+        index = self.structure.indexpath2index(indexpath)
+        atomindex = self.structure.index2leafindex(index)
+        physindex = self.selection.virtual2physical(index)
+        content = self.getatom(atomindex)
+        return Atom(index, atomindex, indexpath, physindex, content)
 
     def __add__(self, operand):
         return ROM(bytes(self.source['content']) + operand)
@@ -322,48 +353,144 @@ class ROM(Memory):
 
     def __str__(self):
         """ Presents the content or path of the ROM. """
+        topologystr = ""
+        if not isinstance(self.structure, SingletonTopology):
+            topologystr = ", structure={}".format(self.structure)
         if 'path' in self.source:
-            return "ROM(path={}, structure={})".format(repr(self.source['path']), self.structure)
+            return "ROM(path={}{})".format(repr(self.source['path']), topologystr)
         else:
-            return "ROM({}, structure={})".format(bytes(self), self.structure)
+            return "ROM({}{})".format(bytes(self), topologystr)
+
 
 class IROM(Memory):
     """ Isomorphism of a ROM. Basically a Unicode string with a structure defined on it. """
     def __init__(self, rom: 'ROM', codec):
         """ Constructs an IROM object from a ROM and a codec transliterating every ROM atom into an IROM atom. """
-        self.structure = rom.structure
-        self.char_width = 8
-        size = len(rom) * self.char_width
-        content = mmap.mmap(-1, size)  # Anonymous memory
-        for p, atom in rom.traverse_preorder():
-            s = codec[atom]
-            content.write(s.encode('utf32'))
-        content.seek(0)
+        self.structure = SimpleTopology(1)  # This will do for now
+        self.text_encoding = 'utf-32'
         self.source = {
-            'size': size,
-            'content': content,
+            'size': rom.atomcount(),  # FIXME
         }
+        content = self._write_to_mmap(rom, codec)
+        self.source['content'] = content
+        self.source['bytesize'] = len(content)
+        self.source['atomcount'] = self.source['size']  # FIXME
+
+    def _write_to_mmap(self, rom, codec):
+        size = self.index2slice(rom.atomcount()-1).stop
+        content = mmap.mmap(-1, size)  # Anonymous memory
+        content.write(''.encode(self.text_encoding))
+        for _, _, _, _, atom in rom.traverse_preorder():
+            s = codec[atom]
+            content.write(s.encode('utf-32')[self.index2slice(0).start:])
+        content.seek(0)
+        return content
 
     def tree(self):
-        t = self.structure.structure(self.source['content'])
+        t = self.structure.structure(self[:])
         return Tree(t)
 
+    def traverse_preorder(self):
+        for idx, atomidx, idxpath, content in self.structure.traverse_preorder(self):
+            byteindex = self.index2slice(idx).start
+            yield idx, atomidx, idxpath, byteindex, str(content)
+
+    def index2slice(self, idx):
+        """ Returns a slice indicating where the bytes necessary to encode the @idx'th character are stored. """
+        if idx >= len(self):
+            raise IndexError("IROM index out of range: {}".format(idx))
+        modidx = idx % len(self)
+        if self.text_encoding == 'utf-32':
+            return slice(4 + 4 * modidx, 4 + 4 * (modidx + 1))
+        raise NotImplementedError()
+
     def __getitem__(self, val):
+        prefix = self.source['content'][0:self.index2slice(0).start]
         if isinstance(val, int):
-            a = val * self.char_width
-            b = (val + 1) * self.char_width
-            return self.source['content'][a:b].decode('utf32')
+            s = self.index2slice(val)
+            return (prefix + self.source['content'][s]).decode(self.text_encoding)
         if isinstance(val, slice):
-            a = val.start * self.char_width if val.start else None
-            b = val.stop * self.char_width if val.stop else None
-            return self.source['content'][a:b].decode('utf32')
+            a = self.index2slice(val.start).start if val.start else self.index2slice(0).start
+            b = self.index2slice(val.stop-1).stop if val.stop else None
+            return (prefix + self.source['content'][a:b]).decode(self.text_encoding)
         raise TypeError("ROM indices must be integers or slices, not {}".format(type(val).__name__))
+
+    def getatom(self, atomindex):
+        """ :return The @atomindex'th atom in this memory. """
+        return str(self.structure.getleaf(atomindex, self))
+
+    def atomindex2entry(self, atomindex: int):
+        Atom = namedtuple("Atom", "index atomindex indexpath byteindex content")
+        indexpath = self.structure.leafindex2indexpath(atomindex)
+        index = self.structure.indexpath2index(indexpath)
+        content = self.getatom(atomindex)
+        byteindex = self.index2slice(index).start
+        return Atom(index, atomindex, indexpath, byteindex, content)
 
     def __len__(self):
         """ Returns the number of characters in this IROM. """
-        return self.source
+        return self.source['size']
+
+    def atomcount(self):
+        return self.source['atomcount']
 
     def __str__(self):
-        if len(self) > 100:
+        if self.source['bytesize'] > 10**8:
             raise MemoryError("IROM too large to convert to string")
         return self[:]
+
+    def find(self, *args):
+        return str(self).find(*args)
+
+    def finditer(self, pattern):
+        """ Returns an ordered list of matches with span=(a, b) such that self[a:b] matches @pattern. """
+        return re.finditer(pattern, str(self))
+
+    def first_match(self, pattern):
+        """ Return the first match for the given pattern. """
+        return next(self.finditer(pattern))
+
+    def first_group(self, pattern):
+        """ Return the start index of the first group of the first match for the given pattern. """
+        return self.first_match(pattern).group(1)
+
+    def first_group_index(self, pattern):
+        """ Return the start index of the first group of the first match for the given pattern. """
+        return self.first_match(pattern).start(1)
+
+    def grep(self, pattern, context=50, labels=True):
+        for m in self.finditer(pattern):
+            s = m.string[m.start() - context:m.end() + context]
+            label = ""
+            if labels:
+                label = "{}: ".format(hex(m.start()))
+            print("{}{}".format(label, s))
+
+    def table(self, cols=16, label=True, border=True, padding=1):
+        """ Display the stream of characters in a table. """
+        fields = [''] + [hex(i)[2:] for i in range(cols)]
+        table = PrettyTable(field_names=fields, header=True, border=border, padding_width=padding)
+        content = str(self)
+        labelwidth = len(str(len(content)))
+        for i in range(0, len(content), cols):
+            segment = content[i:i + cols]
+            segment = segment + " " * max(0, cols - len(segment))
+            segment = list(segment)
+            if label:
+                fmtstr = "{:>" + str(labelwidth) + "}: "
+                segment = [fmtstr.format(hex(i)[2:])] + segment
+            table.add_row(segment)
+        return table
+
+    def grep_table(self, searchstring, context=3, cols=16, label=True, border=True, padding=1):
+        s = str(self)
+        idx = s.index(searchstring)
+        tbl = self.table(cols, label, border, padding)
+        arow = int(idx / cols) - context
+        brow = int(idx / cols) + ceil(len(searchstring) / cols) + context
+        return tbl[arow:brow]
+
+    def __setitem__(self, key, value):
+        if isinstance(key, int) and isinstance(value, str):
+            prefix = self.source['content'][0:self.index2slice(0).start]
+            newatombytes = value.encode(self.text_encoding)[4:]

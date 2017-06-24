@@ -44,6 +44,9 @@ class TestTinyHacker(object):
     def test_place(self):
         self.hacker.place(0, 'How')
         assert str(self.hacker) == 'How'
+        assert self.hacker.codec[b'\x00\xe7'] == 'H'
+        assert self.hacker.codec[b'\x01\x0f'] == 'o'
+        assert self.hacker.codec[b'\x01\x17'] == 'w'
 
     @pytest.mark.skip(reason="Decide on a semantics for this (i.e. propagate changes to codec or ROM?)")
     def test_setitem(self):

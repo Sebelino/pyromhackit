@@ -35,6 +35,7 @@ class TestTinyHacker(object):
         for entry, expected_entry in zip(list(self.hacker.traverse_preorder()), expected):
             assert len(entry[:-1]) == len(expected_entry)
             assert entry[:-1] == expected_entry
+            assert isinstance(entry[-1], str)
 
     def test_set_destination_at(self):
         self.hacker.set_destination_at(0, 'H')

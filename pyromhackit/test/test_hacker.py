@@ -36,17 +36,17 @@ class TestTinyHacker(object):
             assert len(entry[:-1]) == len(expected_entry)
             assert entry[:-1] == expected_entry
 
-    @pytest.mark.skip()
     def test_set_destination_at(self):
-        self.hacker.set_destination_at()
+        self.hacker.set_destination_at(0, 'H')
+        assert str(self.hacker)[0] == 'H'
+        assert self.hacker.codec[b'\x00\xe7'] == 'H'
+
+    def test_place(self):
+        self.hacker.place(0, 'How')
+        assert str(self.hacker) == 'How'
 
     @pytest.mark.skip(reason="Decide on a semantics for this (i.e. propagate changes to codec or ROM?)")
     def test_setitem(self):
         self.hacker[0] = 'c'
         assert str(self.hacker)[0] == 'c'
         assert self.hacker.codec[b'\x00\xe7'] == 'c'
-
-    @pytest.mark.skip(reason="Decide on a semantics for this (i.e. propagate changes to codec or ROM?)")
-    def test_place(self):
-        self.hacker.place(0, 'How')
-        assert str(self.hacker) == 'How'

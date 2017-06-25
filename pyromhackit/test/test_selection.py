@@ -139,7 +139,7 @@ class TestReveal(object):
         assert self.v.revealed == [slice(3, 7), slice(8, 9)]
 
 
-def test_empty_revealed():
+def test_cover_all():
     v = Selection(slice(0, 10))
     v.coverup(0, 10)
     assert v.revealed == []
@@ -209,6 +209,49 @@ class TestIndexing(object):
         (slice(None, 5), Selection(slice(0, 10), [slice(3, 7)])),
         (slice(None, 9), Selection(slice(0, 10), [slice(3, 7)])),
         (slice(None, 15), Selection(slice(0, 10), [slice(3, 7)])),
+        (slice(4, 5), Selection(slice(0, 10), [])),
+        (slice(4, 9), Selection(slice(0, 10), [])),
+        (slice(4, 15), Selection(slice(0, 10), [])),
+    ])
+    def test_v2p_selection(self, vslice, expected):  # TODO negatives; slices (a,b) where a > b
+        assert self.v.virtual2physicalselection(vslice) == expected
+
+
+class TestFullyCovered(object):
+    def setup(self):
+        self.v = Selection(slice(0, 10))
+        self.v.revealed = []  # Poor man's mocking
+
+    def test_index_raises(self):
+        with pytest.raises(ValueError):
+            self.v.index(0)
+
+    def test_v2p_raises(self):
+        with pytest.raises(IndexError):
+            self.v.virtual2physical(0)
+
+    def test_p2v_raises(self):
+        with pytest.raises(IndexError):
+            self.v.physical2virtual(0)
+
+    def test_getitem(self):
+        with pytest.raises(IndexError):
+            self.v[0]
+
+    def test_select(self):
+        content = "HelloWorld"
+        assert self.v.select(content) == ""
+
+    @pytest.mark.parametrize("vslice, expected", [
+        (slice(0, None), Selection(slice(0, 10), [])),
+        (slice(None, 3), Selection(slice(0, 10), [])),
+        (slice(None, 4), Selection(slice(0, 10), [])),
+        (slice(None, None), Selection(slice(0, 10), [])),
+        (slice(1, 3), Selection(slice(0, 10), [])),
+        (slice(0, 0), Selection(slice(0, 10), [])),
+        (slice(None, 5), Selection(slice(0, 10), [])),
+        (slice(None, 9), Selection(slice(0, 10), [])),
+        (slice(None, 15), Selection(slice(0, 10), [])),
         (slice(4, 5), Selection(slice(0, 10), [])),
         (slice(4, 9), Selection(slice(0, 10), [])),
         (slice(4, 15), Selection(slice(0, 10), [])),

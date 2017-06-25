@@ -355,7 +355,11 @@ class TestStructuredROM(object):
         assert self.rom.atomcount() == 3
 
     def test_traverse_preorder(self):
-        assert list(self.rom.traverse_preorder()) == [((0,), b'1h'), ((1,), b'0o'), ((2,), b'0w')]
+        assert list(self.rom.traverse_preorder()) == [
+            (0, 0, (0,), 0, b'1h'),
+            (2, 1, (1,), 2, b'0o'),
+            (4, 2, (2,), 4, b'0w'),
+        ]
 
 
 @pytest.mark.parametrize("args, expected", [

@@ -135,6 +135,8 @@ class Selection(object):
 
     def virtual2physicalselection(self, vslice: slice):
         """ Returns the sub-Selection that is the intersection of this selection and @vslice. """
+        if not self.revealed:
+            return Selection(self.universe, revealed=[])
         if vslice.start is None:
             a = self.revealed[0].start
         elif 0 <= vslice.start < len(self):

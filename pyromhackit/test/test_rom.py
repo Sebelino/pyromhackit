@@ -96,7 +96,7 @@ class TestTinyROM:
 
     def test_hash(self, tinyrom):
         """ ROM hash = the hash of its repr """
-        assert hash(tinyrom) == hash(r"ROM(b'a\xffc')")
+        assert hash(tinyrom) == hash(b'a\xffc')
 
     def test_index(self, tinyrom):
         """ Find bytestring in ROM """

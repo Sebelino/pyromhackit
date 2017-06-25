@@ -158,7 +158,7 @@ class TestTinyROM:
     ])
     def test_subscripting_slices(self, tinyrom, arg, expected):
         """ Subscripting support is isomorphic to bytestrings """
-        assert tinyrom[arg] == ROM(expected)
+        assert tinyrom[arg] == expected
 
     def test_subscripting_raises(self, tinyrom):
         """ Subscripting support is isomorphic to bytestrings """
@@ -281,7 +281,7 @@ class TestROM256:
     ])
     def test_subscripting_slices(self, rom256, arg, expected):
         """ Subscripting support is isomorphic to bytestrings """
-        assert rom256[arg] == ROM(expected)
+        assert rom256[arg] == expected
 
     @pytest.mark.parametrize("arg, expected", [
         (0, [bytes256]),
@@ -374,7 +374,7 @@ def test_pipe(args, expected):
     (["map {}".format(MAPPATH)], "reprehenderit"),
 ])
 def test_pipe2(args, expected):
-    rom = ROM(ROMPATH)[257:257 + 13]
+    rom = ROM(ROM(ROMPATH)[257:257 + 13])
     returned = rom.pipe(*args)
     assert returned == expected
 
@@ -396,7 +396,7 @@ def remove_files():
 @pytest.fixture()
 def write_rom_to_file(request):
     mode, pipeline, expected = request.param
-    rom = ROM(ROMPATH)[257:257 + 13]
+    rom = ROM(ROM(ROMPATH)[257:257 + 13])
     rom.pipe(pipeline)
     with open(OUTPATH, mode) as outfile:
         returned = outfile.read()

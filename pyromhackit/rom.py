@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from abc import abstractmethod
+from abc import abstractmethod, ABCMeta
 from collections import namedtuple
 
 from prettytable import PrettyTable
@@ -19,6 +19,53 @@ from pyromhackit.tree import SingletonTopology, SimpleTopology
 """
 Class representing a ROM.
 """
+
+
+class Gmmap(metaclass=ABCMeta):
+    """ Generalized mmap. While a regular mmap stores a non-empty sequence of bytes, a Gmmap stores a potentially empty
+    sequence of elements satisfying the following conditions:
+    * All elements share a common type.
+    * The bytestring representation of a sequence equals the concatenation of the individual elements' bytestring
+      representations.
+    """
+
+    def __init__(self, source):
+        self.content = self._source2map(source)
+        assert isinstance(self.content, mmap.mmap)
+
+    @abstractmethod
+    def _source2map(self, source):
+        """ :return A mmap storing the bytestring representation of the vector originating from @source. """
+        raise NotImplementedError()
+
+    @abstractmethod
+    def _logical2physical(self, location):
+        """ :return The index of the bytestring which encodes the element at index @location, if @location is an
+        integer; or the slice of the bytestring encoding the elements at @location, if @location is a slice. """
+        raise NotImplementedError()
+
+    @abstractmethod
+    def _encode(self, element):
+        """ :return The bytestring that @element encodes into. """
+        raise NotImplementedError()
+
+    @abstractmethod
+    def _decode(self, bytestring):
+        """ :return The element that @bytestring encodes. """
+        raise NotImplementedError()
+
+    def __getitem__(self, location):
+        """ :return The @val'th element, if @val is an integer; or the sub-sequence retrieved when slicing the
+        sequence with @val, if @val is a slice. There should be no reason to override this. """
+        bytestringlocation = self._logical2physical(location)
+        bytestringrepr = self.content[bytestringlocation]
+        value = self._decode(bytestringrepr)
+        return value
+
+    def __setitem__(self, location, val):
+        bytestringrepr = self._encode(val)
+        bytestringlocation = self._logical2physical(location)
+        self.content[bytestringlocation] = bytestringrepr
 
 
 class Memory(object):

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from abc import abstractmethod, ABCMeta
 from collections import namedtuple
+import io
 
 from prettytable import PrettyTable
 import re
@@ -21,27 +22,68 @@ Class representing a ROM.
 """
 
 
-class Gmmap(metaclass=ABCMeta):
-    """ Generalized mmap. While a regular mmap stores a non-empty sequence of bytes, a Gmmap stores a potentially empty
-    sequence of elements satisfying the following conditions:
-    * All elements share a common type.
+class GMmap(metaclass=ABCMeta):
+    """ Generalized mmap. While a regular mmap stores a non-empty sequence of bytes, a GMmap stores a potentially empty
+    sequence of elements satisfying the following condition:
     * The bytestring representation of a sequence equals the concatenation of the individual elements' bytestring
       representations.
     """
 
-    def __init__(self, source):
-        self.content = self._source2map(source)
-        assert isinstance(self.content, mmap.mmap)
+    def __init__(self, *args):  # Final
+        """ Creates an instance from @source. """
+        source = self._args2source(*args)
+        self._content = self._source2mmap(source)
+        if isinstance(source, io.IOBase):
+            self._length = self._compute_length()
+        else:
+            self._length = len(source)
+
+    def _args2source(self, *args):
+        """ :return The source (file or sequence) contained in the arguments @args. """
+        return args
+
+    def _source2mmap(self, source):  # Final
+        """ :return a mmap from @source, which can be either a sequence or a file storing the sequence. """
+        if isinstance(source, io.IOBase):
+            m = self._file2mmap(source)
+        else:
+            m = self._sequence2mmap(source)
+        assert isinstance(m, mmap.mmap)
+        return m
+
+    def _sequence2mmap(self, sequence) -> mmap.mmap:  # Final
+        """ :return An anonymous mmap storing the bytestring representation of the sequence @sequence. """
+        capacity = len(sequence)  # Initial capacity
+        m = mmap.mmap(-1, capacity)
+        currentsize = 0
+        for element in sequence:
+            bs = self._encode(element)
+            currentsize += len(bs)
+            if currentsize > capacity:
+                m.resize(2 * capacity)  # Double capacity if overflow
+            m.write(bs)
+        m.resize(currentsize)
+        return m
+
+    def _file2mmap(self, file) -> mmap.mmap:  # Final
+        """ :return A mmap storing the bytestring representation of the sequence originating from the file @file. """
+        protection = self._access()
+        m = mmap.mmap(file.fileno(), 0, access=protection)
+        return m
 
     @abstractmethod
-    def _source2map(self, source):
-        """ :return A mmap storing the bytestring representation of the vector originating from @source. """
+    def _compute_length(self) -> int:
+        """ :return The length of the sequence originating from the file @file. """
         raise NotImplementedError()
 
+    def _access(self):
+        """ :return The memory protection of the memory-mapped file. By default, readable and writable. """
+        return mmap.ACCESS_READ | mmap.ACCESS_WRITE
+
     @abstractmethod
-    def _logical2physical(self, location):
-        """ :return The index of the bytestring which encodes the element at index @location, if @location is an
-        integer; or the slice of the bytestring encoding the elements at @location, if @location is a slice. """
+    def _logical2physical(self, location) -> slice:
+        """ :return The slice for the bytestring that encodes the element(s) at location @location of the sequence.
+        :raise IndexError if @location is out of bounds. """
         raise NotImplementedError()
 
     @abstractmethod
@@ -54,18 +96,88 @@ class Gmmap(metaclass=ABCMeta):
         """ :return The element that @bytestring encodes. """
         raise NotImplementedError()
 
-    def __getitem__(self, location):
-        """ :return The @val'th element, if @val is an integer; or the sub-sequence retrieved when slicing the
-        sequence with @val, if @val is a slice. There should be no reason to override this. """
+    def __getitem__(self, location):  # Final
+        """ :return The @location'th element, if @location is an integer; or the sub-sequence retrieved when slicing the
+        sequence with @location, if @location is a slice. """
         bytestringlocation = self._logical2physical(location)
-        bytestringrepr = self.content[bytestringlocation]
+        bytestringrepr = self._content[bytestringlocation]
         value = self._decode(bytestringrepr)
         return value
 
-    def __setitem__(self, location, val):
+    def __setitem__(self, location, val):  # Final
+        """ Sets the @location'th element to @val, if @location is an integer; or sets the sub-sequence retrieved when
+        slicing the sequence with @location to @val, if @location is a slice. There should be no reason to override
+        this. """
         bytestringrepr = self._encode(val)
         bytestringlocation = self._logical2physical(location)
-        self.content[bytestringlocation] = bytestringrepr
+        self._content[bytestringlocation] = bytestringrepr
+
+    def __len__(self):
+        """ :return The number of elements in the sequence. """
+        return self._length
+
+
+class IndexedGMmap(GMmap):
+    """ GMmap where the indices used to access elements in the sequence are either integers or slices. """
+
+    def _logical2physical(self, location) -> slice:
+        """ :return The slice for the bytestring that encodes the element(s) at location @location of the sequence.
+        :raise IndexError if @location is an integer and is out of bounds. """
+        if isinstance(location, int):
+            return self._logicalint2physical(location)
+        elif isinstance(location, slice):
+            return self._logicalslice2physical(location)
+        else:
+            raise ValueError("Unexpected location type: {}".format(type(location)))
+
+    @abstractmethod
+    def _logicalint2physical(self, location: int) -> slice:
+        """ :return The slice for the bytestring that encodes the element(s) at integer index @location of the sequence.
+        :raise IndexError if @location is out of bounds. """
+        raise NotImplementedError()
+
+    @abstractmethod
+    def _logicalslice2physical(self, location: slice) -> slice:
+        """ :return The slice for the bytestring that encodes the element(s) at location @location of the sequence. """
+        raise NotImplementedError()
+
+
+class BytesMmap(IndexedGMmap):
+    """ A GMmap which is a sequence of elements where each element is a bytestring of any positive length. """
+
+    def _decode(self, bytestring):
+        return bytestring
+
+    def _encode(self, element):
+        return element
+
+
+class FixedWidthBytesMmap(BytesMmap):
+    """ A GMmap which is a sequence of bytestrings where all bytestrings share the same (positive) length. """
+
+    def _args2source(self, width, source):
+        self.width = width
+        return source
+
+    def _logicalint2physical(self, location: int):
+        if 0 <= location < len(self):
+            return slice(self.width * location, self.width * (location + 1))
+        elif -len(self) <= location < -1:
+            return slice(self.width * location, self.width * (location + 1))
+        elif location == -1:
+            return slice(self.width * location, None)
+        if location < -len(self) or location >= len(self):
+            raise IndexError("Index out of bounds: {}".format(location))
+
+    def _logicalslice2physical(self, location: slice):
+        return slice(
+            self.width * location.start if location.start else None,
+            self.width * location.stop if location.stop else None,
+            self.width * location.step if location.step else None,
+        )
+
+    def _compute_length(self):
+        return len(self._content) / self.width
 
 
 class Memory(object):

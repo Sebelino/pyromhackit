@@ -52,7 +52,12 @@ class GMmap(metaclass=ABCMeta):
         return m
 
     def _sequence2mmap(self, sequence) -> mmap.mmap:  # Final
-        """ :return An anonymous mmap storing the bytestring representation of the sequence @sequence. """
+        """ :return An anonymous mmap storing the bytestring representation of the sequence @sequence. @sequence needs
+        to either be a bytestring or contain only elements that implement __len__. """
+        if isinstance(sequence, bytes):
+            m = mmap.mmap(-1, len(sequence))
+            m.write(sequence)
+            return m
         capacity = len(sequence)  # Initial capacity
         m = mmap.mmap(-1, capacity)
         currentsize = 0

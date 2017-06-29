@@ -272,7 +272,7 @@ class ROM(Memory):
         t = self.structure.structure(bs)
         return Tree(t)
 
-    def traverse_preorder(self):
+    def traverse_preorder(self):  # NOTE: 18 times slower than iterating for content with getatom
         for idx, atomidx, idxpath, content in self.structure.traverse_preorder(self):
             Atom = namedtuple("Atom", "index atomindex indexpath physindex content")
             physidx = self.selection.virtual2physical(idx)
@@ -544,7 +544,9 @@ class IROM(Memory):
         size = self.index2slice(rom.atomcount()-1).stop
         content = mmap.mmap(-1, size)  # Anonymous memory
         content.write(''.encode(self.text_encoding))
-        for _, _, _, _, atom in rom.traverse_preorder():
+        #for _, _, _, _, atom in rom.traverse_preorder():
+        for i in range(rom.source['atomcount']):
+            atom = rom.getatom(i)
             s = codec[atom]
             content.write(s.encode('utf-32')[self.index2slice(0).start:])
         content.seek(0)

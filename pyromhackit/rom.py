@@ -185,6 +185,17 @@ class FixedWidthBytesMmap(BytesMmap):
 
     def _args2source(self, width, source):
         self.width = width
+        is_file = isinstance(source, io.IOBase)  # Quite tight but the price was right
+        if not is_file:
+            try:
+                element = next(iter(source))
+                is_bytes_iterable = isinstance(element, bytes)
+            except StopIteration:
+                is_bytes_iterable = True
+            except TypeError:
+                is_bytes_iterable = False
+            assert is_bytes_iterable, \
+                "Source is neither a path to an existing file nor an iterable for bytestrings: {}".format(source)
         return source
 
     def _logicalint2physical(self, location: int):

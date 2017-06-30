@@ -194,8 +194,7 @@ class FixedWidthBytesMmap(BytesMmap):
             return slice(self.width * location, self.width * (location + 1))
         elif location == -1:
             return slice(self.width * location, None)
-        if location < -len(self) or location >= len(self):
-            raise IndexError("Index out of bounds: {}".format(location))
+        raise IndexError("Index out of bounds: {}".format(location))
 
     def _logicalslice2physical(self, location: slice):
         return slice(

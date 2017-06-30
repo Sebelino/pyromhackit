@@ -148,14 +148,36 @@ class IndexedGMmap(GMmap):
         raise NotImplementedError()
 
 
-class BytesMmap(IndexedGMmap):
-    """ A GMmap which is a sequence of elements where each element is a bytestring of any positive length. """
+class Additive(metaclass=ABCMeta):
+    @abstractmethod
+    def __add__(self, operand):
+        return NotImplementedError()
+
+    @abstractmethod
+    def __radd__(self, operand):
+        return NotImplementedError()
+
+
+class BytesMmap(Additive, IndexedGMmap, metaclass=ABCMeta):
+    """ An IndexedGMmap which is a sequence of elements where each element is a bytestring of any positive length. """
 
     def _decode(self, bytestring):
         return bytestring
 
     def _encode(self, element):
         return element
+
+    def __bytes__(self) -> bytes:  # Final
+        """ :return The concatenation of all elements in the sequence. """
+        return self[:]
+
+    def __add__(self, operand: bytes) -> bytes:
+        """ :return A bytestring being the concatenation of the sequence's bytestring representation and @operand. """
+        return bytes(self) + operand
+
+    def __radd__(self, operand) -> bytes:
+        """ :return A bytestring being the concatenation of @operadn and the sequence's bytestring representation. """
+        return operand + bytes(self)
 
 
 class FixedWidthBytesMmap(BytesMmap):

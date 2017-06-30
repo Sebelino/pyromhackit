@@ -134,7 +134,7 @@ class IndexedGMmap(GMmap):
         elif isinstance(location, slice):
             return self._logicalslice2physical(location)
         else:
-            raise ValueError("Unexpected location type: {}".format(type(location)))
+            raise TypeError("Unexpected location type: {}".format(type(location)))
 
     @abstractmethod
     def _logicalint2physical(self, location: int) -> slice:

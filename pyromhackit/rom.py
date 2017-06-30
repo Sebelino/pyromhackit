@@ -24,7 +24,7 @@ Class representing a ROM.
 
 class GMmap(metaclass=ABCMeta):
     """ Generalized mmap. While a regular mmap stores a non-empty sequence of bytes, a GMmap stores a potentially empty
-    sequence of elements satisfying the following condition:
+    sequence of elements of any type(s) satisfying the following condition:
     * The bytestring representation of a sequence equals the concatenation of the individual elements' bytestring
       representations.
     """

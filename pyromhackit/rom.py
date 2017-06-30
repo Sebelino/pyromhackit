@@ -64,8 +64,9 @@ class GMmap(metaclass=ABCMeta):
         for element in sequence:
             bs = self._encode(element)
             currentsize += len(bs)
-            if currentsize > capacity:
-                m.resize(2 * capacity)  # Double capacity if overflow
+            while currentsize > capacity:
+                capacity *= 2
+                m.resize(capacity)  # Double capacity if overflow
             m.write(bs)
         m.resize(currentsize)
         return m

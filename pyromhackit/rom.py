@@ -207,6 +207,23 @@ class FixedWidthBytesMmap(BytesMmap):
         return len(self._content) / self.width
 
 
+class SingletonBytesMmap(BytesMmap):
+    """ The most useless subclass. Sequence containing a single bytestring element. """
+
+    def _logicalint2physical(self, location: int) -> slice:
+        if location == 0:
+            return slice(None, None)
+        raise IndexError("Index out of bounds: {}".format(location))
+
+    def _logicalslice2physical(self, location: slice) -> slice:
+        if (location.start is None or location.start <= 0) and (location.stop is None or location.stop >= 1):
+            return location
+        return slice(0, 0)  # Empty slice
+
+    def _compute_length(self) -> int:
+        return 1
+
+
 class Memory(object):
     @abstractmethod
     def tree(self) -> Tree:

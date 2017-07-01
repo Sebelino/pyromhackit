@@ -33,9 +33,11 @@ class GMmap(metaclass=ABCMeta):
         """ Creates an instance from @source. """
         source = self._args2source(*args)
         self._content = self._source2mmap(source)
-        if isinstance(source, io.IOBase):
+        if isinstance(source, io.TextIOWrapper):  # Source is file
+            self._path = source.name
             self._length = self._compute_length()
         else:
+            self._path = None
             self._length = len(source)
 
     def _args2source(self, *args):
@@ -101,6 +103,9 @@ class GMmap(metaclass=ABCMeta):
     def _decode(self, bytestring):
         """ :return The element that @bytestring encodes. """
         raise NotImplementedError()
+
+    def get_path(self):
+        return self._path
 
     def __getitem__(self, location):  # Final
         """ :return The @location'th element, if @location is an integer; or the sub-sequence retrieved when slicing the
@@ -171,6 +176,16 @@ class BytesMmap(Additive, IndexedGMmap, metaclass=ABCMeta):
         """ :return The concatenation of all elements in the sequence. """
         return self[:]
 
+    def iterbytes(self):
+        """ :return A generator for every byte in every element in the sequence, left to right. """
+        for bs in self:
+            for b in bs:
+                yield b
+
+    def bytes_count(self):
+        """ :return The total number of bytes in this sequence. """
+        return len(self._content)  # Assumes that self[:] == bytes(mmap)
+
     def __add__(self, operand: bytes) -> bytes:
         """ :return A bytestring being the concatenation of the sequence's bytestring representation and @operand. """
         return bytes(self) + operand
@@ -215,7 +230,7 @@ class FixedWidthBytesMmap(BytesMmap):
         )
 
     def _compute_length(self):
-        return len(self._content) / self.width
+        return int(len(self._content) / self.width)
 
 
 class SingletonBytesMmap(BytesMmap):
@@ -273,7 +288,7 @@ class ROM(Memory):
     interested in reading the whole file, you may optionally select the portions of the file that should be revealed.
     By default, the whole file is revealed. """
 
-    def __init__(self, rom_specifier, structure=SingletonTopology()):
+    def __init__(self, rom_specifier, structure=SimpleTopology(1)):
         """ Constructs a ROM object from a path to a file to be read. You may define a hierarchical structure on the
         ROM by passing a Topology instance. """
         # TODO ...or a BNF grammar
@@ -283,14 +298,8 @@ class ROM(Memory):
             filesize = os.path.getsize(path)
             file = open(path, 'r')
             content = mmap.mmap(file.fileno(), 0, access=mmap.ACCESS_READ)
-            self.source = {
-                'path': path,
-                'size': filesize,
-                'file': file,
-                'content': content,
-                'atomcount': structure.length(filesize),
-            }
             self.selection = Selection(slice(0, filesize))
+            self.memory = FixedWidthBytesMmap(2, file)
         else:
             try:
                 bytestr = bytes(rom_specifier)
@@ -300,12 +309,12 @@ class ROM(Memory):
                 content = mmap.mmap(-1, size)  # Anonymous memory
                 content.write(bytestr)
                 content.seek(0)
-                self.source = {
-                    'size': size,
-                    'content': content,
-                    'atomcount': structure.length(size),
-                }
                 self.selection = Selection(slice(0, len(bytestr)))
+                if str(structure) == "SimpleTopology(2)":
+                    self.memory = FixedWidthBytesMmap(2, self.structure.structure(bytestr))
+                else:
+                    #self.memory = SingletonBytesMmap(bytestr)
+                    self.memory = FixedWidthBytesMmap(1, self.structure.structure(bytestr))
             except:
                 raise ValueError("ROM constructor expected a bytestring-convertible object or path, got: {}".format(
                     type(rom_specifier)))
@@ -318,7 +327,7 @@ class ROM(Memory):
 
     def tree(self):
         """ Returns a Tree consisting of the revealed portions of the ROM according to the ROM's topology. """
-        bs = self.selection.select(self.source['content'])
+        bs = self.selection.select(self.memory)
         t = self.structure.structure(bs)
         return Tree(t)
 
@@ -332,12 +341,12 @@ class ROM(Memory):
         return self.content.flatten_without_joining()
 
     def index(self, bstring):
-        return bytes(self.source['content']).index(bstring)
+        return bytes(self).index(bstring)
 
     def index_regex(self, bregex):
         """ Returns a pair (a, b) which are the start and end indices of the first string found when searching the ROM
         using the specified regex, or None if there is none. """
-        match = re.search(bregex, bytes(self.source['content']))
+        match = re.search(bregex, bytes(self))
         if match:
             return match.span()
 
@@ -359,13 +368,13 @@ class ROM(Memory):
         """ List of bytestring lines with the specified width """
         if width:
             w = width
-            tbl = [bytes(self.source['content'])[i * w:(i + 1) * w]
+            tbl = [bytes(self)[i * w:(i + 1) * w]
                    for i in range(int(len(self) / w) + 1)]
             if tbl[-1] == b'':
                 return tbl[:-1]
             return tbl
         else:
-            return [bytes(self.source['content'])]
+            return [bytes(self)]
 
     @staticmethod
     def labeltable(tbl):
@@ -376,8 +385,8 @@ class ROM(Memory):
                 for i in range(len(tbl))]
 
     def offset(self, n):
-        """ Increase the value of each byte in the ROM by n modulo 256 """
-        return ROM([(b + n) % 2 ** 8 for b in self])
+        """ :return A ROM where the value of each byte in the ROM is increased by @n modulo 256. """
+        return ROM(bytes((b + n) % 2 ** 8 for b in self.iterbytes()), structure=self.structure)
 
     def map(self, mapdata):
         if isinstance(mapdata, dict):
@@ -447,7 +456,7 @@ class ROM(Memory):
             return lambda s: ROM.tabulate(s, cols, label, border, padding)
         elif positionals[0] == "save":
             path = positionals[1]
-            return lambda s: write(bytes(s.source['content']), path) if \
+            return lambda s: write(bytes(s), path) if \
                 isinstance(s, ROM) else write(s, path)
         raise Exception("Could not execute: {}".format(execstr))
 
@@ -468,36 +477,30 @@ class ROM(Memory):
         return stream
 
     def iterbytes(self):  # TODO only revealed
-        """ Returns a generator for every byte in the ROM. """
-        for b in self.source['content']:
-            yield b
+        """ :return A generator for every byte in the ROM. """
+        return self.memory.iterbytes()
 
     def __len__(self):
         """ Returns the number of bytes in this ROM. """
-        return self.source['size']
+        return self.memory.bytes_count()
 
     def atomcount(self):
-        return self.source['atomcount']
+        return len(self.memory)
 
     def __eq__(self, other):
         """ True of both are ROMs and their byte sequences are the same. """
         # TODO Should the paths also be equal? What about the selections?
+        # TODO optimize with iter+zip.
         return isinstance(other, ROM) and bytes(self) == bytes(other)
 
     def __hash__(self):
         return hash(bytes(self))
 
     def __lt__(self, other: 'ROM'):
-        return bytes(self.source['content']).__lt__(bytes(other.source['content']))
+        return bytes(self).__lt__(bytes(other))
 
     def __getitem__(self, val):
-        if isinstance(val, int):
-            return self.source['content'][self.selection.virtual2physical(val)]
-        if isinstance(val, slice):
-            subselection = self.selection.virtual2physicalselection(val)
-            bs = subselection.select(self.source['content'])
-            return ROM(bs, structure=self.structure)
-        raise TypeError("ROM indices must be integers or slices, not {}".format(type(val).__name__))
+        return self.memory[val]
 
     def getatom(self, atomindex):
         """ :return The @atomindex'th atom in this memory. """
@@ -512,10 +515,10 @@ class ROM(Memory):
         return Atom(index, atomindex, indexpath, physindex, content)
 
     def __add__(self, operand):
-        return ROM(bytes(self.source['content']) + operand)
+        return ROM(self.memory + operand)
 
     def __radd__(self, operand):
-        return ROM(operand + self.source['content'])
+        return ROM(operand + self.memory)
 
     def str_contracted(self, max_width):
         """ Returns a string displaying the ROM with at most max_width characters. """
@@ -526,14 +529,14 @@ class ROM(Memory):
         if len(str(self)) <= max_width:
             return str(self)
         # If no bytestring fits:
-        if max_width < len("ROM(...)") + len(repr(bytes([self[0]]))):
+        if max_width < len("ROM(...)") + len(repr(self[0])):
             return "ROM(...)"
         left_weight = 2  # Soft-code? Probably not worth the effort.
         # If non-empty head bytestring:
         result = list("ROM(b''...)")
         head = []
         tail = []
-        it = iter(bytes(self.source['content']))
+        it = iter(bytes(self))
         rit = reversed(bytes(self))
         byte_iter = zip(*[it] * left_weight, rit)
         byte_iter = iter(y for x in byte_iter for y in x)
@@ -559,19 +562,17 @@ class ROM(Memory):
         return "".join(result)
 
     def __bytes__(self):
-        m = self.source['content']
-        s = self.selection.select(m)
+        s = self.selection.select(self.memory)
         bs = s[:]
-        self.source['content'].seek(0)
         return bs
 
     def __str__(self):
         """ Presents the content or path of the ROM. """
         topologystr = ""
-        if not isinstance(self.structure, SingletonTopology):
+        if not str(self.structure) == "SimpleTopology(1)":
             topologystr = ", structure={}".format(self.structure)
-        if 'path' in self.source:
-            return "ROM(path={}{})".format(repr(self.source['path']), topologystr)
+        if self.memory.get_path():
+            return "ROM(path={}{})".format(repr(self.memory.get_path()), topologystr)
         else:
             return "ROM({}{})".format(bytes(self), topologystr)
 

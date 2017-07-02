@@ -596,7 +596,7 @@ class IROM(Memory):
         content = mmap.mmap(-1, size)  # Anonymous memory
         content.write(''.encode(self.text_encoding))
         #for _, _, _, _, atom in rom.traverse_preorder():
-        for i in range(rom.source['atomcount']):
+        for i in range(rom.atomcount()):
             atom = rom.getatom(i)
             s = codec[atom]
             content.write(s.encode('utf-32')[self.index2slice(0).start:])

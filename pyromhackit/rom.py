@@ -164,7 +164,7 @@ class Additive(metaclass=ABCMeta):
 
 
 class BytesMmap(Additive, IndexedGMmap, metaclass=ABCMeta):
-    """ An IndexedGMmap which is a sequence of elements where each element is a bytestring of any positive length. """
+    """ An IndexedGMmap where each element in the sequence is a bytestring of any positive length. """
 
     def _decode(self, bytestring):
         return bytestring
@@ -191,7 +191,7 @@ class BytesMmap(Additive, IndexedGMmap, metaclass=ABCMeta):
         return bytes(self) + operand
 
     def __radd__(self, operand) -> bytes:
-        """ :return A bytestring being the concatenation of @operadn and the sequence's bytestring representation. """
+        """ :return A bytestring being the concatenation of @operand and the sequence's bytestring representation. """
         return operand + bytes(self)
 
 

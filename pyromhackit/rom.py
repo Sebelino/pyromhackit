@@ -35,7 +35,7 @@ class GMmap(metaclass=ABCMeta):
         self._content = self._source2mmap(source)
         if isinstance(source, io.TextIOWrapper):  # Source is file
             self._path = source.name
-            self._length = self._compute_length()
+            self._length = self._compute_length(self._content)
         else:
             self._path = None
             self._length = len(source)
@@ -80,8 +80,8 @@ class GMmap(metaclass=ABCMeta):
         return m
 
     @abstractmethod
-    def _compute_length(self) -> int:
-        """ :return The length of the sequence originating from the file @file. """
+    def _compute_length(self, content: mmap.mmap) -> int:
+        """ :return The length of the sequence originating from the underlying mmap @content. """
         raise NotImplementedError()
 
     def _access(self):
@@ -229,8 +229,8 @@ class FixedWidthBytesMmap(BytesMmap):
             self.width * location.step if location.step else None,
         )
 
-    def _compute_length(self):
-        return int(len(self._content) / self.width)
+    def _compute_length(self, content):
+        return int(len(content) / self.width)
 
 
 class SingletonBytesMmap(BytesMmap):
@@ -500,11 +500,11 @@ class ROM(Memory):
         return bytes(self).__lt__(bytes(other))
 
     def __getitem__(self, val):
-        return self.memory[val]
+        return self.getatom(val)
 
-    def getatom(self, atomindex):
+    def getatom(self, atomlocation):
         """ :return The @atomindex'th atom in this memory. """
-        return bytes(self.structure.getleaf(atomindex, self))
+        return self.memory[atomlocation]
 
     def indexpath2entry(self, indexpath):
         Atom = namedtuple("Atom", "index atomindex indexpath physindex content")

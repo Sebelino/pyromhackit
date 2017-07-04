@@ -38,10 +38,10 @@ class GMmap(metaclass=ABCMeta):
             self._length = self._compute_length(self._content)
         else:
             self._path = None
-            self._length = len(source)
+            self._length = self._compute_length(self._content)  # Cannot do len(source) if it is a generator
 
     def _args2source(self, *args):
-        """ :return The source (file or sequence) contained in the arguments @args. """
+        """ :return The source (file or iterable for the sequence) contained in the arguments @args. """
         return args
 
     def _source2mmap(self, source):  # Final
@@ -55,12 +55,12 @@ class GMmap(metaclass=ABCMeta):
 
     def _sequence2mmap(self, sequence) -> mmap.mmap:  # Final
         """ :return An anonymous mmap storing the bytestring representation of the sequence @sequence. @sequence needs
-        to either be a bytestring or contain only elements that implement __len__. """
+        to either be a bytestring or an iterable containing only elements that implement __len__. """
         if isinstance(sequence, bytes):
             m = mmap.mmap(-1, len(sequence))
             m.write(sequence)
             return m
-        capacity = len(sequence)  # Initial capacity
+        capacity = 100  # Initial capacity. Cannot do len(sequence) since it is a generator.
         m = mmap.mmap(-1, capacity)
         currentsize = 0
         for element in sequence:

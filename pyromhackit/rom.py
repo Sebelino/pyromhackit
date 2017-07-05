@@ -56,11 +56,18 @@ class GMmap(metaclass=ABCMeta):
     def _sequence2mmap(self, sequence) -> mmap.mmap:  # Final
         """ :return An anonymous mmap storing the bytestring representation of the sequence @sequence. @sequence needs
         to either be a bytestring or an iterable containing only elements that implement __len__. """
+        def double_mmap_capacity(m):
+            new_m = mmap.mmap(-1, capacity)
+            new_m.write(bytes(m))  # FIXME Potentially large bytestring
+            m.close()
+            return new_m
+
+        protection = self._access()
         if isinstance(sequence, bytes):
-            m = mmap.mmap(-1, len(sequence))
+            m = mmap.mmap(-1, len(sequence), access=protection)
             m.write(sequence)
             return m
-        capacity = 100  # Initial capacity. Cannot do len(sequence) since it is a generator.
+        capacity = mmap.PAGESIZE  # Initial capacity. Cannot do len(sequence) since it is a generator.
         m = mmap.mmap(-1, capacity)
         currentsize = 0
         for element in sequence:
@@ -68,7 +75,7 @@ class GMmap(metaclass=ABCMeta):
             currentsize += len(bs)
             while currentsize > capacity:
                 capacity *= 2
-                m.resize(capacity)  # Double capacity if overflow
+                m = double_mmap_capacity(m)  # Because m.resize() is apparently bugged and causes SIGBUS
             m.write(bs)
         m.resize(currentsize)
         return m

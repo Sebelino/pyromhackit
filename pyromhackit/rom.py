@@ -257,40 +257,45 @@ class SingletonBytesMmap(BytesMmap):
         return 1
 
 
-class Memory(object):
-    @abstractmethod
-    def tree(self) -> Tree:
-        raise NotImplementedError()
+class StringMmap(Additive, IndexedGMmap, metaclass=ABCMeta):
+    """ An IndexedGMmap where each element in the sequence is a Unicode string of any positive length. """
 
-    @abstractmethod
-    def __len__(self):
-        raise NotImplementedError()
+    def _compute_length(self, content) -> int:
+        return int(len(content) / 4)  # 4 for each char
 
-    @abstractmethod
-    def __eq__(self, other):
-        raise NotImplementedError()
+    def _logicalslice2physical(self, location: slice) -> slice:
+        return slice(
+            4 * location.start if location.start else None,
+            4 * location.stop if location.stop else None,
+            4 * location.step if location.step else None,
+        )
 
-    def __ne__(self, other):
-        return not self.__eq__(other)
+    def _logicalint2physical(self, location: int) -> slice:
+        if 0 <= location < len(self):
+            return slice(4 * location, 4 * (location + 1))
+        elif -len(self) <= location < -1:
+            return slice(4 * location, 4 * (location + 1))
+        elif location == -1:
+            return slice(4 * location, None)
+        raise IndexError("Index out of bounds: {}".format(location))
 
-    @abstractmethod
-    def __lt__(self, other):
-        raise NotImplementedError()
+    def _encode(self, element: str) -> bytes:
+        return element.encode('utf-32')[4:]
 
-    @abstractmethod
-    def __getitem__(self, val):
-        raise NotImplementedError()
+    def _decode(self, bytestring: bytes) -> str:
+        prefix = ''.encode('utf-32')
+        return (prefix + bytestring).decode('utf-32')
 
-    @abstractmethod
-    def __add__(self, operand):
-        raise NotImplementedError()
+    def __add__(self, operand: str) -> str:
+        """ :return A string being the concatenation of the sequence's string representation and @operand. """
+        return str(self) + operand
 
-    @abstractmethod
-    def __radd__(self, operand):
-        raise NotImplementedError()
+    def __radd__(self, operand: str) -> str:
+        """ :return A string being the concatenation of @operand and the sequence's string representation. """
+        return operand + str(self)
 
 
-class ROM(Memory):
+class ROM(object):
     """ Read-only memory image. Basically a handle to a file, designed to be easy to read. As you might not be
     interested in reading the whole file, you may optionally select the portions of the file that should be revealed.
     By default, the whole file is revealed. """
@@ -584,7 +589,7 @@ class ROM(Memory):
             return "ROM({}{})".format(bytes(self), topologystr)
 
 
-class IROM(Memory):
+class IROM(object):
     """ Isomorphism of a ROM. Basically a Unicode string with a structure defined on it. """
     def __init__(self, rom: 'ROM', codec):
         """ Constructs an IROM object from a ROM and a codec transliterating every ROM atom into an IROM atom. """

@@ -102,12 +102,12 @@ class GMmap(metaclass=ABCMeta):
         raise NotImplementedError()
 
     @abstractmethod
-    def _encode(self, element):
+    def _encode(self, element) -> bytes:
         """ :return The bytestring that @element encodes into. """
         raise NotImplementedError()
 
     @abstractmethod
-    def _decode(self, bytestring):
+    def _decode(self, bytestring: bytes):
         """ :return The element that @bytestring encodes. """
         raise NotImplementedError()
 
@@ -173,10 +173,10 @@ class Additive(metaclass=ABCMeta):
 class BytesMmap(Additive, IndexedGMmap, metaclass=ABCMeta):
     """ An IndexedGMmap where each element in the sequence is a bytestring of any positive length. """
 
-    def _decode(self, bytestring):
+    def _decode(self, bytestring: bytes):
         return bytestring
 
-    def _encode(self, element):
+    def _encode(self, element) -> bytes:
         return element
 
     def __bytes__(self) -> bytes:  # Final
@@ -197,7 +197,7 @@ class BytesMmap(Additive, IndexedGMmap, metaclass=ABCMeta):
         """ :return A bytestring being the concatenation of the sequence's bytestring representation and @operand. """
         return bytes(self) + operand
 
-    def __radd__(self, operand) -> bytes:
+    def __radd__(self, operand: bytes) -> bytes:
         """ :return A bytestring being the concatenation of @operand and the sequence's bytestring representation. """
         return operand + bytes(self)
 

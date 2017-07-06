@@ -207,7 +207,7 @@ class FixedWidthBytesMmap(BytesMmap):
 
     def _args2source(self, width, source):
         self.width = width
-        is_file = isinstance(source, io.IOBase)  # Quite tight but the price was right
+        is_file = isinstance(source, io.TextIOWrapper)  # Quite tight but the price was right
         if not is_file:
             try:
                 element = next(iter(source))
@@ -253,7 +253,7 @@ class SingletonBytesMmap(BytesMmap):
             return location
         return slice(0, 0)  # Empty slice
 
-    def _compute_length(self) -> int:
+    def _compute_length(self, _) -> int:
         return 1
 
 
@@ -309,7 +309,6 @@ class ROM(object):
             path = rom_specifier
             filesize = os.path.getsize(path)
             file = open(path, 'r')
-            content = mmap.mmap(file.fileno(), 0, access=mmap.ACCESS_READ)
             self.selection = Selection(slice(0, filesize))
             self.memory = FixedWidthBytesMmap(2, file)
         else:
@@ -318,9 +317,6 @@ class ROM(object):
                 if not bytestr:  # mmaps cannot have zero length
                     raise NotImplementedError("The bytestring's length cannot be zero.")
                 size = len(bytestr)
-                content = mmap.mmap(-1, size)  # Anonymous memory
-                content.write(bytestr)
-                content.seek(0)
                 self.selection = Selection(slice(0, len(bytestr)))
                 if str(structure) == "SimpleTopology(2)":
                     self.memory = FixedWidthBytesMmap(2, self.structure.structure(bytestr))
@@ -589,31 +585,21 @@ class ROM(object):
             return "ROM({}{})".format(bytes(self), topologystr)
 
 
+class IROMMmap(StringMmap):
+    """ A StringMmap where the source is extracted from a ROM and a codec mapping ROM atoms to strings. """
+
+    def _args2source(self, rom: ROM, codec):
+        for atom in rom:
+            yield codec[atom]
+
+
 class IROM(object):
     """ Isomorphism of a ROM. Basically a Unicode string with a structure defined on it. """
     def __init__(self, rom: 'ROM', codec):
         """ Constructs an IROM object from a ROM and a codec transliterating every ROM atom into an IROM atom. """
         self.structure = SimpleTopology(1)  # This will do for now
         self.text_encoding = 'utf-32'
-        self.source = {
-            'size': rom.atomcount(),  # FIXME
-        }
-        content = self._write_to_mmap(rom, codec)
-        self.source['content'] = content
-        self.source['bytesize'] = len(content)
-        self.source['atomcount'] = self.source['size']  # FIXME
-
-    def _write_to_mmap(self, rom, codec):
-        size = self.index2slice(rom.atomcount()-1).stop
-        content = mmap.mmap(-1, size)  # Anonymous memory
-        content.write(''.encode(self.text_encoding))
-        #for _, _, _, _, atom in rom.traverse_preorder():
-        for i in range(rom.atomcount()):
-            atom = rom.getatom(i)
-            s = codec[atom]
-            content.write(s.encode('utf-32')[self.index2slice(0).start:])
-        content.seek(0)
-        return content
+        self.memory = IROMMmap(rom, codec)
 
     def tree(self):
         t = self.structure.structure(self[:])
@@ -634,17 +620,9 @@ class IROM(object):
         raise NotImplementedError()
 
     def __getitem__(self, val):
-        prefix = self.source['content'][0:self.index2slice(0).start]
-        if isinstance(val, int):
-            s = self.index2slice(val)
-            return (prefix + self.source['content'][s]).decode(self.text_encoding)
-        if isinstance(val, slice):
-            a = self.index2slice(val.start).start if val.start else self.index2slice(0).start
-            b = self.index2slice(val.stop-1).stop if val.stop else None
-            return (prefix + self.source['content'][a:b]).decode(self.text_encoding)
-        raise TypeError("ROM indices must be integers or slices, not {}".format(type(val).__name__))
+        return self.memory[val]
 
-    def getatom(self, atomindex):
+    def getatom(self, atomindex):  # TODO duplicate of getitem at this point
         """ :return The @atomindex'th atom in this memory. """
         return str(self.structure.getleaf(atomindex, self))
 
@@ -657,14 +635,14 @@ class IROM(object):
         return Atom(index, atomindex, indexpath, byteindex, content)
 
     def __len__(self):
-        """ Returns the number of characters in this IROM. """
-        return self.source['size']
+        """ :return The number of characters in this IROM. """
+        return len(self.memory)
 
-    def atomcount(self):
-        return self.source['atomcount']
+    def atomcount(self):  # TODO __len__ duplicate (?)
+        return len(self.memory)
 
     def __str__(self):
-        if self.source['bytesize'] > 10**8:
+        if len(self.memory) > 10 ** 7:  # Assumes that IROM atoms are on average short
             raise MemoryError("IROM too large to convert to string")
         return self[:]
 
@@ -720,6 +698,4 @@ class IROM(object):
         return tbl[arow:brow]
 
     def __setitem__(self, key, value):
-        if isinstance(key, int) and isinstance(value, str):
-            prefix = self.source['content'][0:self.index2slice(0).start]
-            newatombytes = value.encode(self.text_encoding)[4:]
+        raise NotImplementedError()  # TODO

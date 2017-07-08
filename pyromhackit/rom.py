@@ -129,6 +129,12 @@ class GMmap(metaclass=ABCMeta):
         bytestringlocation = self._logical2physical(location)
         self._content[bytestringlocation] = bytestringrepr
 
+    @abstractmethod  # Can this be non-abstract? Hmm...
+    def __delitem__(self, location):  # Final
+        """ Removes the @location'th element, if @location is an integer; or the sub-sequence retrieved when slicing the
+        sequence with @location, if @location is a slice. """
+        raise NotImplementedError()
+
     def __len__(self):
         """ :return The number of elements in the sequence. """
         return self._length

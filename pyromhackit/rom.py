@@ -39,6 +39,11 @@ class GMmap(metaclass=ABCMeta):
         else:
             self._path = None
             self._length = self._compute_length(self._content)  # Cannot do len(source) if it is a generator
+        self._post_init()
+
+    def _post_init(self):
+        """ Executed as a final step of initialization. By default, do nothing. """
+        pass
 
     def _args2source(self, *args):
         """ :return The source (file or iterable for the sequence) contained in the arguments @args. """
@@ -243,6 +248,36 @@ class FixedWidthBytesMmap(BytesMmap):
 
     def _compute_length(self, content):
         return int(len(content) / self.width)
+
+
+class SelectiveGMmap(IndexedGMmap, metaclass=ABCMeta):
+    """ An IndexedGMmap in which elements in the sequence can be marked/unmarked as being hidden from the user's
+    purview. If the ith element is revealed and becomes preceded by n hidden elements, that means that this element will
+    henceforth be considered to be the (i-n)th element. """
+
+    def _post_init(self):
+        self._selection = Selection()
+    
+    def _logical2physical(self, virtual_location):
+        location = self.select
+        super(SelectiveGMmap, self)._logical2physical(location)
+
+    @abstractmethod
+    def coverup(self, from_index, to_index):
+        """ Covers up all elements with indices between @from_index (inclusive) and @to_index (exclusive). In effect,
+        every element with index i >= @to_index becomes the (i-to_index+@from_index)th (visible) element. """
+        raise NotImplementedError()
+
+    @abstractmethod
+    def uncover(self, from_index, to_index):
+        """ Uncovers all elements with indices between @from_index (inclusive) and @to_index (exclusive). In effect,
+        every element with index i >= @to_index becomes the (i-to_index+@from_index)th (visible) element. """
+        raise NotImplementedError()
+
+    @abstractmethod
+    def selection(self):
+        """ :return The Selection expressing the indices of the uncovered elements. """
+        raise NotImplementedError()
 
 
 class SingletonBytesMmap(BytesMmap):

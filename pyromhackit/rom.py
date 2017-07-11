@@ -45,20 +45,23 @@ class GMmap(metaclass=ABCMeta):
         """ Executed as a final step of initialization. By default, do nothing. """
         pass
 
-    def _args2source(self, *args):
+    @staticmethod
+    def _args2source(*args):
         """ :return The source (file or iterable for the sequence) contained in the arguments @args. """
         return args
 
-    def _source2mmap(self, source):  # Final
+    @classmethod
+    def _source2mmap(cls, source):  # Final
         """ :return a mmap from @source, which can be either a sequence or a file storing the sequence. """
         if isinstance(source, io.IOBase):
-            m = self._file2mmap(source)
+            m = cls._file2mmap(source)
         else:
-            m = self._sequence2mmap(source)
+            m = cls._sequence2mmap(source)
         assert isinstance(m, mmap.mmap)
         return m
 
-    def _sequence2mmap(self, sequence) -> mmap.mmap:  # Final
+    @classmethod
+    def _sequence2mmap(cls, sequence) -> mmap.mmap:  # Final
         """ :return An anonymous mmap storing the bytestring representation of the sequence @sequence. @sequence needs
         to either be a bytestring or an iterable containing only elements that implement __len__. """
         def double_mmap_capacity(m):
@@ -67,7 +70,7 @@ class GMmap(metaclass=ABCMeta):
             m.close()
             return new_m
 
-        protection = self._access()
+        protection = cls._access()
         if isinstance(sequence, bytes):
             m = mmap.mmap(-1, len(sequence), access=protection)
             m.write(sequence)
@@ -76,7 +79,7 @@ class GMmap(metaclass=ABCMeta):
         m = mmap.mmap(-1, capacity)
         currentsize = 0
         for element in sequence:
-            bs = self._encode(element)
+            bs = cls._encode(element)
             currentsize += len(bs)
             while currentsize > capacity:
                 capacity *= 2
@@ -85,21 +88,25 @@ class GMmap(metaclass=ABCMeta):
         m.resize(currentsize)
         return m
 
-    def _file2mmap(self, file) -> mmap.mmap:  # Final
+    @classmethod
+    def _file2mmap(cls, file) -> mmap.mmap:  # Final
         """ :return A mmap storing the bytestring representation of the sequence originating from the file @file. """
-        protection = self._access()
+        protection = cls._access()
         m = mmap.mmap(file.fileno(), 0, access=protection)
         return m
 
+    @staticmethod
     @abstractmethod
     def _compute_length(self, content: mmap.mmap) -> int:
         """ :return The length of the sequence originating from the underlying mmap @content. """
         raise NotImplementedError()
 
-    def _access(self):
+    @staticmethod
+    def _access():
         """ :return The memory protection of the memory-mapped file. By default, readable and writable. """
         return mmap.ACCESS_READ | mmap.ACCESS_WRITE
 
+    @classmethod
     @abstractmethod
     def _logical2physical(self, location) -> slice:
         """ :return The slice for the bytestring that encodes the element(s) at location @location of the sequence.

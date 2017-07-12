@@ -1,8 +1,12 @@
 #!/usr/bin/env python
+import types
 from abc import abstractmethod, ABCMeta
 from collections import namedtuple
 import io
 
+import math
+
+import itertools
 from prettytable import PrettyTable
 import re
 from ast import literal_eval
@@ -24,46 +28,104 @@ Class representing a ROM.
 
 class GMmap(metaclass=ABCMeta):
     """ Generalized mmap. While a regular mmap stores a non-empty sequence of bytes, a GMmap stores a potentially empty
-    sequence of elements of any type(s) satisfying the following condition:
+    sequence of elements of any type(s) satisfying the following conditions:
     * The bytestring representation of a sequence equals the concatenation of the individual elements' bytestring
       representations.
+    * For any instance of a deriving class, the bytestring representation of an element cannot change during the
+    instance's lifetime.
+    * The sequence has a defined length given by __len__.
+    * The elements of the sequence are accessed using __getitem__. The type(s) of the objects used as the argument is up
+      to the deriving class.
     """
 
-    def __init__(self, *args):  # Final
-        """ Creates an instance from @source. """
-        source = self._args2source(*args)
-        self._content = self._source2mmap(source)
-        if isinstance(source, io.TextIOWrapper):  # Source is file
-            self._path = source.name
-            self._length = self._compute_length(self._content)
-        else:
-            self._path = None
-            self._length = self._compute_length(self._content)  # Cannot do len(source) if it is a generator
-        self._post_init()
+    @property
+    @abstractmethod
+    def _content(self) -> mmap.mmap:
+        """ :return The underlying mmap storing the sequence as a byte buffer. """
+        raise NotImplementedError
 
-    def _post_init(self):
-        """ Executed as a final step of initialization. By default, do nothing. """
-        pass
+    @property
+    @abstractmethod
+    def _length(self) -> int:
+        """ :return The number of elements in the sequence. """
+        raise NotImplementedError
 
     @staticmethod
+    @abstractmethod
+    def _encode(element) -> bytes:
+        """ :return The bytestring that @element encodes into. """
+        raise NotImplementedError()
+
+    @staticmethod
+    @abstractmethod
+    def _decode(bytestring: bytes):
+        """ :return The element that @bytestring encodes. """
+        raise NotImplementedError()
+
+    """ Post-initialization methods -- may only be called after __init__ finishes """
+
+    @abstractmethod
+    def _logical2physical(self, location) -> slice:
+        """ :return The slice for the bytestring that encodes the element(s) at location @location of the sequence.
+        :raise IndexError if @location is out of bounds. """
+        raise NotImplementedError()
+
+    def __getitem__(self, location):  # Final
+        """ :return A sub-sequence that @location refers to. """
+        bytestringlocation = self._logical2physical(location)
+        bytestringrepr = self._content[bytestringlocation]
+        value = self._decode(bytestringrepr)
+        return value
+
+    def __len__(self):  # Final
+        """ :return The number of elements in the sequence. """
+        return self._length
+
+
+class SourcedGMmap(metaclass=ABCMeta):
+    """
+    GMmap whose content originates from either an iterable storing the elements of the sequence, or a file.
+    """
+
+    def __init__(self, *args):
+        """ Initializes the mmap, the potential underlying path, and the length of the sequence. """
+        source = self._args2source(*args)
+        self._content, self._length, self._path = self._source2triple(source)
+
+    @property
+    @abstractmethod
+    def path(self) -> str:
+        return self._path
+
+    @staticmethod
+    @abstractmethod
     def _args2source(*args):
         """ :return The source (file or iterable for the sequence) contained in the arguments @args. """
-        return args
+        raise NotImplementedError()
 
     @classmethod
-    def _source2mmap(cls, source):  # Final
-        """ :return a mmap from @source, which can be either a sequence or a file storing the sequence. """
-        if isinstance(source, io.IOBase):
-            m = cls._file2mmap(source)
+    def _source2triple(cls, source):
+        if isinstance(source, io.TextIOWrapper):  # Source is file
+            content = cls._file2mmap(source)
+            path = source.name
+            length = cls._initial_length(content)
         else:
-            m = cls._sequence2mmap(source)
-        assert isinstance(m, mmap.mmap)
-        return m
+            content = cls._sequence2mmap(source)
+            path = None
+            length = cls._initial_length(content)  # Cannot do len(source) if it is a generator
+        return content, length, path
+
+    @classmethod
+    @abstractmethod
+    def _initial_length(cls, content: mmap.mmap) -> int:
+        """ :return The length of the sequence at the time of initialization. """
+        raise NotImplementedError()
 
     @classmethod
     def _sequence2mmap(cls, sequence) -> mmap.mmap:  # Final
         """ :return An anonymous mmap storing the bytestring representation of the sequence @sequence. @sequence needs
         to either be a bytestring or an iterable containing only elements that implement __len__. """
+
         def double_mmap_capacity(m):
             new_m = mmap.mmap(-1, capacity)
             new_m.write(bytes(m))  # FIXME Potentially large bytestring
@@ -96,43 +158,18 @@ class GMmap(metaclass=ABCMeta):
         return m
 
     @staticmethod
-    @abstractmethod
-    def _compute_length(self, content: mmap.mmap) -> int:
-        """ :return The length of the sequence originating from the underlying mmap @content. """
-        raise NotImplementedError()
-
-    @staticmethod
     def _access():
         """ :return The memory protection of the memory-mapped file. By default, readable and writable. """
         return mmap.ACCESS_READ | mmap.ACCESS_WRITE
 
-    @classmethod
-    @abstractmethod
-    def _logical2physical(self, location) -> slice:
-        """ :return The slice for the bytestring that encodes the element(s) at location @location of the sequence.
-        :raise IndexError if @location is out of bounds. """
-        raise NotImplementedError()
-
-    @abstractmethod
-    def _encode(self, element) -> bytes:
-        """ :return The bytestring that @element encodes into. """
-        raise NotImplementedError()
-
-    @abstractmethod
-    def _decode(self, bytestring: bytes):
-        """ :return The element that @bytestring encodes. """
-        raise NotImplementedError()
+    """ Post-initialization methods -- may only be called after __init__ finishes """
 
     def get_path(self):
+        """ :return the path of the underlying file, or None if there is none. """
         return self._path
 
-    def __getitem__(self, location):  # Final
-        """ :return The @location'th element, if @location is an integer; or the sub-sequence retrieved when slicing the
-        sequence with @location, if @location is a slice. """
-        bytestringlocation = self._logical2physical(location)
-        bytestringrepr = self._content[bytestringlocation]
-        value = self._decode(bytestringrepr)
-        return value
+
+class MutableGMmap(GMmap):
 
     def __setitem__(self, location, val):  # Final
         """ Sets the @location'th element to @val, if @location is an integer; or sets the sub-sequence retrieved when

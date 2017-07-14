@@ -44,10 +44,18 @@ class GMmap(metaclass=ABCMeta):
         """ :return The underlying mmap storing the sequence as a byte buffer. """
         raise NotImplementedError
 
+    @_content.setter
+    def _content(self, value):
+        raise NotImplementedError
+
     @property
     @abstractmethod
     def _length(self) -> int:
         """ :return The number of elements in the sequence. """
+        raise NotImplementedError
+
+    @_length.setter
+    def _length(self, value):
         raise NotImplementedError
 
     @staticmethod
@@ -82,26 +90,10 @@ class GMmap(metaclass=ABCMeta):
         return self._length
 
 
-class SourcedGMmap(metaclass=ABCMeta):
+class SourcedGMmap(GMmap, metaclass=ABCMeta):
     """
     GMmap whose content originates from either an iterable storing the elements of the sequence, or a file.
     """
-
-    def __init__(self, *args):
-        """ Initializes the mmap, the potential underlying path, and the length of the sequence. """
-        source = self._args2source(*args)
-        self._content, self._length, self._path = self._source2triple(source)
-
-    @property
-    @abstractmethod
-    def path(self) -> str:
-        return self._path
-
-    @staticmethod
-    @abstractmethod
-    def _args2source(*args):
-        """ :return The source (file or iterable for the sequence) contained in the arguments @args. """
-        raise NotImplementedError()
 
     @classmethod
     def _source2triple(cls, source):
@@ -116,10 +108,11 @@ class SourcedGMmap(metaclass=ABCMeta):
         return content, length, path
 
     @classmethod
-    @abstractmethod
-    def _initial_length(cls, content: mmap.mmap) -> int:
-        """ :return The length of the sequence at the time of initialization. """
-        raise NotImplementedError()
+    def _source2mmap(cls, source):
+        if isinstance(source, io.TextIOWrapper):  # Source is file
+            return cls._file2mmap(source)
+        else:
+            return cls._sequence2mmap(source)
 
     @classmethod
     def _sequence2mmap(cls, sequence) -> mmap.mmap:  # Final
@@ -213,7 +206,7 @@ class IndexedGMmap(GMmap):
         """ :return The slice for the bytestring that encodes the element(s) at location @location of the sequence. """
         raise NotImplementedError()
 
-    def _compute_length(self, content: mmap.mmap):
+    def _recompute_length(self):
         """ :return The length of the sequence which is computed in O(n*log(n)) by finding the lowest non-negative index
         that raises an IndexError. """
         try:
@@ -251,10 +244,12 @@ class Additive(metaclass=ABCMeta):
 class BytesMmap(Additive, IndexedGMmap, metaclass=ABCMeta):
     """ An IndexedGMmap where each element in the sequence is a bytestring of any positive length. """
 
-    def _decode(self, bytestring: bytes):
+    @staticmethod
+    def _decode(bytestring: bytes):
         return bytestring
 
-    def _encode(self, element) -> bytes:
+    @staticmethod
+    def _encode(element) -> bytes:
         return element
 
     def __bytes__(self) -> bytes:  # Final
@@ -280,11 +275,34 @@ class BytesMmap(Additive, IndexedGMmap, metaclass=ABCMeta):
         return operand + bytes(self)
 
 
-class FixedWidthBytesMmap(BytesMmap):
+#class FixedWidthGMmap(GMmap, metaclass=ABCMeta):
+
+
+class FixedWidthBytesMmap(SourcedGMmap, BytesMmap):
     """ A GMmap which is a sequence of bytestrings where all bytestrings share the same (positive) length. """
 
-    def _args2source(self, width, source):
+    def __init__(self, width, source):
         self.width = width
+        self._content = self._source2mmap(source)
+
+    @property
+    def path(self):
+        return self._path
+
+    @property
+    def _content(self):
+        return self._m_content
+
+    @_content.setter
+    def _content(self, value):
+        self._m_content = value
+
+    @property
+    def _length(self):
+        return self._content
+
+    def _args2source(*args):
+        width, source = args
         is_file = isinstance(source, io.TextIOWrapper)  # Quite tight but the price was right
         if not is_file:
             try:

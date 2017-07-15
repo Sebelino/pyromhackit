@@ -633,10 +633,11 @@ class ROM(object):
         return self.memory.iterbytes()
 
     def __len__(self):
-        """ Returns the number of bytes in this ROM. """
+        """ :return The number of bytes in this ROM. """
         return self.memory.bytes_count()
 
     def atomcount(self):
+        """ :return The number of atoms in this ROM. """
         return len(self.memory)
 
     def __eq__(self, other):

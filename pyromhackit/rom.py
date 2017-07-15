@@ -735,7 +735,7 @@ class IROMMmap(SourcedGMmap, StringMmap):
     def __init__(self, rom: ROM, codec):
         source = (codec[atom] for atom in rom)
         self._content = self._source2mmap(source)
-        self._length = len(rom)
+        self._length = rom.atomcount()
         self._path = None
 
     @property

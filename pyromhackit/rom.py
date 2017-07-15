@@ -7,6 +7,8 @@ import io
 import math
 
 import itertools
+from typing import Optional
+
 from prettytable import PrettyTable
 import re
 from ast import literal_eval
@@ -45,6 +47,7 @@ class GMmap(metaclass=ABCMeta):
         raise NotImplementedError
 
     @_content.setter
+    @abstractmethod
     def _content(self, value):
         raise NotImplementedError
 
@@ -55,18 +58,19 @@ class GMmap(metaclass=ABCMeta):
         raise NotImplementedError
 
     @_length.setter
+    @abstractmethod
     def _length(self, value):
         raise NotImplementedError
 
-    @staticmethod
+    @classmethod
     @abstractmethod
-    def _encode(element) -> bytes:
+    def _encode(cls, element) -> bytes:
         """ :return The bytestring that @element encodes into. """
         raise NotImplementedError()
 
-    @staticmethod
+    @classmethod
     @abstractmethod
-    def _decode(bytestring: bytes):
+    def _decode(cls, bytestring: bytes):
         """ :return The element that @bytestring encodes. """
         raise NotImplementedError()
 
@@ -94,6 +98,20 @@ class SourcedGMmap(GMmap, metaclass=ABCMeta):
     """
     GMmap whose content originates from either an iterable storing the elements of the sequence, or a file.
     """
+
+    @property
+    @abstractmethod
+    def _path(self) -> Optional[str]:
+        raise NotImplementedError
+
+    @_path.setter
+    @abstractmethod
+    def _path(self, value: Optional[str]):
+        raise NotImplementedError
+
+    @property
+    def path(self) -> Optional[str]:
+        return self._path
 
     @classmethod
     def _source2triple(cls, source):
@@ -155,15 +173,8 @@ class SourcedGMmap(GMmap, metaclass=ABCMeta):
         """ :return The memory protection of the memory-mapped file. By default, readable and writable. """
         return mmap.ACCESS_READ | mmap.ACCESS_WRITE
 
-    """ Post-initialization methods -- may only be called after __init__ finishes """
 
-    def get_path(self):
-        """ :return the path of the underlying file, or None if there is none. """
-        return self._path
-
-
-class MutableGMmap(GMmap):
-
+class SettableGMmap(GMmap):
     def __setitem__(self, location, val):  # Final
         """ Sets the @location'th element to @val, if @location is an integer; or sets the sub-sequence retrieved when
         slicing the sequence with @location to @val, if @location is a slice. """
@@ -171,15 +182,13 @@ class MutableGMmap(GMmap):
         bytestringlocation = self._logical2physical(location)
         self._content[bytestringlocation] = bytestringrepr
 
+
+class DeletableGMmap(GMmap):
     @abstractmethod  # Can this be non-abstract? Hmm...
     def __delitem__(self, location):  # Final
         """ Removes the @location'th element, if @location is an integer; or the sub-sequence retrieved when slicing the
         sequence with @location, if @location is a slice. """
         raise NotImplementedError()
-
-    def __len__(self):
-        """ :return The number of elements in the sequence. """
-        return self._length
 
 
 class IndexedGMmap(GMmap):
@@ -244,12 +253,12 @@ class Additive(metaclass=ABCMeta):
 class BytesMmap(Additive, IndexedGMmap, metaclass=ABCMeta):
     """ An IndexedGMmap where each element in the sequence is a bytestring of any positive length. """
 
-    @staticmethod
-    def _decode(bytestring: bytes):
+    @classmethod
+    def _decode(cls, bytestring: bytes):
         return bytestring
 
-    @staticmethod
-    def _encode(element) -> bytes:
+    @classmethod
+    def _encode(cls, element) -> bytes:
         return element
 
     def __bytes__(self) -> bytes:  # Final
@@ -284,10 +293,19 @@ class FixedWidthBytesMmap(SourcedGMmap, BytesMmap):
     def __init__(self, width, source):
         self.width = width
         self._content = self._source2mmap(source)
+        self._length = len(self._content) // width
+        if isinstance(source, io.TextIOWrapper):
+            self._path = source.name
+        else:
+            self._path = None
 
     @property
-    def path(self):
-        return self._path
+    def _path(self) -> Optional[str]:
+        return self._m_path
+
+    @_path.setter
+    def _path(self, value: Optional[str]):
+        self._m_path = value
 
     @property
     def _content(self):
@@ -298,8 +316,12 @@ class FixedWidthBytesMmap(SourcedGMmap, BytesMmap):
         self._m_content = value
 
     @property
-    def _length(self):
-        return self._content
+    def _length(self) -> int:
+        return self._m_length
+
+    @_length.setter
+    def _length(self, value):
+        self._m_length = value
 
     def _args2source(*args):
         width, source = args
@@ -379,15 +401,9 @@ class SingletonBytesMmap(BytesMmap):
             return location
         return slice(0, 0)  # Empty slice
 
-    def _compute_length(self, _) -> int:
-        return 1
-
 
 class StringMmap(Additive, IndexedGMmap, metaclass=ABCMeta):
     """ An IndexedGMmap where each element in the sequence is a Unicode string of any positive length. """
-
-    def _compute_length(self, content) -> int:
-        return int(len(content) / 4)  # 4 for each char
 
     def _logicalslice2physical(self, location: slice) -> slice:
         return slice(
@@ -405,10 +421,12 @@ class StringMmap(Additive, IndexedGMmap, metaclass=ABCMeta):
             return slice(4 * location, None)
         raise IndexError("Index out of bounds: {}".format(location))
 
-    def _encode(self, element: str) -> bytes:
+    @classmethod
+    def _encode(cls, element: str) -> bytes:
         return element.encode('utf-32')[4:]
 
-    def _decode(self, bytestring: bytes) -> str:
+    @classmethod
+    def _decode(cls, bytestring: bytes) -> str:
         prefix = ''.encode('utf-32')
         return (prefix + bytestring).decode('utf-32')
 
@@ -440,18 +458,18 @@ class ROM(object):
         else:
             try:
                 bytestr = bytes(rom_specifier)
-                if not bytestr:  # mmaps cannot have zero length
-                    raise NotImplementedError("The bytestring's length cannot be zero.")
-                size = len(bytestr)
-                self.selection = Selection(slice(0, len(bytestr)))
-                if str(structure) == "SimpleTopology(2)":
-                    self.memory = FixedWidthBytesMmap(2, self.structure.structure(bytestr))
-                else:
-                    #self.memory = SingletonBytesMmap(bytestr)
-                    self.memory = FixedWidthBytesMmap(1, self.structure.structure(bytestr))
-            except:
-                raise ValueError("ROM constructor expected a bytestring-convertible object or path, got: {}".format(
+            except TypeError:
+                raise TypeError("ROM constructor expected a bytestring-convertible object or path, got: {}".format(
                     type(rom_specifier)))
+            if not bytestr:  # mmaps cannot have zero length
+                raise NotImplementedError("The bytestring's length cannot be zero.")
+            size = len(bytestr)
+            self.selection = Selection(slice(0, len(bytestr)))
+            if str(structure) == "SimpleTopology(2)":
+                self.memory = FixedWidthBytesMmap(2, self.structure.structure(bytestr))
+            else:
+                # self.memory = SingletonBytesMmap(bytestr)
+                self.memory = FixedWidthBytesMmap(1, self.structure.structure(bytestr))
 
     def coverup(self, from_index, to_index, virtual=False):  # Mutability
         self.selection.coverup(from_index, to_index)
@@ -705,22 +723,49 @@ class ROM(object):
         topologystr = ""
         if not str(self.structure) == "SimpleTopology(1)":
             topologystr = ", structure={}".format(self.structure)
-        if self.memory.get_path():
-            return "ROM(path={}{})".format(repr(self.memory.get_path()), topologystr)
+        if self.memory.path:
+            return "ROM(path={}{})".format(repr(self.memory.path), topologystr)
         else:
             return "ROM({}{})".format(bytes(self), topologystr)
 
 
-class IROMMmap(StringMmap):
+class IROMMmap(SourcedGMmap, StringMmap):
     """ A StringMmap where the source is extracted from a ROM and a codec mapping ROM atoms to strings. """
 
-    def _args2source(self, rom: ROM, codec):
-        for atom in rom:
-            yield codec[atom]
+    def __init__(self, rom: ROM, codec):
+        source = (codec[atom] for atom in rom)
+        self._content = self._source2mmap(source)
+        self._length = len(rom)
+        self._path = None
+
+    @property
+    def _content(self) -> mmap.mmap:
+        return self._m_content
+
+    @property
+    def _path(self) -> Optional[str]:
+        return self._m_path
+
+    @property
+    def _length(self) -> int:
+        return self._m_length
+
+    @_content.setter
+    def _content(self, value):
+        self._m_content = value
+
+    @_length.setter
+    def _length(self, value):
+        self._m_length = value
+
+    @_path.setter
+    def _path(self, value):
+        self._m_path = value
 
 
 class IROM(object):
     """ Isomorphism of a ROM. Basically a Unicode string with a structure defined on it. """
+
     def __init__(self, rom: 'ROM', codec):
         """ Constructs an IROM object from a ROM and a codec transliterating every ROM atom into an IROM atom. """
         self.structure = SimpleTopology(1)  # This will do for now

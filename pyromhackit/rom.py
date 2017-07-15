@@ -354,9 +354,6 @@ class FixedWidthBytesMmap(SourcedGMmap, BytesMmap):
             self.width * location.step if location.step else None,
         )
 
-    def _compute_length(self, content):
-        return int(len(content) / self.width)
-
 
 class SelectiveGMmap(IndexedGMmap, metaclass=ABCMeta):
     """ An IndexedGMmap in which elements in the sequence can be marked/unmarked as being hidden from the user's

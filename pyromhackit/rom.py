@@ -271,7 +271,7 @@ class BytesMmap(Additive, IndexedGMmap, metaclass=ABCMeta):
             for b in bs:
                 yield b
 
-    def bytes_count(self):
+    def bytecount(self):
         """ :return The total number of bytes in this sequence. """
         return len(self._content)  # Assumes that self[:] == bytes(mmap)
 
@@ -639,6 +639,10 @@ class ROM(object):
     def atomcount(self):
         """ :return The number of atoms in this ROM. """
         return len(self.memory)
+
+    def bytecount(self):
+        """ :return The number of bytes in this ROM. """
+        return self.memory.bytecount()
 
     def __eq__(self, other):
         """ True of both are ROMs and their byte sequences are the same. """

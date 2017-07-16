@@ -357,32 +357,37 @@ class FixedWidthBytesMmap(SourcedGMmap, BytesMmap):
 
 class SelectiveGMmap(IndexedGMmap, metaclass=ABCMeta):
     """ An IndexedGMmap in which elements in the sequence can be marked/unmarked as being hidden from the user's
-    purview. If the ith element is revealed and becomes preceded by n hidden elements, that means that this element will
+    purview. If the ith element is visible and becomes preceded by n hidden elements, that means that this element will
     henceforth be considered to be the (i-n)th element. """
 
-    def _post_init(self):
-        self._selection = Selection()
-    
+    @property
+    @abstractmethod
+    def selection(self) -> Selection:
+        raise NotImplementedError
+
     def _logical2physical(self, virtual_location):
-        location = self.select
+        location = self.selection.select(virtual_location)
         super(SelectiveGMmap, self)._logical2physical(location)
 
-    @abstractmethod
     def coverup(self, from_index, to_index):
         """ Covers up all elements with indices between @from_index (inclusive) and @to_index (exclusive). In effect,
         every element with index i >= @to_index becomes the (i-to_index+@from_index)th (visible) element. """
-        raise NotImplementedError()
+        self.selection.coverup(from_index, to_index)
 
-    @abstractmethod
     def uncover(self, from_index, to_index):
-        """ Uncovers all elements with indices between @from_index (inclusive) and @to_index (exclusive). In effect,
+        """ Uncovers all elements that are hidden between with indices between @from_index (inclusive) and @to_index (exclusive). In effect,
         every element with index i >= @to_index becomes the (i-to_index+@from_index)th (visible) element. """
-        raise NotImplementedError()
+        self.selection.reveal(from_index, to_index)
 
-    @abstractmethod
-    def selection(self):
-        """ :return The Selection expressing the indices of the uncovered elements. """
-        raise NotImplementedError()
+
+class SelectiveFixedWidthBytesMmap(SelectiveGMmap, FixedWidthBytesMmap):
+    def __init__(self, width, source):
+        super(SelectiveFixedWidthBytesMmap, self).__init__(width, source)
+        self._selection = Selection(universe=slice(0, self._length))
+
+    @property
+    def selection(self) -> Selection:
+        return self._selection
 
 
 class SingletonBytesMmap(BytesMmap):

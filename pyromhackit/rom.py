@@ -48,7 +48,7 @@ class GMmap(metaclass=ABCMeta):
 
     @_content.setter
     @abstractmethod
-    def _content(self, value):
+    def _content(self, value: mmap.mmap):
         raise NotImplementedError
 
     @property
@@ -59,7 +59,7 @@ class GMmap(metaclass=ABCMeta):
 
     @_length.setter
     @abstractmethod
-    def _length(self, value):
+    def _length(self, value: int):
         raise NotImplementedError
 
     @classmethod
@@ -308,11 +308,11 @@ class FixedWidthBytesMmap(SourcedGMmap, BytesMmap):
         self._m_path = value
 
     @property
-    def _content(self):
+    def _content(self) -> mmap.mmap:
         return self._m_content
 
     @_content.setter
-    def _content(self, value):
+    def _content(self, value: mmap.mmap):
         self._m_content = value
 
     @property
@@ -320,7 +320,7 @@ class FixedWidthBytesMmap(SourcedGMmap, BytesMmap):
         return self._m_length
 
     @_length.setter
-    def _length(self, value):
+    def _length(self, value: int):
         self._m_length = value
 
     def _args2source(*args):
@@ -631,7 +631,7 @@ class ROM(object):
 
     def __len__(self):
         """ :return The number of bytes in this ROM. """
-        return self.memory.bytes_count()
+        return self.atomcount()
 
     def atomcount(self):
         """ :return The number of atoms in this ROM. """

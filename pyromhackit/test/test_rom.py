@@ -46,7 +46,7 @@ def test_init_fail():
     """ Call constructor with invalid value """
     with pytest.raises(ValueError):
         ROM([256])
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         ROM(None)
 
 def test_idempotence():
@@ -56,7 +56,7 @@ def test_idempotence():
 
 class TestTinyROM:
     @pytest.fixture(scope="module")
-    def tinyrom(self):
+    def tinyrom(self) -> ROM:
         """ Test methods for an explicitly given tiny ROM """
         return ROM(b"a\xffc")
 
@@ -79,7 +79,7 @@ class TestTinyROM:
         assert len(tinyrom) == 3
 
     def test_atomcount(self, tinyrom):
-        assert tinyrom.atomcount() == 1
+        assert tinyrom.atomcount() == 3
 
     def test_eq(self, tinyrom):
         """ Two ROMs constructed from the same bytestring are equal """
@@ -142,7 +142,7 @@ class TestTinyROM:
         assert tinyrom.relative_search(bregex, stop_on_match) == expected
 
     @pytest.mark.parametrize("arg, expected", [
-        (0, 97),
+        (0, b'a'),
     ])
     def test_subscripting(self, tinyrom, arg, expected):
         """ Subscripting support is isomorphic to bytestrings """
@@ -264,7 +264,7 @@ class TestROM256:
         assert rom256.index(b'\x80') == 0x80
 
     @pytest.mark.parametrize("arg, expected", [
-        (0, 0),
+        (0, b'\x00'),
     ])
     def test_subscripting(self, rom256, arg, expected):
         """ Subscripting support is isomorphic to bytestrings """
@@ -354,6 +354,15 @@ class TestStructuredROM(object):
     def test_atomcount(self):
         assert self.rom.atomcount() == 3
 
+    @pytest.mark.parametrize("idx, expected", [
+        (0, b'1h'),
+        (1, b'0o'),
+        (2, b'0w'),
+    ])
+    def test_getatom(self, idx, expected):
+        assert self.rom.getatom(idx) == expected
+
+    @pytest.mark.skip("Not sure if this method should even exist, even for debug purposes")
     def test_traverse_preorder(self):
         assert list(self.rom.traverse_preorder()) == [
             (0, 0, (0,), 0, b'1h'),
@@ -362,6 +371,7 @@ class TestStructuredROM(object):
         ]
 
 
+@pytest.mark.skip()
 @pytest.mark.parametrize("args, expected", [
     (["hex"], ["61", "62", "63"]),
     (["hex | join ' '"], "61 62 63"),
@@ -377,6 +387,7 @@ def test_pipe(args, expected):
 @pytest.mark.parametrize("args, expected", [
     (["map {}".format(MAPPATH)], "reprehenderit"),
 ])
+@pytest.mark.skip("Unsupported feature for now")
 def test_pipe2(args, expected):
     rom = ROM(ROM(ROMPATH)[257:257 + 13])
     returned = rom.pipe(*args)
@@ -412,6 +423,7 @@ def write_rom_to_file(request):
     ("rb", "save {}".format(OUTPATH), rb"23623=3\9325<"),
     ("r", "map {} | save {}".format(MAPPATH, OUTPATH), "reprehenderit"),
 ], indirect=True)
+@pytest.mark.skip("Unsupported feature for now")
 def test_outfile(write_rom_to_file):
     """ Test loading a ROM from a file and write it to another """
     _, _, returned, expected = write_rom_to_file

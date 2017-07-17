@@ -183,6 +183,20 @@ class TestTinyROM:
         """ Split ROM into a list """
         assert tinyrom.lines(arg) == expected
 
+    def test_coverup(self, tinyrom: ROM):
+        tinyrom.coverup(0, 1)
+        assert bytes(tinyrom) == b'\xffc'
+
+    def test_coverup_and_reveal(self, tinyrom: ROM):
+        tinyrom.coverup(0, 1)
+        tinyrom.reveal(0, 1)
+        assert bytes(tinyrom) == b'a\xffc'
+
+    def test_coverup_all_and_reveal_all(self, tinyrom: ROM):
+        tinyrom.coverup(None, None)
+        tinyrom.reveal(None, None)
+        assert bytes(tinyrom) == b'a\xffc'
+
 
 bytes256 = (
     b"\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f"

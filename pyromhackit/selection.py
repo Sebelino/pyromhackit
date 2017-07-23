@@ -1,7 +1,33 @@
 #!/usr/bin/env python
 
 
-class Selection(object):
+class AbstractSelection(object):
+    def coverup(self, from_index, to_index):
+        raise NotImplementedError
+
+    def reveal(self, from_index, to_index):
+        raise NotImplementedError
+
+    def index(self, pindex):
+        """ :return The slice that @pindex is in. """
+        raise NotImplementedError
+
+    def select(self, listlike):
+        """ :return The selection of the subscriptable object @listlike. """
+        raise NotImplementedError
+
+    def physical2virtual(self, pindex):
+        raise NotImplementedError
+
+    def virtual2physical(self, vindex):
+        raise NotImplementedError
+
+    def virtual2physicalselection(self, vslice: slice):
+        """ :return The sub-Selection that is the intersection of this selection and @vslice. """
+        raise NotImplementedError
+
+
+class Selection(AbstractSelection):
     def __init__(self, universe: slice, revealed: list = None):
         assert isinstance(universe, slice)
         assert universe.start == 0

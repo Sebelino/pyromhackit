@@ -1,35 +1,28 @@
 #!/usr/bin/env python
+from abc import ABCMeta, abstractmethod
 
 
-class AbstractSelection(object):
-    def coverup(self, from_index, to_index):
+class AbstractGSlice(metaclass=ABCMeta):
+    """ A GSlice (generalized slice) is any subset of the set of non-negative integers. """
+
+    @abstractmethod
+    def select(self, sequence):
+        """ :return The selection of the subscriptable object @sequence. """
         raise NotImplementedError
 
-    def reveal(self, from_index, to_index):
-        raise NotImplementedError
-
-    def index(self, pindex):
-        """ :return The slice that @pindex is in. """
-        raise NotImplementedError
-
-    def select(self, listlike):
-        """ :return The selection of the subscriptable object @listlike. """
-        raise NotImplementedError
-
-    def physical2virtual(self, pindex):
-        raise NotImplementedError
-
-    def virtual2physical(self, vindex):
-        raise NotImplementedError
-
-    def virtual2physicalselection(self, vslice: slice):
-        """ :return The sub-Selection that is the intersection of this selection and @vslice. """
-        raise NotImplementedError
+    def __getitem__(self, sequence):  # Final
+        """ :return select(@sequence). """
+        return self.select(sequence)
 
 
-class Selection(AbstractSelection):
+class Slice(slice, AbstractGSlice):
+    def select(self, sequence):
+        return sequence[self]
+
+
+class Selection(AbstractGSlice):  # TODO rename to GSlice
     def __init__(self, universe: slice, revealed: list = None):
-        assert isinstance(universe, slice)
+        assert isinstance(universe, slice)  # Should universe even be visible/exist?
         assert universe.start == 0
         assert isinstance(universe.stop, int)
         assert universe.stop >= 1

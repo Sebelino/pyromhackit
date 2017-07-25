@@ -2,25 +2,19 @@
 from abc import ABCMeta, abstractmethod
 
 
-class AbstractGSlice(metaclass=ABCMeta):
-    """ A GSlice (generalized slice) is any subset of the set of non-negative integers. """
+class GSlice(metaclass=ABCMeta):
+    """ A GSlice (generalized slice) is any subset of the set of non-negative integers. It provides a way to select
+     certain elements from a sequence. """
 
     @abstractmethod
     def select(self, sequence):
-        """ :return The selection of the subscriptable object @sequence. """
+        """ :return A sequence x1, x2, ..., xn such that each xi is found in the sequence @sequence and the index of xi
+        in @sequence increases monotonically w.r.t. i. The return value should not depend on the nature of the elements
+        themselves. """
         raise NotImplementedError
 
-    def __getitem__(self, sequence):  # Final
-        """ :return select(@sequence). """
-        return self.select(sequence)
 
-
-class Slice(slice, AbstractGSlice):
-    def select(self, sequence):
-        return sequence[self]
-
-
-class Selection(AbstractGSlice):  # TODO rename to GSlice
+class Selection(GSlice):
     def __init__(self, universe: slice, revealed: list = None):
         assert isinstance(universe, slice)  # Should universe even be visible/exist?
         assert universe.start == 0

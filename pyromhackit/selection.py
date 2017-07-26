@@ -14,7 +14,33 @@ class GSlice(metaclass=ABCMeta):
         raise NotImplementedError
 
 
-class Selection(GSlice):
+class PrimitiveGSlice(GSlice, metaclass=ABCMeta):  # TODO rename
+    pass
+
+
+class Integer(PrimitiveGSlice):
+    def __init__(self, *args):
+        self.content = int(*args)
+
+    def select(self, sequence):
+        return sequence[self.content]
+
+    def __call__(self, *args, **kwargs):
+        return self.content
+
+
+class Slice(PrimitiveGSlice):
+    def __init__(self, *args):
+        self.content = slice(*args)
+
+    def select(self, sequence):
+        return sequence[self.content]
+
+    def __call__(self, *args, **kwargs):
+        return self.content
+
+
+class Selection(GSlice):  # TODO -> GSlice
     def __init__(self, universe: slice, revealed: list = None):
         assert isinstance(universe, slice)  # Should universe even be visible/exist?
         assert universe.start == 0
@@ -173,6 +199,10 @@ class Selection(GSlice):
         intervals[0] = slice(a, intervals[0].stop)
         intervals[-1] = slice(intervals[-1].start, b)
         return Selection(universe=self.universe, revealed=intervals)
+
+    def virtualselection2physical(self, vselection: 'Selection'):  # TODO -> virtualslice2physical
+        """ :return the sub-Selection that is the intersection of this selection and @vselection. """
+        pass
 
     def __getitem__(self, item):
         return self.virtual2physical(item)

@@ -202,7 +202,10 @@ class Selection(GSlice):  # TODO -> GSlice
 
     def virtualselection2physical(self, vselection: 'Selection'):  # TODO -> virtualslice2physical
         """ :return the sub-Selection that is the intersection of this selection and @vselection. """
-        pass
+        intervals = []
+        for start, stop in vselection:
+            intervals.append(self.virtual2physicalselection(slice(start, stop)))
+        return Selection(universe=self.universe, revealed=intervals)
 
     def __getitem__(self, item):
         return self.virtual2physical(item)

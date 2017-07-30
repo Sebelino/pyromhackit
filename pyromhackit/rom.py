@@ -77,15 +77,20 @@ class GMmap(metaclass=ABCMeta):
     """ Post-initialization methods -- may only be called after __init__ finishes """
 
     @abstractmethod
-    def _logical2physical(self, location) -> slice:
+    def _logical2physical(self, location):
         """ :return The slice for the bytestring that encodes the element(s) at location @location of the sequence.
         :raise IndexError if @location is out of bounds. """
         raise NotImplementedError()
 
+    @abstractmethod
+    def _physical2bytes(self, physicallocation, content: mmap.mmap) -> bytes:
+        """ :return The bytestring obtained when accessing the @content mmap using @physicallocation. """
+        raise NotImplementedError
+
     def __getitem__(self, location):  # Final
         """ :return A sub-sequence that @location refers to. """
         bytestringlocation = self._logical2physical(location)
-        bytestringrepr = self._content[bytestringlocation]
+        bytestringrepr = self._physical2bytes(bytestringlocation, self._content)
         value = self._decode(bytestringrepr)
         return value
 
@@ -194,7 +199,7 @@ class DeletableGMmap(GMmap):
 class IndexedGMmap(GMmap):
     """ GMmap where the indices used to access elements in the sequence are either integers or slices. """
 
-    def _logical2physical(self, location) -> slice:
+    def _logical2physical(self, location: Union[int, slice]):
         """ :return The slice for the bytestring that encodes the element(s) at location @location of the sequence.
         :raise IndexError if @location is an integer and is out of bounds. """
         if isinstance(location, int):
@@ -205,13 +210,13 @@ class IndexedGMmap(GMmap):
             raise TypeError("Unexpected location type: {}".format(type(location)))
 
     @abstractmethod
-    def _logicalint2physical(self, location: int) -> slice:
+    def _logicalint2physical(self, location: int):
         """ :return The slice for the bytestring that encodes the element(s) at integer index @location of the sequence.
         :raise IndexError if @location is out of bounds. """
         raise NotImplementedError()
 
     @abstractmethod
-    def _logicalslice2physical(self, location: slice) -> slice:
+    def _logicalslice2physical(self, location: slice):
         """ :return The slice for the bytestring that encodes the element(s) at location @location of the sequence. """
         raise NotImplementedError()
 
@@ -240,6 +245,18 @@ class IndexedGMmap(GMmap):
         return a + 1
 
 
+class PhysicallyIndexedGMmap(GMmap):
+    """ GMmap where each physical location that a logical location translates into is either a slice or a Selection. """
+
+    def _physical2bytes(self, physicallocation: Union[slice, Selection], content: mmap.mmap) -> bytes:
+        """ :return The bytestring obtained when accessing the @content mmap using @physicallocation. """
+        if isinstance(physicallocation, slice):
+            return content[physicallocation]
+        elif isinstance(physicallocation, Selection):
+            return physicallocation.select(content)
+        raise TypeError
+
+
 class Additive(metaclass=ABCMeta):
     @abstractmethod
     def __add__(self, operand):
@@ -250,7 +267,7 @@ class Additive(metaclass=ABCMeta):
         return NotImplementedError()
 
 
-class BytesMmap(Additive, IndexedGMmap, metaclass=ABCMeta):
+class BytesMmap(Additive, IndexedGMmap, PhysicallyIndexedGMmap, metaclass=ABCMeta):
     """ An IndexedGMmap where each element in the sequence is a bytestring of any positive length. """
 
     @classmethod
@@ -355,7 +372,7 @@ class FixedWidthBytesMmap(SourcedGMmap, BytesMmap):
         )
 
 
-class SelectiveGMmap(IndexedGMmap, metaclass=ABCMeta):
+class SelectiveGMmap(IndexedGMmap, PhysicallyIndexedGMmap, metaclass=ABCMeta):
     """ An IndexedGMmap in which elements in the sequence can be marked/unmarked as being hidden from the user's
     purview. If the ith element is visible and becomes preceded by n hidden elements, that means that this element will
     henceforth be considered to be the (i-n)th element. """

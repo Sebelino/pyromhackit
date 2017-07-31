@@ -383,8 +383,16 @@ class SelectiveGMmap(IndexedGMmap, PhysicallyIndexedGMmap, metaclass=ABCMeta):
         raise NotImplementedError
 
     def _logical2physical(self, virtual_location):
-        location = self.selection.select(virtual_location)
-        super(SelectiveGMmap, self)._logical2physical(location)
+        if isinstance(virtual_location, int):
+            location = self.selection.virtual2physical(virtual_location)
+            return super(SelectiveGMmap, self)._logicalint2physical(location)
+        elif isinstance(virtual_location, slice):
+            return self._logicalselection2physical(virtual_location)
+        #raise ValueError("Expected integer or slice but got {}".format(virtual_location))
+        raise TypeError("Unexpected location type: {}".format(type(virtual_location)))
+
+    def _logicalselection2physical(self, location: Selection) -> Selection:
+        return self.selection.virtual2physicalselection(location)
 
     def coverup(self, from_index, to_index):
         """ Covers up all elements with indices between @from_index (inclusive) and @to_index (exclusive). In effect,
@@ -472,8 +480,7 @@ class ROM(object):
             path = rom_specifier
             filesize = os.path.getsize(path)
             file = open(path, 'r')
-            self.selection = Selection(slice(0, filesize))
-            self.memory = FixedWidthBytesMmap(2, file)
+            self.memory = SelectiveFixedWidthBytesMmap(2, file)
         else:
             try:
                 bytestr = bytes(rom_specifier)
@@ -483,30 +490,27 @@ class ROM(object):
             if not bytestr:  # mmaps cannot have zero length
                 raise NotImplementedError("The bytestring's length cannot be zero.")
             size = len(bytestr)
-            self.selection = Selection(slice(0, len(bytestr)))
             if str(structure) == "SimpleTopology(2)":
-                self.memory = FixedWidthBytesMmap(2, self.structure.structure(bytestr))
+                self.memory = SelectiveFixedWidthBytesMmap(2, self.structure.structure(bytestr))
             else:
                 # self.memory = SingletonBytesMmap(bytestr)
-                self.memory = FixedWidthBytesMmap(1, self.structure.structure(bytestr))
+                self.memory = SelectiveFixedWidthBytesMmap(1, self.structure.structure(bytestr))
 
     def coverup(self, from_index, to_index, virtual=False):  # Mutability
-        self.selection.coverup(from_index, to_index)
+        self.memory.coverup(from_index, to_index)
 
     def reveal(self, from_index, to_index, virtual=False):  # Mutability
-        self.selection.reveal(from_index, to_index)
+        self.memory.uncover(from_index, to_index)
 
     def tree(self):
         """ Returns a Tree consisting of the revealed portions of the ROM according to the ROM's topology. """
-        bs = self.selection.select(self.memory)
-        t = self.structure.structure(bs)
+        t = self.structure.structure(self.memory)
         return Tree(t)
 
     def traverse_preorder(self):  # NOTE: 18 times slower than iterating for content with getatom
         for idx, atomidx, idxpath, content in self.structure.traverse_preorder(self):
             Atom = namedtuple("Atom", "index atomindex indexpath physindex content")
-            physidx = self.selection.virtual2physical(idx)
-            yield Atom(idx, atomidx, idxpath, physidx, bytes(content))
+            yield Atom(idx, atomidx, idxpath, idx, bytes(content))
 
     def flatten_without_joining(self):
         return self.content.flatten_without_joining()
@@ -686,7 +690,7 @@ class ROM(object):
         Atom = namedtuple("Atom", "index atomindex indexpath physindex content")
         index = self.structure.indexpath2index(indexpath)
         atomindex = self.structure.index2leafindex(index)
-        physindex = self.selection.virtual2physical(index)
+        physindex = -1  # TODO
         content = self.getatom(atomindex)
         return Atom(index, atomindex, indexpath, physindex, content)
 
@@ -738,8 +742,7 @@ class ROM(object):
         return "".join(result)
 
     def __bytes__(self):
-        s = self.selection.select(self.memory)
-        bs = s[:]
+        bs = self.memory[:]
         return bs
 
     def __str__(self):

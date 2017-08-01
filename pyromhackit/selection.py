@@ -2,7 +2,10 @@
 from abc import ABCMeta, abstractmethod
 
 
-class GSlice(metaclass=ABCMeta):
+# TODO create interface/type Selection
+
+
+class GSlice(metaclass=ABCMeta):  # TODO -> AbstractGSlice
     """ A GSlice (generalized slice) is any subset of the set of non-negative integers. It provides a way to select
      certain elements from a sequence. """
 
@@ -122,7 +125,7 @@ class Selection(GSlice):  # TODO -> GSlice
 
     def __iter__(self):
         for sl in self.revealed:
-            yield (sl.start, sl.stop)
+            yield (sl.start, sl.stop)  # FIXME should probably generate slices instead, or every index
 
     def _slice_index(self, pindex):
         """ Returns n if @pindex is in the nth slice. """
@@ -159,7 +162,7 @@ class Selection(GSlice):  # TODO -> GSlice
             vindex += b - a
         raise IndexError("Physical index {} out of bounds for selection {}".format(pindex, self))
 
-    def virtual2physical(self, vindex):
+    def virtual2physical(self, vindex):  # TODO -> virtualint2physical
         pindex = self.revealed[0].start
         cumlength = 0
         for a, b in self:
@@ -172,7 +175,7 @@ class Selection(GSlice):  # TODO -> GSlice
                     break
         raise IndexError("Virtual index {} out of bounds for selection {}".format(vindex, self))
 
-    def virtual2physicalselection(self, vslice: slice):
+    def virtual2physicalselection(self, vslice: slice):  # TODO -> virtualslice2physical
         """ Returns the sub-Selection that is the intersection of this selection and @vslice. """
         if not self.revealed:
             return Selection(self.universe, revealed=[])
@@ -217,6 +220,14 @@ class Selection(GSlice):  # TODO -> GSlice
 
     def __eq__(self, other):
         return repr(self) == repr(other)
+
+    def __mul__(self, other: int):
+        scaled_universe = slice(self.universe.start * other, self.universe.stop * other)
+        scaled_revealed = [slice(s.start * other, s.stop * other) for s in self.revealed]
+        return Selection(universe=scaled_universe, revealed=scaled_revealed)
+
+    def __rmul__(self, other):
+        return self.__mul__(other)
 
     def __repr__(self):
         return "{}(universe={}, revealed={})".format(self.__class__.__name__, self.universe, self.revealed)

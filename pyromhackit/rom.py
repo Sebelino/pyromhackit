@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import types
 from abc import abstractmethod, ABCMeta
 from collections import namedtuple
 import io
@@ -7,9 +6,8 @@ import io
 import math
 
 import itertools
-from typing import Optional
+from typing import Optional, Union
 
-from prettytable import PrettyTable
 import re
 from ast import literal_eval
 import os
@@ -356,6 +354,7 @@ class FixedWidthBytesMmap(SourcedGMmap, BytesMmap):
         return source
 
     def _logicalint2physical(self, location: int):
+        assert isinstance(location, int)  # TODO remove
         if 0 <= location < len(self):
             return slice(self.width * location, self.width * (location + 1))
         elif -len(self) <= location < -1:
@@ -365,6 +364,7 @@ class FixedWidthBytesMmap(SourcedGMmap, BytesMmap):
         raise IndexError("Index out of bounds: {}".format(location))
 
     def _logicalslice2physical(self, location: slice):
+        assert isinstance(location, slice)  # TODO remove
         return slice(
             self.width * location.start if location.start else None,
             self.width * location.stop if location.stop else None,
@@ -387,12 +387,14 @@ class SelectiveGMmap(IndexedGMmap, PhysicallyIndexedGMmap, metaclass=ABCMeta):
             location = self.selection.virtual2physical(virtual_location)
             return super(SelectiveGMmap, self)._logicalint2physical(location)
         elif isinstance(virtual_location, slice):
-            return self._logicalselection2physical(virtual_location)
+            location = self.selection.virtual2physicalselection(virtual_location)
+            return self._logicalselection2physical(location)
         #raise ValueError("Expected integer or slice but got {}".format(virtual_location))
         raise TypeError("Unexpected location type: {}".format(type(virtual_location)))
 
+    @abstractmethod
     def _logicalselection2physical(self, location: Selection) -> Selection:
-        return self.selection.virtual2physicalselection(location)
+        raise NotImplementedError
 
     def coverup(self, from_index, to_index):
         """ Covers up all elements with indices between @from_index (inclusive) and @to_index (exclusive). In effect,
@@ -414,6 +416,9 @@ class SelectiveFixedWidthBytesMmap(SelectiveGMmap, FixedWidthBytesMmap):
     def selection(self) -> Selection:
         return self._selection
 
+    def _logicalselection2physical(self, location: Selection):
+        return location * self.width
+
 
 class SingletonBytesMmap(BytesMmap):
     """ The most useless subclass. Sequence containing a single bytestring element. """
@@ -429,7 +434,7 @@ class SingletonBytesMmap(BytesMmap):
         return slice(0, 0)  # Empty slice
 
 
-class StringMmap(Additive, IndexedGMmap, metaclass=ABCMeta):
+class StringMmap(Additive, IndexedGMmap, PhysicallyIndexedGMmap, metaclass=ABCMeta):
     """ An IndexedGMmap where each element in the sequence is a Unicode string of any positive length. """
 
     def _logicalslice2physical(self, location: slice) -> slice:
@@ -790,6 +795,20 @@ class IROMMmap(SourcedGMmap, StringMmap):
         self._m_path = value
 
 
+class SelectiveIROMMmap(SelectiveGMmap, IROMMmap):
+
+    def __init__(self, rom: ROM, codec):
+        super(SelectiveIROMMmap, self).__init__(rom, codec)
+        self._selection = Selection(universe=slice(0, self._length))
+
+    @property
+    def selection(self) -> Selection:
+        return self._selection
+
+    def _logicalselection2physical(self, location: Selection):
+        return location * 4
+
+
 class IROM(object):
     """ Isomorphism of a ROM. Basically a Unicode string with a structure defined on it. """
 
@@ -797,7 +816,13 @@ class IROM(object):
         """ Constructs an IROM object from a ROM and a codec transliterating every ROM atom into an IROM atom. """
         self.structure = SimpleTopology(1)  # This will do for now
         self.text_encoding = 'utf-32'
-        self.memory = IROMMmap(rom, codec)
+        self.memory = SelectiveIROMMmap(rom, codec)
+
+    def coverup(self, from_index, to_index, virtual=False):  # Mutability
+        self.memory.coverup(from_index, to_index)
+
+    def reveal(self, from_index, to_index, virtual=False):  # Mutability
+        self.memory.uncover(from_index, to_index)
 
     def tree(self):
         t = self.structure.structure(self[:])

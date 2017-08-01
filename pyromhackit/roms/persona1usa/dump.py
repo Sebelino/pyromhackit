@@ -3,15 +3,30 @@
 import os
 from pyromhackit.rom import ROM
 from pyromhackit.morphism import Morphism
+from pyromhackit.morphism import Hacker
 import pyromhackit.thousandcurses.codec as codec
+from pyromhackit.tree import SimpleTopology
 from pyromhackit.roms.persona1usa.hexmap import transliter
 
 package_dir = os.path.dirname(os.path.abspath(__file__))
 
-rom_path = os.path.join(package_dir, "resources/copyrighted/TENSI.BIN")
+tensi_path = os.path.join(package_dir, "resources/copyrighted/TENSI.BIN")  # Angel talk
+e0_path = os.path.join(package_dir, "resources/copyrighted/E0.BIN")  # SEBEC story text, beginning, ending
+e1_path = os.path.join(package_dir, "resources/copyrighted/E1.BIN")  # SQQ story text
+e2_path = os.path.join(package_dir, "resources/copyrighted/E2.BIN")  # SEBEC story text
+e3_path = os.path.join(package_dir, "resources/copyrighted/E3.BIN")  # SQQ story text
+e4_path = os.path.join(package_dir, "resources/copyrighted/E4.BIN")  # Crapload of dupes (Agastya, Trish, Igor...)
+dvlan_path = os.path.join(package_dir, "resources/copyrighted/DVLAN.BIN")  #
+
+persona_codec_path = os.path.join(package_dir, "resources/persona_codec.json")
+persona_visage_path = os.path.join(package_dir, "resources/persona_visage.json")
+tensi_selection_path = os.path.join(package_dir, "resources/tensi_selection.json")
+
+class Archive(object):  # File that can be unzipped into one or more ROMs.
+    pass
 
 
-class Persona1Codec(codec.Decoder):
+class Persona1Codec(codec.Codec):
     @classmethod
     def domain(cls, bytestr: bytes):
         return codec.Tree([bytestr[i:i + 2] for i in range(0, len(bytestr), 2)])
@@ -21,10 +36,121 @@ class Persona1Codec(codec.Decoder):
         return btree.transliterate(transliter)
 
 
-if __name__ == '__main__':
-    r = ROM(rom_path)
-    r2 = r[25704*2:25704*2+100]
-    f2 = Morphism(r2, Persona1Codec)
-    f = Morphism(r, Persona1Codec)
+def g(bytetreeish):
+    return bytetreeish[1] if bytetreeish[0] == '0' else bytetreeish[1].decode()
 
-    print(f2)
+def f(bytetreeish):
+    return ['['] + reversed(g(c) for c in bytetreeish) + [']']
+
+def persona1usa_structure(bs):
+    return [[bs[i:i + 1], bs[i + 1:i + 2]] for i in range(0, len(bs), 2)]
+
+def two_byte_structure(bs):
+    return [bs[i:i+2] for i in range(0, len(bs), 2)]
+
+if __name__ == '__main__':
+    r = ROM(e2_path, structure=SimpleTopology(2))
+    #r2 = r[0*25704 * 2:25704 * 2 + 4000]
+    #r2 = r[:25704 * 2 + 4000]
+    #r2s2 = ROM(r2, structure=SimpleTopology(2))
+
+    #r3 = r2[:6]
+    #r2s = ROM(r2, structure=persona1usa_structure)
+    #r2s2 = ROM(r2, structure=two_byte_structure)
+    #r3s = ROM(r3, structure=persona1usa_structure)
+
+    #r3 = ROM(r2, structure=pyparsing_grammar])
+    #t = MutableTree(r3)
+    #t.reverse()
+    #t.transliterate()
+    #t.assign((0,), )
+    #f2 = Morphism(r3, t)
+    #f2 = Morphism(r2, Persona1Codec)
+    #f2 = Morphism(r2, f)
+    #f3 = f2[:6]
+    #f = Morphism(r, Persona1Codec)
+
+    hacker = Hacker(r)
+    print("DEBUG HACKER DONE")
+    #hacker = Hacker(r2s2)
+    hacker.load_codec(persona_codec_path)
+    #hacker.load_visage(persona_visage_path)
+
+
+# Decoding function:
+# 1. Totality. True iff the domain of definition equals the domain of discourse (the set of all bytestrings).
+# 2. Surjection. True iff the image equals the codomain (the set of all strings).
+# 3. Injection. True iff no two bytestrings map to the same string.
+# 4. Functionality. True always since every bytestring maps to at most one string.
+# Affection relation:
+# 1. Left-totality.
+# 2. Right-totality.
+# 3. Left-uniqueness.
+# 4. Right-uniqueness.
+
+#<Bytestring> ::= {<Unit>}
+#<Unit> ::= <Mod><Alpha>
+#<Mod> ::= 0 | 1
+#
+#   b'0a1b1c0d1E'
+#-> [[b'0', b'a'], [b'1', b'b'], [b'1', b'c'], [b'0', b'd'], [b'1', b'E']]
+#-> f([[b'0', b'a'], [b'1', b'b'], [b'1', b'c'], [b'0', b'd'], [b'1', b'E']])
+#== ['[', g([b'1', b'E']), g([b'0', b'd']), g([b'1', b'c']), g([b'1', b'b']), g([b'0', b'a']), ']']:[None, (4,), (3,), (2,), (1,), (0,), None]
+#== ['[', 'E ', 'd', 'C', 'B', 'a', ']']:[None, (4,), (3,), (2,), (1,), (0,), None]
+#-> '[EdCBa]'
+
+# High-level properties:
+# 1. Totality. NOT maintained since e.g. b'2c' and b'0a1' are not part of the grammar.
+# 2. Surjection. NOT maintained since e.g. '+' is not part of the image.
+# 3. Injection. NOT maintained since b'1a' and b'1A' both map to 'A'.
+# Tree-level properties:
+# 1. Left-totality. Even though no bytestring leaf is mapped, each leaf has an ancestor (here, parent) that is.
+# 2. Right-totality NOT retained since the square bracket string nodes are not affected by anything.
+# 3. Left-uniqueness since no two bytestring nodes affect the same string node.
+# 4. Right-uniqueness since every bytestring leaf affects at most one string node.
+
+
+#b'0a1b1c0d1E'
+#-> [b'0a1b1c0d1E']
+#-> f([b'0a1b1c0d1E'])
+#== ['[', 'EdCBa', ']']:[None, (0,), None]
+#-> '[EdCBa]'
+
+# High-level properties:
+# 1. Totality. NOT maintained since e.g. b'2c' and b'0a1' are not part of the grammar.
+# 2. Surjection. NOT maintained since e.g. '+' is not part of the image.
+# 3. Injection. NOT maintained since b'1a' and b'1A' both map to 'A'.
+# Tree-level properties:
+# 1. Left-totality. There is precisely one bytestring leaf and it affects to the middle string leaf.
+# 2. Right-totality NOT retained since the square bracket string nodes are not affected by anything.
+# 3. Left-uniqueness since no two bytestring nodes affect the same string node.
+# 4. Right-uniqueness since the bytestring leaf affects at most one string node.
+
+
+#<Bytestring> ::= {<Unit>}
+#<Unit> ::= <Mod><Alpha>
+#<Mod> ::= 0 | 1
+#
+#b'0a1b1c0d1E'
+#-> [[b'0', b'a'], [b'1', b'b'], [b'1', b'c'], [b'0', b'd'], [b'1', b'E']]
+#-> f([[b'0', b'a'], [b'1', b'b'], [b'1', b'c'], [b'0', b'd'], [b'1', b'E']])
+#== ['[', g([b'1', b'E']), g([b'0', b'd']), g([b'1', b'c']), g([b'1', b'b']), g([b'0', b'a']), ']']:[None, (4,), (3,), (2,), (1,), (0,), None]
+#== ['[', 'e ', 'd', 'C', 'B', 'a', ']']:[None, (4,), (3,), (2,), (1,), (0,), None]
+#-> '[edCBa]'
+
+# High-level properties:
+# 1. Totality. NOT maintained since e.g. b'2c' and b'0a1' are not part of the grammar.
+# 2. Surjection. NOT maintained since e.g. '+' is not part of the image.
+# 3. Injection. NOT maintained since b'1a' and b'0A' both map to 'A'.
+# Tree-level properties:
+# 1. Left-totality. Even though no bytestring leaf is mapped, each leaf has an ancestor (here, parent) that is.
+# 2. Right-totality NOT retained since the square bracket string nodes are not affected by anything.
+# 3. Left-uniqueness since no two bytestring nodes affect the same string node.
+# 4. Right-uniqueness since every bytestring leaf affects at most one string node.
+
+
+# Want to construct a function M : ByteTree -> StringTree, Relation
+# Base case:
+# Tree whose all children are leaves
+# Inductive case:
+# Tree where at least one child is a tree

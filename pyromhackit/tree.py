@@ -45,7 +45,7 @@ class Topology(metaclass=ABCMeta):
         for leafidx in range(self.length(len(stringlike))):
             idxpath = self.leafindex2indexpath(leafidx)
             idx = self.indexpath2index(idxpath)
-            yield (idx, leafidx, idxpath, self.getleaf(leafidx, stringlike))
+            yield Leaf(idx, leafidx, idxpath, self.getleaf(leafidx, stringlike))
 
     def length(self, size):
         """ :return the number of leaves in a tree for a stringlike object of size @size structured according to this
@@ -136,4 +136,4 @@ class SimpleTopology(Topology):
         raise NotImplementedError()
 
     def __str__(self):
-        return "{}({})".format(self.__class__.__name__, self.sizes)
+        return "{}({})".format(self.__class__.__name__, *self.sizes)

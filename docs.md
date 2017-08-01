@@ -20,8 +20,35 @@ representation looks the way you want it to.
 A PROM (Programmable ROM) is similar to an IROM except that its bytestring representation is
 modifiable while its string representation is immutable.
 
+# EROM
 
-# ROM-hacking workflow
+* IROM: To modify a character c into c' is to change a codec entry b <-> c into b <-> c'.
+        The underlying ROM is immutable.
+* PROM: To modify a byte b into b' is to change a codec entry b <-> c into b' <-> c.
+        The decoded string is immutable.
+* EROM: To modify a byte b into b' is to also modify the corresponding character c into c';
+        To modify a byte c into c' is to also modify the corresponding byte b into b';
+        where the codec contains entries b <-> c and b' <-> c'.
+        The codec is immutable.
+        
+# Script dumping
+Transforming a raw ROM into a readable string representation is similar to solving a jigsaw puzzle:
+there is an initial phase where you piece together the edge pieces. Once finished, the second phase
+-- where you piece together the internal pieces -- becomes considerably easier.
+
+To dump the script contained in a ROM is to construct a Unicode string representation of the relevant
+portions of the ROM.
+
+1. Create a ROM instance from the path of the file
+2. Find some text in the ROM
+3. Create an IROM instance from the ROM
+4. Enforce the bytes in the found range to map to the desired string
+5. Study the resulting string representation visually and try to find more bytes that you can associate
+   with characters
+6. Repeat step 4-5 until you are happy with the string representation.
+7. Save it to a file
+
+## Example
 1. Create a ROM instance from the path of the file.
 ```
 >>> rom = ROM('persona1usa/TENSI.BIN', structure=SimpleTopology(2))
@@ -43,4 +70,5 @@ modifiable while its string representation is immutable.
 ```
 >>> print(irom)
 ```
-6. Repeat step 4-5 until you are happy with the codec.
+6. Repeat step 4-5 until you are happy with the string representation.
+7. Save it to a file.

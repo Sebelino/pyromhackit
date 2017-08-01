@@ -7,6 +7,8 @@ from typing import Union
 from enum import Enum
 
 import re
+
+import time
 from bidict import bidict, KeyAndValueDuplicationError, OVERWRITE, IGNORE
 
 from pyromhackit.rom import ROM, IROM
@@ -51,6 +53,9 @@ class Morphism(object):
             raise ValueError("Affecting byte not found.")
         raise TypeError("Argument must be either a bytestring or a string.")
 
+    def source_tree_diffusion(self, indexpath):
+        return self.graph[indexpath]
+
     def source_diffusion(self, idx):
         """ Returns the set of indices of the characters in the decoded string affected when altering the ith byte
         in the ROM. """
@@ -58,7 +63,7 @@ class Morphism(object):
         indices = set()
         for i in range(2 ** 8):
             alteration = self.src[:idx] + bytes([i]) + self.src[idx + 1:]
-            dalteration = self.decoder.decode(alteration)
+            dalteration = self.decoder.decode(Tree([bytes(alteration)]))
             diff = difflib.ndiff(dalteration, self.dst)
             adiff = [ds for ds in diff if ds[0] != '+']
             for j, s in enumerate(adiff):
@@ -118,7 +123,6 @@ Behavior = Enum('Behavior', 'RAISE SWAP')
 
 class Hacker(object):
     """
-    Isomorphism of a ROM.
     Assumes a one-to-one mapping between bytestring leaves and string leaves.
     Assumes dicts as decoders (and encoders!) instead of functions.
     """
@@ -138,8 +142,8 @@ class Hacker(object):
         self.last_codec_path = None
         self.last_visage_path = None
 
-    # Uses the information in self.src, self.affection, and self.codec to update self.dst.
     def _compute_dst(self):
+        """ Uses the information in self.src, self.affection, and self.codec to update self.dst. """
         self.dst = IROM(self.src, self.codec)
         #self.dst = self.dsttree.transliterate(self.codec)
         #self.dst = self.dsttree.restructured(self.affection)
@@ -154,7 +158,9 @@ class Hacker(object):
     def _any_codec(self, occupied=dict()):
         mu = bidict()
         codepoint = 128
-        for _, _, _, _, srcleaf in self.src.traverse_preorder():
+        #for i, (_, _, _, _, srcleaf) in enumerate(self.src.traverse_preorder()):
+        for i in range(self.src.atomcount()):
+            srcleaf = self.src.getatom(i)
             if srcleaf not in mu and srcleaf not in occupied:
                 while chr(codepoint) in occupied.values():
                     codepoint += 1
@@ -227,10 +233,12 @@ class Hacker(object):
         self.visage[actual_char] = viewed_substring
 
     def coverup(self, from_index: Union[int, None], to_index: Union[int, None]):
-        raise NotImplementedError()
+        self.src.coverup(from_index, to_index)
+        self.dst.coverup(from_index, to_index)
 
     def reveal(self, from_index: Union[int, None], to_index: Union[int, None]):
-        raise NotImplementedError()
+        self.src.reveal(from_index, to_index)
+        self.dst.reveal(from_index, to_index)
 
     def character_diffusion(self, charindex):
         """ Returns the set or slice of indices of the bytes in the ROM affected when altering the ith character in the
@@ -359,6 +367,19 @@ class Hacker(object):
             yield Entry(vbyteindex, vatomindex, vatomindexpath, pbyteindex, ratom,
                         icharindex, iatomindex, iatomindexpath, ibyteindex, iatom)
 
+    def load_selection(self, json_path=None):
+        """ Reveal only the sections of the ROM specified in the JSON file with path @json_path. """
+        self.coverup(None, None)
+        with open(json_path, 'r') as f:
+            loaded = json.load(f)
+            assert isinstance(loaded, list)
+            for element in loaded:
+                assert isinstance(element, list)
+                a, b = element
+                assert isinstance(a, int)
+                assert isinstance(b, int)
+                self.reveal(a, b)
+
     def dump_codec(self, json_path=None):
         if json_path is None:
             json_path = self.last_codec_path
@@ -415,7 +436,7 @@ class Hacker(object):
         #return "{}{}".format(classname, self.dsttree)
 
     def __len__(self):
-        return len(self.dst)
+        return len(self.src)
 
     def __deepcopy__(self, memodict={}):
         cpy = self.__class__(self.srctree)

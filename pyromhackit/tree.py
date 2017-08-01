@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 import os
-from abc import abstractmethod
+from abc import abstractmethod, ABCMeta
 from collections import namedtuple
 
 package_dir = os.path.dirname(os.path.abspath(__file__))
 
 
-class Topology(object):
+class Topology(metaclass=ABCMeta):
     """ A way of transforming a stringlike object into a list of stringlike objects, taking in account only the length
     of the object. """
 

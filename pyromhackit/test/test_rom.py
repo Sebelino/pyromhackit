@@ -49,6 +49,7 @@ def test_init_fail():
     with pytest.raises(TypeError):
         ROM(None)
 
+
 def test_idempotence():
     """ ROM(ROM(bs)) == ROM(bs) for all bytestrings bs """
     assert ROM(ROM(b'abc')) == ROM(b'abc')
@@ -149,12 +150,12 @@ class TestTinyROM:
         assert tinyrom[arg] == expected
 
     @pytest.mark.parametrize("arg, expected", [
-        #(slice(1, 1), b''),  # mmap trouble
+        # (slice(1, 1), b''),  # mmap trouble
         (slice(None, 1), b'a'),
         (slice(1, 3), b'\xffc'),
         (slice(None, None), b'a\xffc'),
         (slice(None, 5), b'a\xffc'),
-        #(slice(4, 5), b''),  # mmap trouble
+        # (slice(4, 5), b''),  # mmap trouble
     ])
     def test_subscripting_slices(self, tinyrom, arg, expected):
         """ Subscripting support is isomorphic to bytestrings """
@@ -285,13 +286,13 @@ class TestROM256:
         assert rom256[arg] == expected
 
     @pytest.mark.parametrize("arg, expected", [
-        #(slice(1, 1), b''),  # mmap trouble
+        # (slice(1, 1), b''),  # mmap trouble
         (slice(None, 1), b'\x00'),
         (slice(1, 3), b'\x01\x02'),
         (slice(None, None), bytes256),
         (slice(None, 1000), bytes256),
         (slice(255, 1000), b'\xff'),
-        #(slice(500, 1000), b''),  # mmap trouble
+        # (slice(500, 1000), b''),  # mmap trouble
     ])
     def test_subscripting_slices(self, rom256, arg, expected):
         """ Subscripting support is isomorphic to bytestrings """
@@ -325,8 +326,8 @@ class TestROM256:
 
 
 @pytest.mark.parametrize("expected, max_width, rombytes", [
-    #(ValueError, 7, b""),  # mmap trouble
-    #(r"ROM(b'')", 8, b""),  # mmap trouble
+    # (ValueError, 7, b""),  # mmap trouble
+    # (r"ROM(b'')", 8, b""),  # mmap trouble
     (r"ROM(...)", 8, b"a"),
     (r"ROM(b'a')", 9, b"a"),
     (r"ROM(b'ab')", 10, b"ab"),

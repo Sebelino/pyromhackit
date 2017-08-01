@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-""" Test suite for ROM class. """
+""" Test suite for Morphism classes. """
 import inspect
 import os
 import re
@@ -13,6 +13,7 @@ from ..thousandcurses.codec import ASCII, ReverseASCII
 package_dir = os.path.dirname(os.path.abspath(__file__))
 
 
+@pytest.mark.skip()
 class TestASCIIMorphism:
     def setup(self):
         self.morphism = Morphism(b"abcdefghi", ASCII)
@@ -91,6 +92,7 @@ class TestASCIIMorphism:
         assert newdecoder
 
 
+@pytest.mark.skip()
 class TestReverseASCIIMorphism:
     def setup(self):
         self.morphism = Morphism(b"hello", ReverseASCII)
@@ -112,3 +114,24 @@ class TestReverseASCIIMorphism:
         returned = self.morphism.index(searchitem)
         assert returned == expected
 
+    @pytest.mark.parametrize("srcindexpath, expected", [
+        ((0,), {(4,)}),
+#        (1, {3}),
+#        (2, {2}),
+#        (3, {1}),
+#        (4, {0}),
+    ])
+    @pytest.mark.skip()
+    def test_source_tree_diffusion(self, srcindexpath, expected):
+        assert self.morphism.source_tree_diffusion(srcindexpath) == expected
+
+    @pytest.mark.parametrize("srcindex, expected", [
+        (0, {4}),
+#        (1, {3}),
+#        (2, {2}),
+#        (3, {1}),
+#        (4, {0}),
+    ])
+    @pytest.mark.skip()
+    def test_source_diffusion(self, srcindex, expected):
+        assert self.morphism.source_diffusion(srcindex) == expected

@@ -25,6 +25,7 @@ class TestTinyHacker(object):
     def setup(self):
         self.hacker = Hacker(rom)
 
+    @pytest.mark.skip("Not sure if this method should even exist, even for debug purposes")
     def test_traverse_preorder(self):
         assert len(list(self.hacker.traverse_preorder())) == 3
         expected = [
@@ -49,13 +50,25 @@ class TestTinyHacker(object):
         assert self.hacker.codec[b'\x01\x0f'] == 'o'
         assert self.hacker.codec[b'\x01\x17'] == 'w'
 
+    def test_place_twice(self):
+        self.hacker.place(0, 'How')
+        self.hacker.place(0, 'hey')
+        assert str(self.hacker) == 'hey'
+        assert self.hacker.codec[b'\x00\xe7'] == 'h'
+        assert self.hacker.codec[b'\x01\x0f'] == 'e'
+        assert self.hacker.codec[b'\x01\x17'] == 'y'
+
     @pytest.mark.skip(reason="Decide on a semantics for this (i.e. propagate changes to codec or ROM?)")
     def test_setitem(self):
         self.hacker[0] = 'c'
         assert str(self.hacker)[0] == 'c'
         assert self.hacker.codec[b'\x00\xe7'] == 'c'
 
+    def test_len(self):
+        return len(self.hacker) == 3
+
     def test_coverup(self):
+        self.hacker.place(0, 'How')
         self.hacker.coverup(0, 1)
         assert bytes(self.hacker.src) == b'\x01\x0f\x01\x17'
         assert str(self.hacker.dst) == 'ow'

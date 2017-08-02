@@ -56,6 +56,10 @@ class Selection(GSlice):  # TODO -> GSlice
             self.revealed = revealed
 
     def coverup(self, from_index, to_index):
+        """ Shrinks this selection by excluding any element with index i, where @from_index <= i < @to_index, if it is
+            not already excluded.
+            :return The number of revealed elements that were covered. """
+        original_length = len(self)
         if isinstance(from_index, int) and -self.universe.stop <= from_index < 0:
             from_index = from_index % self.universe.stop
         if isinstance(to_index, int) and -self.universe.stop <= to_index < 0:
@@ -86,8 +90,13 @@ class Selection(GSlice):  # TODO -> GSlice
             elif b <= from_index:
                 pass
             i += 1
+        return original_length - len(self)
 
     def reveal(self, from_index, to_index):
+        """ Expands this selection by including any element with index i, where @from_index <= i < @to_index, if it is
+            not already included.
+            :return The number of covered elements that were revealed. """
+        original_length = len(self)
         if isinstance(from_index, int) and -self.universe.stop <= from_index < 0:
             from_index = from_index % self.universe.stop
         if isinstance(to_index, int) and -self.universe.stop <= to_index < 0:
@@ -100,7 +109,7 @@ class Selection(GSlice):  # TODO -> GSlice
             to_index = self.universe.stop
         if not self.revealed:
             self.revealed.append(slice(from_index, to_index))
-            return
+            return to_index - from_index
         i = 0
         while i < len(self.revealed):
             sl = self.revealed[i]
@@ -122,6 +131,7 @@ class Selection(GSlice):  # TODO -> GSlice
                 self.revealed.insert(i + 1, slice(from_index, to_index))
                 i += 1
             i += 1
+        return len(self) - original_length
 
     def __iter__(self):
         for sl in self.revealed:

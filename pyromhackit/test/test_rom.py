@@ -198,6 +198,10 @@ class TestTinyROM:
         tinyrom.reveal(None, None)
         assert bytes(tinyrom) == b'a\xffc'
 
+    def test_coverup_assert_length(self, tinyrom: ROM):
+        tinyrom.coverup(0, 1)
+        assert len(tinyrom) == 2
+
 
 bytes256 = (
     b"\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f"

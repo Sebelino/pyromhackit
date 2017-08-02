@@ -399,12 +399,14 @@ class SelectiveGMmap(IndexedGMmap, PhysicallyIndexedGMmap, metaclass=ABCMeta):
     def coverup(self, from_index, to_index):
         """ Covers up all elements with indices between @from_index (inclusive) and @to_index (exclusive). In effect,
         every element with index i >= @to_index becomes the (i-to_index+@from_index)th (visible) element. """
-        self.selection.coverup(from_index, to_index)
+        covered_count = self.selection.coverup(from_index, to_index)
+        self._length -= covered_count
 
     def uncover(self, from_index, to_index):
         """ Uncovers all elements that are hidden between with indices between @from_index (inclusive) and @to_index (exclusive). In effect,
         every element with index i >= @to_index becomes the (i-to_index+@from_index)th (visible) element. """
-        self.selection.reveal(from_index, to_index)
+        revealed_count = self.selection.reveal(from_index, to_index)
+        self._length += revealed_count
 
 
 class SelectiveFixedWidthBytesMmap(SelectiveGMmap, FixedWidthBytesMmap):

@@ -150,7 +150,8 @@ def test_cover_all():
 class TestIndexing(object):
     def setup(self):
         self.v = Selection(slice(0, 10))
-        self.v.revealed = [slice(3, 7)]  # Poor man's mocking
+        self.v.coverup(0, 3)
+        self.v.coverup(7, 10)
 
     def test_index(self):
         assert self.v.index(5) == slice(3, 7)
@@ -163,12 +164,13 @@ class TestIndexing(object):
     @pytest.mark.parametrize("vindex, expected", [
         (0, 3),
         (3, 6),
+        (-1, 6),
     ])
     def test_v2p(self, vindex, expected):
         assert self.v.virtual2physical(vindex) == expected
 
     @pytest.mark.parametrize("vindex, expected", [
-        (-1, IndexError),
+        #(-1, IndexError),
         (4, IndexError),
     ])
     def test_v2p_raises(self, vindex, expected):

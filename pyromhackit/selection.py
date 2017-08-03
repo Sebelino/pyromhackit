@@ -173,6 +173,11 @@ class Selection(GSlice):  # TODO -> GSlice
         raise IndexError("Physical index {} out of bounds for selection {}".format(pindex, self))
 
     def virtual2physical(self, vindex):  # TODO -> virtualint2physical
+        """ :return the integer n such that where the @vindex'th revealed element is the nth element. If
+        @vindex < 0, @vindex is interpreted as (number of revealed elements) + @vindex.
+        """
+        if vindex < 0:
+            return self.virtual2physical(len(self) + vindex)
         pindex = self.revealed[0].start
         cumlength = 0
         for a, b in self:
@@ -186,12 +191,12 @@ class Selection(GSlice):  # TODO -> GSlice
         raise IndexError("Virtual index {} out of bounds for selection {}".format(vindex, self))
 
     def virtual2physicalselection(self, vslice: slice):  # TODO -> virtualslice2physical
-        """ Returns the sub-Selection that is the intersection of this selection and @vslice. """
+        """ :return the sub-Selection that is the intersection of this selection and @vslice. """
         if not self.revealed:
             return Selection(self.universe, revealed=[])
         if vslice.start is None:
             a = self.revealed[0].start
-        elif 0 <= vslice.start < len(self):
+        elif -len(self) <= vslice.start < len(self):
             a = self.virtual2physical(vslice.start)
         elif vslice.start >= len(self):
             a = self.revealed[-1].stop
@@ -225,7 +230,7 @@ class Selection(GSlice):  # TODO -> GSlice
         return self.virtual2physical(item)
 
     def __len__(self):
-        """ Returns the total number of revealed elements. """
+        """ :return the total number of revealed elements. """
         return sum(segment.stop - segment.start for segment in self.revealed)
 
     def __eq__(self, other):

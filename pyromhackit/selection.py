@@ -139,14 +139,12 @@ class Selection(GSlice):  # TODO -> GSlice
 
     def _slice_index(self, pindex):
         """ :return n if @pindex is in the nth slice. :raise ValueError if @pindex is outside any slice. """
-        i = 0
-        for a, b in self:
+        for i, (a, b) in enumerate(self):
             if a <= pindex:
                 if pindex < b:
                     return i
             else:
                 break
-            i += 1
         raise ValueError("{} is not in any interval.".format(pindex))
 
     def index(self, pindex):

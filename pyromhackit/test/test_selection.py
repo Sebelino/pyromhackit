@@ -214,6 +214,8 @@ class TestIndexing(object):
         (slice(4, 5), Selection(slice(0, 10), [])),
         (slice(4, 9), Selection(slice(0, 10), [])),
         (slice(4, 15), Selection(slice(0, 10), [])),
+        (slice(-2, None), Selection(slice(0, 10), [slice(5, 7)])),
+        (slice(-2, -1), Selection(slice(0, 10), [slice(5, 6)])),
     ])
     def test_v2p_selection(self, vslice, expected):  # TODO negatives; slices (a,b) where a > b
         assert self.v.virtual2physicalselection(vslice) == expected

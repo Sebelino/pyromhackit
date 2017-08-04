@@ -202,7 +202,7 @@ class Selection(GSlice):  # TODO -> GSlice
             raise ValueError("Unexpected slice start: {}".format(vslice))
         if vslice.stop is None or vslice.stop >= len(self):
             b = self.revealed[-1].stop
-        elif 0 <= vslice.stop < len(self):
+        elif -len(self) <= vslice.stop < len(self):
             b = self.virtual2physical(vslice.stop)
         else:
             raise ValueError("Unexpected slice stop: {}".format(vslice))

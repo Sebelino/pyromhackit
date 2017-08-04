@@ -261,3 +261,25 @@ class TestFullyCovered(object):
     def test_v2p_selection(self, vslice, expected):  # TODO negatives; slices (a,b) where a > b
         assert self.v.virtual2physicalselection(vslice) == expected
 
+class TestThreeRevealedIntervals(object):
+    def setup(self):
+        self.v = Selection(slice(0, 10))
+        self.v.coverup(2, 4)
+        self.v.coverup(6, 9)
+
+    @pytest.mark.parametrize("pindex, expected", [
+        (0, 0),
+        (1, 0),
+        (4, 1),
+        (5, 1),
+        (9, 2),
+    ])
+    def test_slice_index(self, pindex, expected):
+        assert self.v._slice_index(pindex) == expected
+
+    @pytest.mark.parametrize("pindex", [
+        2, 3, 6, 7, 8,
+    ])
+    def test_slice_index_raises(self, pindex):
+        with pytest.raises(ValueError):
+            self.v._slice_index(pindex)

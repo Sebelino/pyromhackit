@@ -177,7 +177,7 @@ class SourcedGMmap(GMmap, metaclass=ABCMeta):
         return mmap.ACCESS_READ | mmap.ACCESS_WRITE
 
 
-class SettableGMmap(GMmap):
+class SettableGMmap(GMmap, metaclass=ABCMeta):
     def __setitem__(self, location, val):  # Final
         """ Sets the @location'th element to @val, if @location is an integer; or sets the sub-sequence retrieved when
         slicing the sequence with @location to @val, if @location is a slice. """
@@ -186,7 +186,7 @@ class SettableGMmap(GMmap):
         self._content[bytestringlocation] = bytestringrepr
 
 
-class DeletableGMmap(GMmap):
+class DeletableGMmap(GMmap, metaclass=ABCMeta):
     @abstractmethod  # Can this be non-abstract? Hmm...
     def __delitem__(self, location):  # Final
         """ Removes the @location'th element, if @location is an integer; or the sub-sequence retrieved when slicing the
@@ -194,7 +194,7 @@ class DeletableGMmap(GMmap):
         raise NotImplementedError()
 
 
-class IndexedGMmap(GMmap):
+class IndexedGMmap(GMmap, metaclass=ABCMeta):
     """ GMmap where the indices used to access elements in the sequence are either integers or slices. """
 
     def _logical2physical(self, location: Union[int, slice]):
@@ -243,7 +243,7 @@ class IndexedGMmap(GMmap):
         return a + 1
 
 
-class PhysicallyIndexedGMmap(GMmap):
+class PhysicallyIndexedGMmap(GMmap, metaclass=ABCMeta):
     """ GMmap where each physical location that a logical location translates into is either a slice or a Selection. """
 
     def _physical2bytes(self, physicallocation: Union[slice, Selection], content: mmap.mmap) -> bytes:

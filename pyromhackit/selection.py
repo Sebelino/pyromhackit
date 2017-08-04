@@ -138,14 +138,14 @@ class Selection(GSlice):  # TODO -> GSlice
             yield (sl.start, sl.stop)  # FIXME should probably generate slices instead, or every index
 
     def _slice_index(self, pindex):
-        """ Returns n if @pindex is in the nth slice. """
+        """ :return n if @pindex is in the nth slice. :raise ValueError if @pindex is outside any slice. """
         i = 0
         for a, b in self:
             if a <= pindex:
                 if pindex < b:
                     return i
-                else:
-                    break
+            else:
+                break
             i += 1
         raise ValueError("{} is not in any interval.".format(pindex))
 

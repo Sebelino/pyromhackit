@@ -48,33 +48,17 @@ def persona1usa_structure(bs):
 def two_byte_structure(bs):
     return [bs[i:i+2] for i in range(0, len(bs), 2)]
 
-if __name__ == '__main__':
-    r = ROM(e2_path, structure=SimpleTopology(2))
-    #r2 = r[0*25704 * 2:25704 * 2 + 4000]
-    #r2 = r[:25704 * 2 + 4000]
-    #r2s2 = ROM(r2, structure=SimpleTopology(2))
-
-    #r3 = r2[:6]
-    #r2s = ROM(r2, structure=persona1usa_structure)
-    #r2s2 = ROM(r2, structure=two_byte_structure)
-    #r3s = ROM(r3, structure=persona1usa_structure)
-
-    #r3 = ROM(r2, structure=pyparsing_grammar])
-    #t = MutableTree(r3)
-    #t.reverse()
-    #t.transliterate()
-    #t.assign((0,), )
-    #f2 = Morphism(r3, t)
-    #f2 = Morphism(r2, Persona1Codec)
-    #f2 = Morphism(r2, f)
-    #f3 = f2[:6]
-    #f = Morphism(r, Persona1Codec)
-
+def hack(path):
+    r = ROM(path, structure=SimpleTopology(2))
     hacker = Hacker(r)
-    print("DEBUG HACKER DONE")
-    #hacker = Hacker(r2s2)
     hacker.load_codec(persona_codec_path)
-    #hacker.load_visage(persona_visage_path)
+    hacker.load_visage(persona_visage_path)
+    if path == tensi_path:
+        hacker.load_selection(tensi_selection_path)
+    return hacker
+
+if __name__ == '__main__':
+    hacker = hack(tensi_path)
 
 
 # Decoding function:

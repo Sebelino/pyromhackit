@@ -138,14 +138,14 @@ class Selection(GSlice):  # TODO -> GSlice
             yield (sl.start, sl.stop)  # FIXME should probably generate slices instead, or every index
 
     def _slice_index(self, pindex):
-        """ :return n if @pindex is in the nth slice. :raise ValueError if @pindex is outside any slice. """
+        """ :return n if @pindex is in the nth slice. :raise IndexError if @pindex is outside any slice. """
         for i, (a, b) in enumerate(self):
             if a <= pindex:
                 if pindex < b:
                     return i
             else:
                 break
-        raise ValueError("{} is not in any interval.".format(pindex))
+        raise IndexError("{} is not in any interval.".format(pindex))
 
     def index(self, pindex):
         """ Returns the slice that @pindex is in. """
@@ -174,7 +174,10 @@ class Selection(GSlice):  # TODO -> GSlice
         """ :return the integer n such that where the @vindex'th revealed element is the nth element. If
         @vindex < 0, @vindex is interpreted as (number of revealed elements) + @vindex.
         """
-        if vindex < 0:
+        if vindex < -len(self):
+            raise IndexError(
+                "Got index {}, expected it to be within range [{},{})".format(vindex, -len(self), len(self)))
+        elif vindex < 0:
             return self.virtual2physical(len(self) + vindex)
         pindex = self.revealed[0].start
         cumlength = 0

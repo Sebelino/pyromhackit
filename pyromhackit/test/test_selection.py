@@ -158,7 +158,7 @@ class TestIndexing(object):
 
     @pytest.mark.parametrize("pindex", [2, 7])
     def test_index_raises(self, pindex):
-        with pytest.raises(ValueError):
+        with pytest.raises(IndexError):
             self.v.index(pindex)
 
     @pytest.mark.parametrize("vindex, expected", [
@@ -227,7 +227,7 @@ class TestFullyCovered(object):
         self.v.revealed = []  # Poor man's mocking
 
     def test_index_raises(self):
-        with pytest.raises(ValueError):
+        with pytest.raises(IndexError):
             self.v.index(0)
 
     def test_v2p_raises(self):
@@ -283,5 +283,5 @@ class TestThreeRevealedIntervals(object):
         2, 3, 6, 7, 8,
     ])
     def test_slice_index_raises(self, pindex):
-        with pytest.raises(ValueError):
+        with pytest.raises(IndexError):
             self.v._slice_index(pindex)

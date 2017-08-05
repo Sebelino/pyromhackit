@@ -47,7 +47,6 @@ class TestDumpAndFind:
             os.remove(created_file)
 
 @pytest.mark.skipif(not os.path.exists(tensi_path), reason="File not found")
-@pytest.mark.skip()
 class TestCoverup:
     def setup(self):
         self.created_files = [os.path.join(package_dir, "tensi.txt")]

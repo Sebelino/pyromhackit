@@ -198,7 +198,7 @@ class IndexedGMmap(GMmap, metaclass=ABCMeta):
     """ GMmap where the indices used to access elements in the sequence are either integers or slices. """
 
     def _logical2physical(self, location: Union[int, slice]):
-        """ :return The slice for the bytestring that encodes the element(s) at location @location of the sequence.
+        """ :return The location of the bytestring that encodes the element(s) at location @location of the sequence.
         :raise IndexError if @location is an integer and is out of bounds. """
         if isinstance(location, int):
             return self._logicalint2physical(location)
@@ -208,15 +208,39 @@ class IndexedGMmap(GMmap, metaclass=ABCMeta):
             raise TypeError("Unexpected location type: {}".format(type(location)))
 
     @abstractmethod
-    def _logicalint2physical(self, location: int):
+    def _logicalint2physical_unsafe(self, location: int):
+        """ :return The slice for the bytestring that encodes the element(s) at integer index @location of the sequence.
+        The behavior is undefined if @location is out of bounds. """
+        raise NotImplementedError()
+
+    def _logicalint2physical(self, location: int):  # Final
         """ :return The slice for the bytestring that encodes the element(s) at integer index @location of the sequence.
         :raise IndexError if @location is out of bounds. """
-        raise NotImplementedError()
+        if self._is_within_bounds(location):
+            return self._logicalint2physical_unsafe(location)
+        raise IndexError("Index out of bounds: {}".format(location))
+
+    @abstractmethod
+    def _is_within_bounds(self, location: int):
+        """ :return True iff accessing this GMmap by index @location yields an element in the sequence. """
+        raise NotImplementedError
 
     @abstractmethod
     def _logicalslice2physical(self, location: slice):
         """ :return The slice for the bytestring that encodes the element(s) at location @location of the sequence. """
         raise NotImplementedError()
+
+
+class ListlikeGMmap(IndexedGMmap, metaclass=ABCMeta):
+    """ IndexedGMmap where
+    * using an integer i as index yields the ith element in the sequence
+    * using a slice(i, j) as index yields a the subsequence (a_i, a_(i+1), ..., a_j) where a is the sequence
+    * negative integers are interpreted as counting from the end of the list.
+    """
+
+    def _is_within_bounds(self, location: int):
+        """ :return True iff accessing this GMmap by index @location yields an element in the sequence. """
+        return -len(self) <= location < len(self)
 
     def _recompute_length(self):
         """ :return The length of the sequence which is computed in O(n*log(n)) by finding the lowest non-negative index
@@ -265,8 +289,8 @@ class Additive(metaclass=ABCMeta):
         return NotImplementedError()
 
 
-class BytesMmap(Additive, IndexedGMmap, PhysicallyIndexedGMmap, metaclass=ABCMeta):
-    """ An IndexedGMmap where each element in the sequence is a bytestring of any positive length. """
+class BytesMmap(Additive, ListlikeGMmap, PhysicallyIndexedGMmap, metaclass=ABCMeta):
+    """ A ListlikeGMmap where each element in the sequence is a bytestring of any positive length. """
 
     @classmethod
     def _decode(cls, bytestring: bytes):
@@ -353,7 +377,7 @@ class FixedWidthBytesMmap(SourcedGMmap, BytesMmap):
                 "Source is neither a path to an existing file nor an iterable for bytestrings: {}".format(source)
         return source
 
-    def _logicalint2physical(self, location: int):
+    def _logicalint2physical_unsafe(self, location: int):
         assert isinstance(location, int)  # TODO remove
         if 0 <= location < len(self):
             return slice(self.width * location, self.width * (location + 1))
@@ -361,7 +385,6 @@ class FixedWidthBytesMmap(SourcedGMmap, BytesMmap):
             return slice(self.width * location, self.width * (location + 1))
         elif location == -1:
             return slice(self.width * location, None)
-        raise IndexError("Index out of bounds: {}".format(location))
 
     def _logicalslice2physical(self, location: slice):
         assert isinstance(location, slice)  # TODO remove
@@ -372,8 +395,8 @@ class FixedWidthBytesMmap(SourcedGMmap, BytesMmap):
         )
 
 
-class SelectiveGMmap(IndexedGMmap, PhysicallyIndexedGMmap, metaclass=ABCMeta):
-    """ An IndexedGMmap in which elements in the sequence can be marked/unmarked as being hidden from the user's
+class SelectiveGMmap(ListlikeGMmap, PhysicallyIndexedGMmap, metaclass=ABCMeta):
+    """ A ListlikeGMmap in which elements in the sequence can be marked/unmarked as being hidden from the user's
     purview. If the ith element is visible and becomes preceded by n hidden elements, that means that this element will
     henceforth be considered to be the (i-n)th element. """
 
@@ -382,18 +405,20 @@ class SelectiveGMmap(IndexedGMmap, PhysicallyIndexedGMmap, metaclass=ABCMeta):
     def selection(self) -> Selection:
         raise NotImplementedError
 
-    def _logical2physical(self, virtual_location):
-        if isinstance(virtual_location, int):
-            location = self.selection.virtual2physical(virtual_location)
-            return super(SelectiveGMmap, self)._logicalint2physical(location)
-        elif isinstance(virtual_location, slice):
-            location = self.selection.virtual2physicalselection(virtual_location)
-            return self._logicalselection2physical(location)
-        #raise ValueError("Expected integer or slice but got {}".format(virtual_location))
-        raise TypeError("Unexpected location type: {}".format(type(virtual_location)))
+    def _logicalint2physical(self, vindex: int):  # Final
+        nonvindex = self.selection.virtual2physical(vindex)
+        return self._nonvirtualint2physical(nonvindex)
+
+    def _logicalslice2physical(self, vslice: slice):  # Final
+        nonvselection = self.selection.virtual2physicalselection(vslice)
+        return self._nonvirtualselection2physical(nonvselection)
 
     @abstractmethod
-    def _logicalselection2physical(self, location: Selection) -> Selection:
+    def _nonvirtualint2physical(self, location: int) -> int:
+        raise NotImplementedError
+
+    @abstractmethod
+    def _nonvirtualselection2physical(self, location: Selection) -> Selection:
         raise NotImplementedError
 
     def coverup(self, from_index, to_index):
@@ -418,17 +443,19 @@ class SelectiveFixedWidthBytesMmap(SelectiveGMmap, FixedWidthBytesMmap):
     def selection(self) -> Selection:
         return self._selection
 
-    def _logicalselection2physical(self, location: Selection):
+    def _nonvirtualint2physical(self, location: int):
+        return slice(self.width * location, self.width * (location + 1))
+
+    def _nonvirtualselection2physical(self, location: Selection):
         return location * self.width
 
 
 class SingletonBytesMmap(BytesMmap):
     """ The most useless subclass. Sequence containing a single bytestring element. """
 
-    def _logicalint2physical(self, location: int) -> slice:
+    def _logicalint2physical_unsafe(self, location: int) -> slice:
         if location == 0:
             return slice(None, None)
-        raise IndexError("Index out of bounds: {}".format(location))
 
     def _logicalslice2physical(self, location: slice) -> slice:
         if (location.start is None or location.start <= 0) and (location.stop is None or location.stop >= 1):
@@ -436,8 +463,8 @@ class SingletonBytesMmap(BytesMmap):
         return slice(0, 0)  # Empty slice
 
 
-class StringMmap(Additive, IndexedGMmap, PhysicallyIndexedGMmap, metaclass=ABCMeta):
-    """ An IndexedGMmap where each element in the sequence is a Unicode string of any positive length. """
+class StringMmap(Additive, ListlikeGMmap, PhysicallyIndexedGMmap, metaclass=ABCMeta):
+    """ A ListlikeGMmap where each element in the sequence is a Unicode string of any positive length. """
 
     def _logicalslice2physical(self, location: slice) -> slice:
         return slice(
@@ -446,14 +473,13 @@ class StringMmap(Additive, IndexedGMmap, PhysicallyIndexedGMmap, metaclass=ABCMe
             4 * location.step if location.step else None,
         )
 
-    def _logicalint2physical(self, location: int) -> slice:
+    def _logicalint2physical_unsafe(self, location: int) -> slice:
         if 0 <= location < len(self):
             return slice(4 * location, 4 * (location + 1))
         elif -len(self) <= location < -1:
             return slice(4 * location, 4 * (location + 1))
         elif location == -1:
             return slice(4 * location, None)
-        raise IndexError("Index out of bounds: {}".format(location))
 
     @classmethod
     def _encode(cls, element: str) -> bytes:
@@ -807,7 +833,10 @@ class SelectiveIROMMmap(SelectiveGMmap, IROMMmap):
     def selection(self) -> Selection:
         return self._selection
 
-    def _logicalselection2physical(self, location: Selection):
+    def _nonvirtualint2physical(self, location: int):
+        return slice(4 * location, 4 * (location + 1))
+
+    def _nonvirtualselection2physical(self, location: Selection):
         return location * 4
 
 

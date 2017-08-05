@@ -203,6 +203,35 @@ class TestTinyROM:
         assert len(tinyrom) == 2
 
 
+class TestCoveredROM(object):
+    def setup(self):
+        self.rom = ROM(b'abcdefghij')
+        self.rom.coverup(0, 1)
+        self.rom.coverup(4, 6)
+        self.rom.coverup(8, 10)
+
+    def test_bytes(self):
+        assert bytes(self.rom) == b'bcdgh'
+
+    def test_len(self):
+        assert len(self.rom) == 5
+
+    @pytest.mark.parametrize("index, expected", [
+        (0, b'b'),
+        (1, b'c'),
+        (2, b'd'),
+        (3, b'g'),
+        (4, b'h'),
+        (-5, b'b'),
+        (-4, b'c'),
+        (-3, b'd'),
+        (-2, b'g'),
+        (-1, b'h'),
+    ])
+    def test_getitem(self, index, expected):
+        assert self.rom[index] == expected
+
+
 bytes256 = (
     b"\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f"
     b"\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f"

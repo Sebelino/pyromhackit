@@ -292,6 +292,8 @@ class Hacker(object):
 
     def set_destination_at(self, idx: int, dst: str):
         """ Set the @idx'th character in the destination string to @dst, updating the codec accordingly. """
+        if self.dst[idx] == dst:
+            return  # If the character is already set to @dst, do nothing
         dstatomidx = idx  # FIXME assumes IROM atom length = 1
         dstidx, _, dstidxpath, _, _ = self.dst.atomindex2entry(dstatomidx)
         assert dstidx == dstatomidx  # TODO

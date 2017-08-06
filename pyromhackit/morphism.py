@@ -309,6 +309,9 @@ class Hacker(object):
         self._compute_leaf(srcidxpath)
 
     def put(self, src: bytes, dst: str):
+        """ For every ROM atom containing @src, updates the associated IROM atom so that it becomes equal to @dst. """
+        assert isinstance(src, bytes), "Expected bytes, got: {}".format(type(src))
+        assert isinstance(dst, bytes), "Expected string, got: {}".format(type(dst))
         self.codec[src] = dst
         self._compute_dst()
 

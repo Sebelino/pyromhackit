@@ -118,14 +118,13 @@ class Isomorphism(Morphism):
         return None
 
 
-Behavior = Enum('Behavior', 'RAISE SWAP')
-
-
 class Hacker(object):
     """
     Assumes a one-to-one mapping between bytestring leaves and string leaves.
     Assumes dicts as decoders (and encoders!) instead of functions.
     """
+
+    Behavior = Enum('Behavior', 'RAISE SWAP')
 
     def __init__(self, item: 'ROM'):
         if isinstance(item, ROM):
@@ -136,7 +135,7 @@ class Hacker(object):
         self.affection = lambda p: p  # Functions are simpler than dicts; avoids a mmap for large bidicts
         self.invaffection = self.affection  # ...but unfortunately requires an inverse function
         self.codec = mu  # Should probably support multiple codecs, assigning one codec to each subtree/leaf.
-        self.codec_behavior = Behavior.SWAP
+        self.codec_behavior = self.Behavior.SWAP
         self._compute_dst()
         self.visage = dict()  # Dict mapping each actual character into a presented character
         self.last_codec_path = None
@@ -279,11 +278,11 @@ class Hacker(object):
 
     def set_destination(self, dst1: str, dst2: str):
         """ Change all @dst1 string leaves into @dst2. """
-        if self.codec_behavior == Behavior.RAISE:
+        if self.codec_behavior == self.Behavior.RAISE:
             assert dst2 not in self.codec.inv, "String leaf {} already exists in the codec.".format(repr(dst2))
             src1 = self.codec.inv.pop(dst1)
             self.codec.inv[dst2] = src1
-        elif self.codec_behavior == Behavior.SWAP:
+        elif self.codec_behavior == self.Behavior.SWAP:
             src1 = self.codec.inv.pop(dst1)
             if dst2 in self.codec.inv:
                 src2 = self.codec.inv.pop(dst2)
@@ -301,7 +300,7 @@ class Hacker(object):
         try:
             self.codec[bs] = dst
         except KeyAndValueDuplicationError as e:
-            if self.codec_behavior == Behavior.SWAP:
+            if self.codec_behavior == self.Behavior.SWAP:
                 occupying_key = self.codec.inv[dst]
                 swapped_value = self.codec[bs]
                 self.codec.putall({(occupying_key, swapped_value), (bs, dst)}, on_dup_val=OVERWRITE)

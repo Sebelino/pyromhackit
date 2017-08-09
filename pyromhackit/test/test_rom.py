@@ -238,6 +238,21 @@ class TestCoveredROM(object):
         with pytest.raises(IndexError):
             self.rom[index]
 
+    @pytest.mark.parametrize("aindex, bindex, expected", [
+        (0, 1, b'b'),
+        (1, 2, b'c'),
+        (2, 3, b'd'),
+        (3, 4, b'g'),
+        (4, 5, b'h'),
+        (-5, -4, b'b'),
+        (-4, -3, b'c'),
+        (-3, -2, b'd'),
+        (-2, -1, b'g'),
+        (-1, 0, b'h'),
+    ])
+    def test_getitem_slice(self, aindex, bindex, expected):
+        assert self.rom[aindex:bindex] == expected
+
 
 bytes256 = (
     b"\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f"

@@ -248,7 +248,7 @@ class TestCoveredROM(object):
         (-4, -3, b'c'),
         (-3, -2, b'd'),
         (-2, -1, b'g'),
-        (-1, 0, b'h'),
+        (-1, None, b'h'),
     ])
     def test_getitem_slice(self, aindex, bindex, expected):
         assert self.rom[aindex:bindex] == expected

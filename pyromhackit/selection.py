@@ -193,7 +193,7 @@ class Selection(GSlice):  # TODO -> GSlice
 
     def virtual2physicalselection(self, vslice: slice):  # TODO -> virtualslice2physical
         """ :return the sub-Selection that is the intersection of this selection and @vslice. """
-        if not self.revealed:
+        if not self.revealed or vslice.stop == 0:
             return Selection(self.universe, revealed=[])
         if vslice.start is None:
             a = self.revealed[0].start
@@ -204,19 +204,19 @@ class Selection(GSlice):  # TODO -> GSlice
         else:
             raise ValueError("Unexpected slice start: {}".format(vslice))
         if vslice.stop is None or vslice.stop >= len(self):
-            b = self.revealed[-1].stop
+            b = self.revealed[-1].stop - 1
         elif -len(self) <= vslice.stop < len(self):
-            b = self.virtual2physical(vslice.stop)
+            b = self.virtual2physical(vslice.stop - 1)
         else:
             raise ValueError("Unexpected slice stop: {}".format(vslice))
-        # INV: a is the physical index of the first element, b-1 is the physical index of the last element
-        if b <= a:
+        # INV: a is the physical index of the first element, b is the physical index of the last element
+        if b < a:
             return Selection(universe=self.universe, revealed=[])
         m = self._slice_index(a)
-        n = self._slice_index(b - 1)
+        n = self._slice_index(b)
         intervals = self.revealed[m:n + 1]
         intervals[0] = slice(a, intervals[0].stop)
-        intervals[-1] = slice(intervals[-1].start, b)
+        intervals[-1] = slice(intervals[-1].start, b + 1)
         return Selection(universe=self.universe, revealed=intervals)
 
     def virtualselection2physical(self, vselection: 'Selection'):  # TODO -> virtualslice2physical

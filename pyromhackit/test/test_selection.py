@@ -285,3 +285,31 @@ class TestThreeRevealedIntervals(object):
     def test_slice_index_raises(self, pindex):
         with pytest.raises(IndexError):
             self.v._slice_index(pindex)
+
+
+class TestVirtualCoverup(object):
+    def setup(self):
+        self.v = Selection(slice(0, 5))
+        self.v.coverup_virtual(1, 2)
+        self.v.coverup_virtual(1, 2)
+
+    @pytest.mark.parametrize("pindex, expected", [
+        (0, 0),
+        (1, 3),
+        (2, 4),
+        (2, 4),
+    ])
+    def test_v2p(self, pindex, expected):
+        assert self.v[pindex] == expected
+
+    @pytest.mark.parametrize("pindex, expected", [
+        (0, 0),
+        (1, 1),
+        (2, 2),
+        (3, 3),
+        (4, 4),
+    ])
+    @pytest.mark.skip()
+    def test_reveal(self, pindex, expected):
+        self.v.reveal(0, 1)
+        assert self.v

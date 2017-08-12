@@ -92,6 +92,17 @@ class Selection(GSlice):  # TODO -> GSlice
             i += 1
         return original_length - len(self)
 
+    def coverup_virtual(self, from_index, to_index):
+        if from_index is None or from_index < -len(self) or from_index >= len(self):
+            p_from_index = None
+        else:
+            p_from_index = self.virtual2physical(from_index)
+        if to_index is None or to_index < -len(self) or to_index >= len(self):
+            p_to_index = None
+        else:
+            p_to_index = self.virtual2physical(to_index)
+        self.coverup(p_from_index, p_to_index)
+
     def reveal(self, from_index, to_index):
         """ Expands this selection by including any element with index i, where @from_index <= i < @to_index, if it is
             not already included.

@@ -290,26 +290,19 @@ class TestThreeRevealedIntervals(object):
 class TestVirtualCoverup(object):
     def setup(self):
         self.v = Selection(slice(0, 5))
+
+    def test_cover_cumulatively(self):
         self.v.coverup_virtual(1, 2)
         self.v.coverup_virtual(1, 2)
+        assert self.v == Selection(universe=slice(0, 5), revealed=[slice(0, 1), slice(3, 5)])
 
-    @pytest.mark.parametrize("pindex, expected", [
-        (0, 0),
-        (1, 3),
-        (2, 4),
-        (2, 4),
-    ])
-    def test_v2p(self, pindex, expected):
-        assert self.v[pindex] == expected
-
-    @pytest.mark.parametrize("pindex, expected", [
-        (0, 0),
-        (1, 1),
-        (2, 2),
-        (3, 3),
-        (4, 4),
-    ])
     @pytest.mark.skip()
-    def test_reveal(self, pindex, expected):
-        self.v.reveal(0, 1)
-        assert self.v
+    def test_cover_and_reveal(self):
+        self.v.coverup_virtual(1, 2)
+        self.v.coverup_virtual(1, 2)
+        self.v.reveal(1, 2)
+        assert self.v == Selection(universe=slice(0, 5), revealed=[slice(0, 5)])
+
+    def test_cover_all(self):
+        self.v.coverup_virtual(None, 7)
+        assert self.v == Selection(universe=slice(0, 5), revealed=[])

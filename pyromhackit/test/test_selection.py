@@ -287,6 +287,20 @@ class TestThreeRevealedIntervals(object):
             self.v._slice_index(pindex)
 
 
+class TestNormalization(object):
+    def setup(self):
+        self.v = Selection(slice(0, 5))
+
+    def test_reveal_revealed(self):
+        self.v.reveal(1, 2)
+        assert self.v.revealed == [slice(0, 5)]
+
+    def test_cover_and_reveal_revealed(self):
+        self.v.coverup(1, 2)
+        self.v.reveal(2, 3)
+        assert self.v.revealed == [slice(0, 1), slice(2, 5)]
+
+
 class TestVirtualCoverup(object):
     def setup(self):
         self.v = Selection(slice(0, 5))

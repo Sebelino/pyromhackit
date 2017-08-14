@@ -16,7 +16,7 @@ e1_path = os.path.join(package_dir, "resources/copyrighted/E1.BIN")  # SQQ story
 e2_path = os.path.join(package_dir, "resources/copyrighted/E2.BIN")  # SEBEC story text
 e3_path = os.path.join(package_dir, "resources/copyrighted/E3.BIN")  # SQQ story text
 e4_path = os.path.join(package_dir, "resources/copyrighted/E4.BIN")  # Crapload of dupes (Agastya, Trish, Igor...)
-dvlan_path = os.path.join(package_dir, "resources/copyrighted/DVLAN.BIN")  #
+dvlan_path = os.path.join(package_dir, "resources/copyrighted/DVLAN.BIN")  # No text here (?)
 
 persona_codec_path = os.path.join(package_dir, "resources/persona_codec.json")
 persona_visage_path = os.path.join(package_dir, "resources/persona_visage.json")

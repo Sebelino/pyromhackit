@@ -441,7 +441,7 @@ class TestStructuredROM(object):
         ]
 
 
-@pytest.mark.skip()
+@pytest.mark.skip("Unsupported feature for now")
 @pytest.mark.parametrize("args, expected", [
     (["hex"], ["61", "62", "63"]),
     (["hex | join ' '"], "61 62 63"),

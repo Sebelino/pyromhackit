@@ -891,7 +891,7 @@ class IROM(object):
             byteindex = self.index2slice(idx).start
             yield idx, atomidx, idxpath, byteindex, str(content)
 
-    def index2slice(self, idx):
+    def index2slice(self, idx):  # TODO Abstraction leak -- remove (?)
         """ Returns a slice indicating where the bytes necessary to encode the @idx'th character are stored. """
         if idx >= len(self):
             raise IndexError("IROM index out of range: {}".format(idx))

@@ -56,7 +56,7 @@ def test_idempotence():
 
 
 class TestTinyROM:
-    @pytest.fixture(scope="module")
+    @pytest.fixture(scope="function")
     def tinyrom(self) -> ROM:
         """ Test methods for an explicitly given tiny ROM """
         return ROM(b"a\xffc")
@@ -206,9 +206,9 @@ class TestTinyROM:
 class TestCoveredROM(object):
     def setup(self):
         self.rom = ROM(b'abcdefghij')
-        self.rom.coverup(0, 1)
-        self.rom.coverup(4, 6)
-        self.rom.coverup(8, 10)
+        self.rom.coverup(0, 1, virtual=False)
+        self.rom.coverup(4, 6, virtual=False)
+        self.rom.coverup(8, 10, virtual=False)
 
     def test_bytes(self):
         assert bytes(self.rom) == b'bcdgh'

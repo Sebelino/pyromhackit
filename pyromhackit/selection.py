@@ -124,27 +124,37 @@ class Selection(GSlice):  # TODO -> GSlice
         if not self.revealed:
             self.revealed.append(slice(from_index, to_index))
             return to_index - from_index
-        i = 0
-        while i < len(self.revealed):
-            sl = self.revealed[i]
-            a, b = sl.start, sl.stop
-            if from_index < a:
-                if to_index < a:
-                    self.revealed.insert(i, slice(from_index, to_index))
-                    i += 1
-                elif a <= to_index <= b:
-                    self.revealed[i] = slice(from_index, b)
-                elif b <= to_index:
-                    self.revealed[i] = slice(from_index, to_index)
-            elif a <= from_index <= b:
-                if to_index <= b:
-                    pass
-                elif to_index > b:
-                    self.revealed[i] = slice(a, to_index)
-            elif b < from_index:
-                self.revealed.insert(i + 1, slice(from_index, to_index))
-                i += 1
-            i += 1
+
+        if self._within_bounds(from_index):
+            m = self._slice_index(from_index)
+            if self._within_bounds(to_index):
+                n = self._slice_index(to_index)
+                self.revealed[m:n + 1] = [slice(self.revealed[m].start, self.revealed[n].stop)]
+            elif self._within_bounds(to_index + 1):
+                n = self._slice_index(to_index + 1)
+                self.revealed[m:n + 1] = [slice(self.revealed[m].start, self.revealed[n].stop)]
+            else:
+                n = self._gap_index(to_index)
+                self.revealed[m:n] = [slice(self.revealed[m].start, to_index)]
+        elif self._within_bounds(from_index - 1):
+            m = self._slice_index(from_index - 1)
+            if self._within_bounds(to_index):
+                n = self._slice_index(to_index)
+                self.revealed[m:n + 1] = [slice(self.revealed[m].start, self.revealed[n].stop)]
+            elif self._within_bounds(to_index + 1):
+                n = self._slice_index(to_index + 1)
+                self.revealed[m:n + 1] = [slice(self.revealed[m].start, self.revealed[n].stop)]
+            else:
+                n = self._gap_index(to_index)
+                self.revealed[m:n] = [slice(self.revealed[m].start, to_index)]
+        else:
+            m = self._gap_index(from_index)
+            if self._within_bounds(to_index):
+                n = self._slice_index(to_index)
+                self.revealed[m:n + 1] = [slice(from_index, self.revealed[n].stop)]
+            else:
+                n = self._gap_index(to_index)
+                self.revealed[m:n] = [slice(from_index, to_index)]
         return len(self) - original_length
 
     def __iter__(self):
@@ -152,7 +162,8 @@ class Selection(GSlice):  # TODO -> GSlice
             yield (sl.start, sl.stop)  # FIXME should probably generate slices instead, or every index
 
     def _slice_index(self, pindex):
-        """ :return n if @pindex is in the nth slice. :raise IndexError if @pindex is outside any slice. """
+        """ :return n if @pindex is in the nth slice (zero-indexed).
+        :raise IndexError if @pindex is outside any slice. """
         for i, (a, b) in enumerate(self):
             if a <= pindex:
                 if pindex < b:
@@ -160,6 +171,26 @@ class Selection(GSlice):  # TODO -> GSlice
             else:
                 break
         raise IndexError("{} is not in any interval.".format(pindex))
+
+    def _gap_index(self, pindex):
+        """ :return n if there are n slices to the left to @pindex.
+        :raise IndexError if @pindex is in a slice. """
+        n = 0
+        for (a, b) in self:
+            if a <= pindex:
+                if pindex < b:
+                    raise IndexError("{} is not in any gap.".format(pindex))
+            else:
+                break
+            n += 1
+        return n
+
+    def _within_bounds(self, pindex):
+        try:
+            self._slice_index(pindex)
+            return True
+        except IndexError:
+            return False
 
     def index(self, pindex):
         """ Returns the slice that @pindex is in. """

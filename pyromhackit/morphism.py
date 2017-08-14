@@ -232,8 +232,8 @@ class Hacker(object):
         self.visage[actual_char] = viewed_substring
 
     def coverup(self, from_index: Union[int, None], to_index: Union[int, None]):
-        self.src.coverup(from_index, to_index)
-        self.dst.coverup(from_index, to_index)
+        self.src.coverup(from_index, to_index, virtual=True)
+        self.dst.coverup(from_index, to_index, virtual=True)
 
     def reveal(self, from_index: Union[int, None], to_index: Union[int, None]):
         self.src.reveal(from_index, to_index)

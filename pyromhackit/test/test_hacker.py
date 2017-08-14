@@ -9,21 +9,21 @@ from pyromhackit.tree import SimpleTopology
 
 package_dir = os.path.dirname(os.path.abspath(__file__))
 
-rom = ROM(b'\x00\xe7\x01\x0f\x01\x17', structure=SimpleTopology(2))
+bytestring = b'\x00\xe7\x01\x0f\x01\x17'
 
 
 def test_init():
-    Hacker(rom)
+    Hacker(ROM(bytestring, structure=SimpleTopology(2)))
 
 
 def test_str():
-    hacker = Hacker(rom)
+    hacker = Hacker(ROM(bytestring, structure=SimpleTopology(2)))
     assert len(str(hacker)) == 3  # Actual content of string representation is undefined, but its length is known
 
 
 class TestTinyHacker(object):
     def setup(self):
-        self.hacker = Hacker(rom)
+        self.hacker = Hacker(ROM(bytestring, structure=SimpleTopology(2)))
 
     @pytest.mark.skip("Not sure if this method should even exist, even for debug purposes")
     def test_traverse_preorder(self):
@@ -72,3 +72,10 @@ class TestTinyHacker(object):
         self.hacker.coverup(0, 1)
         assert bytes(self.hacker.src) == b'\x01\x0f\x01\x17'
         assert str(self.hacker.dst) == 'ow'
+
+    def test_cover_cumulatively(self):
+        self.hacker.place(0, 'How')
+        self.hacker.coverup(0, 1)
+        self.hacker.coverup(0, 1)
+        assert bytes(self.hacker.src) == b'\x01\x17'
+        assert str(self.hacker.dst) == 'w'

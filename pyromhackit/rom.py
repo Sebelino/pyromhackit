@@ -422,14 +422,29 @@ class SelectiveGMmap(ListlikeGMmap, PhysicallyIndexedGMmap, metaclass=ABCMeta):
         raise NotImplementedError
 
     def coverup(self, from_index, to_index):
-        """ Covers up all elements with indices between @from_index (inclusive) and @to_index (exclusive). In effect,
-        every element with index i >= @to_index becomes the (i-to_index+@from_index)th (visible) element. """
+        """ Let N denote the total number of elements in the sequence. This method causes every element with index i,
+        where @from_index <= i < @to_index, to become hidden (if it is not already). """
         covered_count = self.selection.coverup(from_index, to_index)
         self._length -= covered_count
 
+    def coverup_virtual(self, from_index, to_index):
+        """ Let I_0, I_1, ..., I_(M-1) denote the indices of the visible elements in the sequence. This method causes
+        every element with index I_i, where @from_index <= i < @to_index, to become hidden. """
+        covered_count = self.selection.coverup_virtual(from_index, to_index)
+        self._length -= covered_count
+
     def uncover(self, from_index, to_index):
-        """ Uncovers all elements that are hidden between with indices between @from_index (inclusive) and @to_index (exclusive). In effect,
-        every element with index i >= @to_index becomes the (i-to_index+@from_index)th (visible) element. """
+        """ Let N denote the total number of elements in the sequence. This method causes every element with index i,
+        where @from_index <= i < @to_index, to become visible (if it is not already). """
+        revealed_count = self.selection.reveal(from_index, to_index)
+        self._length += revealed_count
+
+    def uncover_virtual(self, from_index, to_index):
+        """ Let I_0, I_1, ..., I_(M-1) denote the indices of the visible elements in the sequence. This method causes
+        every element with index i, where I_@from_index < i < I_@to_index, to become visible. If @from_index is None,
+        and @to_index is not None, the condition becomes i < I_@to_index. If @from_index is not None and @to_index is
+        None, the condition becomes I_@from_index < i. If both are None, all elements in the sequence become visible.
+        """
         revealed_count = self.selection.reveal(from_index, to_index)
         self._length += revealed_count
 
@@ -529,11 +544,17 @@ class ROM(object):
                 # self.memory = SingletonBytesMmap(bytestr)
                 self.memory = SelectiveFixedWidthBytesMmap(1, self.structure.structure(bytestr))
 
-    def coverup(self, from_index, to_index, virtual=False):  # Mutability
-        self.memory.coverup(from_index, to_index)
+    def coverup(self, from_index, to_index, virtual=True):  # Mutability
+        if virtual:
+            self.memory.coverup_virtual(from_index, to_index)
+        else:
+            self.memory.coverup(from_index, to_index)
 
-    def reveal(self, from_index, to_index, virtual=False):  # Mutability
-        self.memory.uncover(from_index, to_index)
+    def reveal(self, from_index, to_index, virtual=True):  # Mutability
+        if virtual:
+            self.memory.uncover_virtual(from_index, to_index)
+        else:
+            self.memory.uncover(from_index, to_index)
 
     def tree(self):
         """ Returns a Tree consisting of the revealed portions of the ROM according to the ROM's topology. """
@@ -849,11 +870,17 @@ class IROM(object):
         self.text_encoding = 'utf-32'
         self.memory = SelectiveIROMMmap(rom, codec)
 
-    def coverup(self, from_index, to_index, virtual=False):  # Mutability
-        self.memory.coverup(from_index, to_index)
+    def coverup(self, from_index, to_index, virtual=True):  # Mutability
+        if virtual:
+            self.memory.coverup_virtual(from_index, to_index)
+        else:
+            self.memory.coverup(from_index, to_index)
 
-    def reveal(self, from_index, to_index, virtual=False):  # Mutability
-        self.memory.uncover(from_index, to_index)
+    def reveal(self, from_index, to_index, virtual=True):  # Mutability
+        if virtual:
+            self.memory.uncover_virtual(from_index, to_index)
+        else:
+            self.memory.uncover(from_index, to_index)
 
     def tree(self):
         t = self.structure.structure(self[:])

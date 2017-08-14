@@ -157,6 +157,19 @@ class Selection(GSlice):  # TODO -> GSlice
                 self.revealed[m:n] = [slice(from_index, to_index)]
         return len(self) - original_length
 
+    def reveal_virtual(self, from_index, to_index):
+        """ Expands this selection by including any element between the @from_index'th and @to_index'th visible
+        elements. :return The number of revealed elements that were revealed. """
+        if from_index is None or from_index < -len(self) or from_index >= len(self):
+            p_from_index = None
+        else:
+            p_from_index = self.virtual2physical(from_index)
+        if to_index is None or to_index < -len(self) or to_index >= len(self):
+            p_to_index = None
+        else:
+            p_to_index = self.virtual2physical(to_index)
+        return self.reveal(p_from_index, p_to_index)
+
     def __iter__(self):
         for sl in self.revealed:
             yield (sl.start, sl.stop)  # FIXME should probably generate slices instead, or every index

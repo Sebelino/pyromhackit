@@ -263,6 +263,7 @@ class TestFullyCovered(object):
     def test_v2p_selection(self, vslice, expected):  # TODO negatives; slices (a,b) where a > b
         assert self.v.virtual2physicalselection(vslice) == expected
 
+
 class TestThreeRevealedIntervals(object):
     def setup(self):
         self.v = Selection(slice(0, 10))
@@ -310,11 +311,10 @@ class TestVirtualCoverup(object):
         self.v.coverup_virtual(1, 2)
         assert self.v == Selection(universe=slice(0, 5), revealed=[slice(0, 1), slice(3, 5)])
 
-    @pytest.mark.skip()
     def test_cover_and_reveal(self):
         self.v.coverup_virtual(1, 2)
         self.v.coverup_virtual(1, 2)
-        self.v.reveal(1, 2)
+        self.v.reveal_virtual(0, 1)
         assert self.v == Selection(universe=slice(0, 5), revealed=[slice(0, 5)])
 
     def test_cover_all(self):

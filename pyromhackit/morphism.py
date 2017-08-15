@@ -401,7 +401,8 @@ class Hacker(object):
         if not json_path:
             raise ValueError("Expected valid filename or path, got: {}".format(json_path))
         with open(json_path, 'w') as f:
-            json.dump({s: list(bs) for bs, s in self.codec.items()}, f)
+            json.dump({s: list(bs) for bs, s in self.codec.items()}, f, sort_keys=True, indent=4,
+                      separators=(',', ': '))
             self.last_codec_path = json_path
 
     def load_codec(self, json_path=None, totality=False):
@@ -427,7 +428,7 @@ class Hacker(object):
         if not json_path:
             raise ValueError("Expected valid filename or path, got: {}".format(json_path))
         with open(json_path, 'w') as f:
-            json.dump(self.visage, f)
+            json.dump(self.visage, f, sort_keys=True, indent=4, separators=(',', ': '))
             self.last_visage_path = json_path
 
     def load_visage(self, json_path=None):

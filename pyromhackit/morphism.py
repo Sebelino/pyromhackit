@@ -140,6 +140,7 @@ class Hacker(object):
         self.visage = dict()  # Dict mapping each actual character into a presented character
         self.last_codec_path = None
         self.last_visage_path = None
+        self.last_selection_path = None
 
     def _compute_dst(self):
         """ Uses the information in self.src, self.affection, and self.codec to update self.dst. """
@@ -371,6 +372,15 @@ class Hacker(object):
             yield Entry(vbyteindex, vatomindex, vatomindexpath, pbyteindex, ratom,
                         icharindex, iatomindex, iatomindexpath, ibyteindex, iatom)
 
+    def dump_selection(self, json_path=None):
+        """ Dump a list of interval lists [a, b] describing the revealed intervals to the JSON file with path
+        @json_path. """
+        if json_path is None:
+            json_path = self.last_selection_path
+        with open(json_path, 'w') as f:
+            json.dump(list(self.dst.memory.selection), f)  # TODO encapsulation
+        self.last_selection_path = json_path
+
     def load_selection(self, json_path=None):
         """ Reveal only the sections of the ROM specified in the JSON file with path @json_path. """
         self.coverup(None, None)
@@ -383,6 +393,7 @@ class Hacker(object):
                 assert isinstance(a, int)
                 assert isinstance(b, int)
                 self.reveal(a, b)
+        self.last_selection_path = json_path
 
     def dump_codec(self, json_path=None):
         if json_path is None:

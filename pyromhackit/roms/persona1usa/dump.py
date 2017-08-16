@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 
 import os
+import random
+
+import unicodedata
+
 from pyromhackit.rom import ROM
 from pyromhackit.morphism import Morphism
 from pyromhackit.morphism import Hacker
@@ -21,6 +25,7 @@ dvlan_path = os.path.join(package_dir, "resources/copyrighted/DVLAN.BIN")  # No 
 persona_codec_path = os.path.join(package_dir, "resources/persona_codec.json")
 persona_visage_path = os.path.join(package_dir, "resources/persona_visage.json")
 tensi_selection_path = os.path.join(package_dir, "resources/tensi_selection.json")
+e0_selection_path = os.path.join(package_dir, "resources/e0_selection.json")
 
 class Archive(object):  # File that can be unzipped into one or more ROMs.
     pass
@@ -36,6 +41,10 @@ class Persona1Codec(codec.Codec):
         return btree.transliterate(transliter)
 
 
+def any_lo_char():
+    return any_lo_char.los_chars[random.randint(0, len(any_lo_char.los_chars))]
+any_lo_char.los_chars = [chr(i) for i in range(2 ** 16) if unicodedata.category(chr(i)) == 'Lo']
+
 def g(bytetreeish):
     return bytetreeish[1] if bytetreeish[0] == '0' else bytetreeish[1].decode()
 
@@ -49,16 +58,27 @@ def two_byte_structure(bs):
     return [bs[i:i+2] for i in range(0, len(bs), 2)]
 
 def hack(path):
+    import time; t = time.time()
     r = ROM(path, structure=SimpleTopology(2))
+    print("Created ROM: {}".format(time.time()-t))
     hacker = Hacker(r)
+    print("Created Hacker: {}".format(time.time()-t))
     hacker.load_codec(persona_codec_path)
+    print("Loaded codec: {}".format(time.time()-t))
     hacker.load_visage(persona_visage_path)
-    if path == tensi_path:
-        hacker.load_selection(tensi_selection_path)
+    print("Loaded visage: {}".format(time.time()-t))
+    path_mapper = {
+        tensi_path: tensi_selection_path,
+        e0_path: e0_selection_path,
+    }
+    if path in path_mapper:
+        hacker.load_selection(path_mapper[path])
+        print("Loaded selection: {}".format(time.time()-t))
+    hacker.set_codec_behavior(Hacker.Behavior.RAISE)
     return hacker
 
 if __name__ == '__main__':
-    hacker = hack(tensi_path)
+    hacker = hack(e0_path)
 
 
 # Decoding function:

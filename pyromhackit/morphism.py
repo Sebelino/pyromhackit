@@ -9,6 +9,8 @@ from enum import Enum
 import re
 
 import time
+
+import unicodedata
 from bidict import bidict, KeyAndValueDuplicationError, OVERWRITE, IGNORE
 
 from pyromhackit.rom import ROM, IROM
@@ -158,11 +160,11 @@ class Hacker(object):
     def _any_codec(self, occupied=dict()):
         mu = bidict()
         codepoint = 128
-        #for i, (_, _, _, _, srcleaf) in enumerate(self.src.traverse_preorder()):
+        categories = {'Ll', 'Lu', 'Lo'}
         for i in range(self.src.atomcount()):
             srcleaf = self.src.getatom(i)
             if srcleaf not in mu and srcleaf not in occupied:
-                while chr(codepoint) in occupied.values():
+                while chr(codepoint) in occupied.values() or unicodedata.category(chr(codepoint)) not in categories:
                     codepoint += 1
                 mu[srcleaf] = chr(codepoint)
                 codepoint += 1

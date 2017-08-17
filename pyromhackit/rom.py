@@ -980,3 +980,8 @@ class IROM(object):
 
     def __setitem__(self, key, value):
         raise NotImplementedError()  # TODO
+
+    def dump(self, path):
+        """ Writes the content of this IROM to a file with path @path. """
+        with open(path, 'w') as f:
+            f.write(self.memory[:])

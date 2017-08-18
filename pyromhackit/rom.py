@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import difflib
 from abc import abstractmethod, ABCMeta
 from collections import namedtuple
 import io
@@ -985,3 +986,17 @@ class IROM(object):
         """ Writes the content of this IROM to a file with path @path. """
         with open(path, 'w') as f:
             f.write(self.memory[:])
+
+    def load_selection(self, path):
+        """ File @path contains a string identical to this IROM except that zero or more substrings have been removed.
+        The selection of this IROM is adjusted so that the substrings not present in @path become hidden.
+        """
+        with open(path, 'r') as f:
+            edited_content = f.read()
+        d = difflib.Differ()
+        original_content = self[:]
+        g = d.compare(original_content.split('\n'), edited_content.split('\n'))
+        difflines = [(x[:2] == '+ ', x[2:]) for x in g if x[:2] != '  ']
+        seqm = difflib.SequenceMatcher(None, difflines[0][1], difflines[1][1])
+        deletions = [(i1, i2, j1, j2) for opcode, i1, i2, j1, j2 in seqm.get_opcodes() if opcode == 'delete']
+        print(deletions)

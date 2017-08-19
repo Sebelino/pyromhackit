@@ -79,6 +79,8 @@ def hack(path):
 
 if __name__ == '__main__':
     hacker = hack(e0_path)
+    hacker[chr(9166)] = '\n'
+    hacker.dst.load_selection('e0dump.txt')
 
 
 # Decoding function:

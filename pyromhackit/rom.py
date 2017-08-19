@@ -996,7 +996,16 @@ class IROM(object):
         d = difflib.Differ()
         original_content = self[:]
         g = d.compare(original_content.split('\n'), edited_content.split('\n'))
-        difflines = [(x[:2] == '+ ', x[2:]) for x in g if x[:2] != '  ']
-        seqm = difflib.SequenceMatcher(None, difflines[0][1], difflines[1][1])
-        deletions = [(i1, i2, j1, j2) for opcode, i1, i2, j1, j2 in seqm.get_opcodes() if opcode == 'delete']
+        difflines = []
+        offset = 0
+        for line in g:
+            if line[:2] != '  ':
+                difflines.append((line[:2] == '+ ', offset, line[2:]))
+            offset += len(line)
+        print(difflines)
+        seqm = difflib.SequenceMatcher(None, difflines[0][2], difflines[1][2])
+        line_offset = difflines[1][1] - difflines[0][1]
+        deletions = [(line_offset + i1, line_offset + i2) for opcode, i1, i2, j1, j2 in seqm.get_opcodes() if
+                     opcode == 'delete']
+        self.coverup(deletions[0][0], deletions[0][1], virtual=True)
         print(deletions)

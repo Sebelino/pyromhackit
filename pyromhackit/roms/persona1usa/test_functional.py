@@ -44,7 +44,10 @@ class TestDumpAndFind:
 
     def teardown(self):
         for created_file in self.created_files:
-            os.remove(created_file)
+            try:
+                os.remove(created_file)
+            except FileNotFoundError:
+                pass
 
 @pytest.mark.skipif(not os.path.exists(tensi_path), reason="File not found")
 class TestCoverup:

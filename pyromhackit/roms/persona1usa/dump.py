@@ -78,9 +78,9 @@ def hack(path):
     return hacker
 
 if __name__ == '__main__':
-    hacker = hack(e0_path)
+    hacker = hack(tensi_path)
     hacker[chr(9166)] = '\n'
-    hacker.dst.load_selection('e0dump.txt')
+    hacker.dst.load_selection_from_copy('tensidump.txt')
 
 
 # Decoding function:

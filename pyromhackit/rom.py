@@ -987,7 +987,7 @@ class IROM(object):
         with open(path, 'w') as f:
             f.write(self.memory[:])
 
-    def load_selection(self, path):
+    def load_selection_from_copy(self, path):
         """ File @path contains a string identical to this IROM except that zero or more substrings have been removed.
         The selection of this IROM is adjusted so that the substrings not present in @path become hidden.
         """
@@ -998,14 +998,28 @@ class IROM(object):
         g = d.compare(original_content.split('\n'), edited_content.split('\n'))
         difflines = []
         offset = 0
+        removals = []
         for line in g:
             if line[:2] != '  ':
                 difflines.append((line[:2] == '+ ', offset, line[2:]))
             offset += len(line)
-        print(difflines)
-        seqm = difflib.SequenceMatcher(None, difflines[0][2], difflines[1][2])
-        line_offset = difflines[1][1] - difflines[0][1]
-        deletions = [(line_offset + i1, line_offset + i2) for opcode, i1, i2, j1, j2 in seqm.get_opcodes() if
-                     opcode == 'delete']
-        self.coverup(deletions[0][0], deletions[0][1], virtual=True)
-        print(deletions)
+        difflineidx = 0
+        while difflineidx < len(difflines):
+            is_insertion1, offset1, string1 = difflines[difflineidx]
+            difflineidx += 1
+            if not is_insertion1:
+                for opcode, i1, i2, j1, j2 in seqm.get_opcodes():
+                    if opcode == 'delete':
+                        removals.append((offset1 + i1, offset1 + i2))
+                    else:
+                        raise RuntimeError("Unexpected: opcode {}".format(opcode))
+            else:
+                difflineidx += 1
+                is_insertion2, offset2, string2 = difflines[difflineidx]
+                assert is_insertion2
+                seqm = difflib.SequenceMatcher(None, string1, string2)
+                line_offset = offset2 - offset1
+                removals = [(line_offset + i1, line_offset + i2) for opcode, i1, i2, j1, j2 in seqm.get_opcodes() if
+                             opcode == 'delete']
+        print(removals)
+        #self.coverup(removals[0][0], deletions[0][1], virtual=True)

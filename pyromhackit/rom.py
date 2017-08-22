@@ -996,13 +996,15 @@ class IROM(object):
         d = difflib.Differ()
         original_content = self[:]
         g = d.compare(original_content.split('\n'), edited_content.split('\n'))
+        # Match added lines with removed lines
         difflines = []
         offset = 0
-        removals = []
         for line in g:
-            if line[:2] != '  ':
-                difflines.append((line[:2] == '+ ', offset, line[2:]))
+            difflines.append((line[:2], offset, line[2:]))
             offset += len(line)
+        #difflines group by adjacent + or -
+        # Determine what parts to remove
+        removals = []
         difflineidx = 0
         while difflineidx < len(difflines):
             is_insertion1, offset1, string1 = difflines[difflineidx]

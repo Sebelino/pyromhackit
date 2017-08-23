@@ -995,14 +995,28 @@ class IROM(object):
             edited_content = f.read()
         d = difflib.Differ()
         original_content = self[:]
-        g = d.compare(original_content.split('\n'), edited_content.split('\n'))
+        diff = d.compare(original_content.split('\n'), edited_content.split('\n'))
         # Match added lines with removed lines
-        difflines = []
-        offset = 0
-        for line in g:
-            difflines.append((line[:2], offset, line[2:]))
-            offset += len(line)
-        #difflines group by adjacent + or -
+        lines = []
+        original_offset = 0
+        edited_offset = 0
+        for diffline in diff:
+            prefix = diffline[:2]
+            line = diffline[2:]
+            if prefix != '+ ':
+                lines.append((prefix, original_offset, line))
+                original_offset += len(line)
+            if prefix != '- ':
+                lines.append((prefix, edited_offset, line))
+                edited_offset += len(line)
+        adjacentlines = list(zip([(None, None, None)] + lines, lines + [(None, None, None)]))
+        start_indices = [i for i, ((p1, _, _), (p2, _, _)) in enumerate(adjacentlines)
+                         if p1 in {None, '  '} and p2 in {'- ', '+ '}]
+        stop_indices = [i for i, ((p1, _, _), (p2, _, _)) in enumerate(adjacentlines)
+                        if p1 in {'- ', '+ '} and p2 in {None, '  '}]
+        difflines = [lines[slice(a, b)] for a, b in zip(start_indices, stop_indices)]
+        # Strip away empty added lines
+        difflines = [[(a, b, c) for a, b, c in chunk if not (a == '+ ' and len(c) == 0)] for chunk in difflines]
         # Determine what parts to remove
         removals = []
         difflineidx = 0

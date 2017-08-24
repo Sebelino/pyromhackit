@@ -1003,39 +1003,41 @@ class IROM(object):
         for diffline in diff:
             prefix = diffline[:2]
             line = diffline[2:]
-            if prefix != '+ ':
+            delta = len(line) + 1  # Line length + \n
+            if prefix == '- ':
                 lines.append((prefix, original_offset, line))
-                original_offset += len(line)
-            if prefix != '- ':
+                original_offset += delta
+            elif prefix == '+ ':
                 lines.append((prefix, edited_offset, line))
-                edited_offset += len(line)
+                edited_offset += delta
+            elif prefix == '  ':
+                lines.append((prefix, (original_offset, edited_offset), line))
+                original_offset += delta
+                edited_offset += delta
         adjacentlines = list(zip([(None, None, None)] + lines, lines + [(None, None, None)]))
         start_indices = [i for i, ((p1, _, _), (p2, _, _)) in enumerate(adjacentlines)
                          if p1 in {None, '  '} and p2 in {'- ', '+ '}]
         stop_indices = [i for i, ((p1, _, _), (p2, _, _)) in enumerate(adjacentlines)
                         if p1 in {'- ', '+ '} and p2 in {None, '  '}]
-        difflines = [lines[slice(a, b)] for a, b in zip(start_indices, stop_indices)]
+        chunks = [lines[slice(a, b)] for a, b in zip(start_indices, stop_indices)]
         # Strip away empty added lines
-        difflines = [[(a, b, c) for a, b, c in chunk if not (a == '+ ' and len(c) == 0)] for chunk in difflines]
+        chunks = [[(a, b, c) for a, b, c in chunk if not (a == '+ ' and len(c) == 0)] for chunk in chunks]
+        # INV: Every chunk is a list of n >= 1 triplets with '- ' prefix followed by m <= n triplets with prefix '+ '
         # Determine what parts to remove
         removals = []
-        difflineidx = 0
-        while difflineidx < len(difflines):
-            is_insertion1, offset1, string1 = difflines[difflineidx]
-            difflineidx += 1
-            if not is_insertion1:
-                for opcode, i1, i2, j1, j2 in seqm.get_opcodes():
-                    if opcode == 'delete':
-                        removals.append((offset1 + i1, offset1 + i2))
-                    else:
-                        raise RuntimeError("Unexpected: opcode {}".format(opcode))
-            else:
-                difflineidx += 1
-                is_insertion2, offset2, string2 = difflines[difflineidx]
-                assert is_insertion2
+        for chunk in chunks:
+            removed_lines = [diffline for diffline in chunk if diffline[0] == '- ']
+            added_lines = [diffline for diffline in chunk if diffline[0] == '+ ']
+            assert len(added_lines) == len(removed_lines)  # TODO Actually <=
+            # Assuming nth removed line corresponds to nth added line for now
+            for rline, aline in zip(removed_lines, added_lines):
+                _, offset1, string1 = rline
+                _, offset2, string2 = aline
                 seqm = difflib.SequenceMatcher(None, string1, string2)
-                line_offset = offset2 - offset1
-                removals = [(line_offset + i1, line_offset + i2) for opcode, i1, i2, j1, j2 in seqm.get_opcodes() if
-                             opcode == 'delete']
-        print(removals)
-        #self.coverup(removals[0][0], deletions[0][1], virtual=True)
+                removals.extend(
+                    [(offset1 + i1, offset1 + i2) for opcode, i1, i2, j1, j2 in seqm.get_opcodes() if
+                     opcode == 'delete'])
+        removed_count = 0
+        for a, b in removals:
+            self.coverup(a - removed_count, b - removed_count, virtual=True)
+            removed_count += b - a

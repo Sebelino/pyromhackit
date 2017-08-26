@@ -138,6 +138,7 @@ class Hacker(object):
         self.invaffection = self.affection  # ...but unfortunately requires an inverse function
         self.codec = mu  # Should probably support multiple codecs, assigning one codec to each subtree/leaf.
         self.codec_behavior = self.Behavior.SWAP
+        self.dst = None
         self._compute_dst()
         self.visage = dict()  # Dict mapping each actual character into a presented character
         self.last_codec_path = None
@@ -146,7 +147,12 @@ class Hacker(object):
 
     def _compute_dst(self):
         """ Uses the information in self.src, self.affection, and self.codec to update self.dst. """
+        selection = self.dst.memory.selection if self.dst else None  # TODO compositionality violation
         self.dst = IROM(self.src, self.codec)
+        if selection:
+            self.dst.coverup(None, None)
+            for a, b in selection:
+                self.dst.reveal(a, b, virtual=False)
         #self.dst = self.dsttree.transliterate(self.codec)
         #self.dst = self.dsttree.restructured(self.affection)
 

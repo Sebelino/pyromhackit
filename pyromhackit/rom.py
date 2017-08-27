@@ -7,6 +7,7 @@ import io
 import math
 
 import itertools
+from copy import deepcopy
 from typing import Optional, Union
 
 import re
@@ -545,6 +546,9 @@ class ROM(object):
                 # self.memory = SingletonBytesMmap(bytestr)
                 self.memory = SelectiveFixedWidthBytesMmap(1, self.structure.structure(bytestr))
 
+    def selection(self):
+        return deepcopy(self.memory.selection)
+
     def coverup(self, from_index, to_index, virtual=True):  # Mutability
         if virtual:
             self.memory.coverup_virtual(from_index, to_index)
@@ -810,16 +814,6 @@ class ROM(object):
         else:
             return "ROM({}{})".format(bytes(self), topologystr)
 
-    def clone(self):
-        temp_selection = self.memory.selection  # TODO: Nastiness
-        self.reveal(None, None)
-        clone = ROM(self[:], structure=self.structure)
-        clone.reveal(None, None)
-        for a, b in temp_selection:
-            self.reveal(a, b)
-            clone.reveal(a, b)
-        return clone
-
 
 class IROMMmap(SourcedGMmap, StringMmap):
     """ A StringMmap where the source is extracted from a ROM and a codec mapping ROM atoms to strings. """
@@ -879,13 +873,10 @@ class IROM(object):
         """ Constructs an IROM object from a ROM and a codec transliterating every ROM atom into an IROM atom. """
         self.structure = SimpleTopology(1)  # This will do for now
         self.text_encoding = 'utf-32'
-        clonedrom = rom.clone()
-        selection = clonedrom.memory.selection  # FIXME encapsulation violation
-        clonedrom.reveal(None, None)
-        self.memory = SelectiveIROMMmap(clonedrom, codec)
-        self.coverup(None, None)
-        for a, b in selection:
-            self.reveal(a, b)
+        self.memory = SelectiveIROMMmap(rom, codec)
+
+    def selection(self):
+        return self.memory.selection.clone()
 
     def coverup(self, from_index, to_index, virtual=True):  # Mutability
         if virtual:

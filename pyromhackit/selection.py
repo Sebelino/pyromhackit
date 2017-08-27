@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 from abc import ABCMeta, abstractmethod
+from copy import deepcopy
 
 
 # TODO create interface/type Selection
@@ -308,3 +309,7 @@ class Selection(GSlice):  # TODO -> GSlice
 
     def __str__(self):
         return repr(self)
+
+    def __deepcopy__(self, memo):
+        """ :return A deep copy of this object. """
+        return Selection(universe=deepcopy(self.universe, memo), revealed=deepcopy(self.revealed, memo))

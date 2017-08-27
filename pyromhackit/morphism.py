@@ -147,12 +147,13 @@ class Hacker(object):
 
     def _compute_dst(self):
         """ Uses the information in self.src, self.affection, and self.codec to update self.dst. """
-        selection = self.dst.memory.selection if self.dst else None  # TODO compositionality violation
+        selection = self.src.selection() if self.dst else None
+        self.src.reveal(None, None)
         self.dst = IROM(self.src, self.codec)
         if selection:
-            self.dst.coverup(None, None)
+            self.coverup(None, None)
             for a, b in selection:
-                self.dst.reveal(a, b, virtual=False)
+                self.reveal(a, b)
         #self.dst = self.dsttree.transliterate(self.codec)
         #self.dst = self.dsttree.restructured(self.affection)
 

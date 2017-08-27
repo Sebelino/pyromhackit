@@ -79,3 +79,9 @@ class TestTinyHacker(object):
         self.hacker.coverup(0, 1)
         assert bytes(self.hacker.src) == b'\x01\x17'
         assert str(self.hacker.dst) == 'w'
+
+    def test_cover_and_edit_codec(self):
+        self.hacker[0] = 'H'
+        self.hacker.coverup(0, 1)
+        self.hacker['H'] = 'C'
+        assert len(self.hacker.src) == len(self.hacker.dst)

@@ -876,7 +876,7 @@ class IROM(object):
         self.memory = SelectiveIROMMmap(rom, codec)
 
     def selection(self):
-        return self.memory.selection.clone()
+        return deepcopy(self.memory.selection)
 
     def coverup(self, from_index, to_index, virtual=True):  # Mutability
         if virtual:

@@ -404,6 +404,15 @@ class Hacker(object):
                 self.reveal(a, b)
         self.last_selection_path = json_path
 
+    def load_selection_from_copy(self, path):
+        """ File @path contains a string identical to the IROM except that zero or more substrings have been removed.
+        The selections of the IROM and ROM is adjusted so that the substrings not present in @path become hidden.
+        """
+        self.dst.load_selection_from_copy(path)
+        self.src.coverup(None, None)
+        for a, b in self.dst.selection():
+            self.src.reveal(a, b)
+
     def dump_codec(self, json_path=None):
         if json_path is None:
             json_path = self.last_codec_path

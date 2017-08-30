@@ -387,7 +387,7 @@ class Hacker(object):
         if json_path is None:
             json_path = self.last_selection_path
         with open(json_path, 'w') as f:
-            json.dump(list(self.dst.memory.selection), f)  # TODO encapsulation
+            json.dump(list(self.dst.selection()), f, sort_keys=True, indent=4, separators=(',', ': '))
         self.last_selection_path = json_path
 
     def load_selection(self, json_path=None):

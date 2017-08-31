@@ -1086,8 +1086,8 @@ class IROM(object):
         """
         with open(path, 'r') as f:
             edited_content = f.read()
-        removals = self.removals_from_copy(edited_content)
         removed_count = 0
+        removals = self.removals_from_copy(str(self), edited_content)
         for a, b in removals:
             self.coverup(a - removed_count, b - removed_count, virtual=True)
             removed_count += b - a

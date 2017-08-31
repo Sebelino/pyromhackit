@@ -994,12 +994,10 @@ class IROM(object):
         with open(path, 'w') as f:
             f.write(self.memory[:])
 
-    def diff_chunks_from_copy(self, path):
+    def diff_chunks_from_copy(self, edited_content):
         """ File @path contains a string identical to this IROM except that zero or more substrings have been removed.
         :return A list of diff chunks describing what parts of the lines have changed.
         """
-        with open(path, 'r') as f:
-            edited_content = f.read()
         d = difflib.Differ()
         original_content = self[:]
         diff = d.compare(original_content.split('\n'), edited_content.split('\n'))
@@ -1032,38 +1030,63 @@ class IROM(object):
         # INV: Every chunk is a list of n >= 1 triplets with '- ' prefix followed by m <= n triplets with prefix '+ '
         return chunks
 
-    def _organize_chunk(self, chunk):
+    @staticmethod
+    def _string_selection_of(selstring, string):
+        """ :return True iff string1 is string2 but with zero or more characters removed. """
+        seqm = difflib.SequenceMatcher(None, string, selstring)
+        for opcode, i1, i2, j1, j2 in seqm.get_opcodes():
+            if opcode not in {'delete', 'equal'}:
+                return False
+        return True
+
+    @classmethod
+    def _organize_chunk(cls, chunk):
         """ Takes @chunk -- a collection of lines that are removed/added -- as input. @return A collection of removed
         lines paired with a collection consisting of pairs (R, A) where R is the removed line and A is the added line
         that corresponds to it. """
-        removed_lines = [diffline for diffline in chunk if diffline[0] == '- ']
-        added_lines = [diffline for diffline in chunk if diffline[0] == '+ ']
-        matched_line_pairs = []
-        for added_line in added_lines:
+        altered_difflines = [diffline for diffline in chunk if diffline[0] == '- ']
+        added_difflines = [diffline for diffline in chunk if diffline[0] == '+ ']
+        removed_difflines = set(altered_difflines)
+        matched_diffline_pairs = []
+        for added_diffline in added_difflines:
             found_match = False
-            for removed_line in removed_lines:
-                if added_line in removed_line:
+            _, _, added_line = added_diffline
+            for altered_diffline in altered_difflines:
+                _, _, altered_line = altered_diffline
+                if cls._string_selection_of(added_line, altered_line):
                     assert not found_match, "Found two removed lines that may both correspond to the same added line."
                     found_match = True
-                    matched_line_pairs.append((removed_line, added_line))
-        return removed_lines, matched_line_pairs
+                    matched_diffline_pairs.append((altered_diffline, added_diffline))
+                    removed_difflines.remove(altered_diffline)
+            assert found_match, "Found no removed line that corresponds to the added line."
+        return removed_difflines, matched_diffline_pairs
+
+    @classmethod
+    def removals_from_copy(cls, original_content, edited_content) -> Selection:
+        """ :return A collection of intervals that specify the sections of the edited IROM copy pointed out by @path
+        that have been removed. """
+        chunks = cls.diff_chunks_from_copy(original_content, edited_content)
+        removals = Selection(universe=slice(0, len(original_content)), revealed=[])
+        for chunk in chunks:
+            removed_lines, matched_line_pairs = cls._organize_chunk(chunk)
+            for prefix, offset, line in removed_lines:
+                removals.reveal(offset, offset + len(line) + 1)
+            for rline, aline in matched_line_pairs:
+                _, offset1, string1 = rline
+                _, offset2, string2 = aline
+                seqm = difflib.SequenceMatcher(None, string1, string2)
+                for opcode, i1, i2, _, _ in seqm.get_opcodes():
+                    if opcode == 'delete':
+                        removals.reveal(offset1 + i1, offset1 + i2)
+        return removals
 
     def load_selection_from_copy(self, path):
         """ File @path contains a string identical to this IROM except that zero or more substrings have been removed.
         The selection of this IROM is adjusted so that the substrings not present in @path become hidden.
         """
-        chunks = self.diff_chunks_from_copy(path)
-        removals = []
-        for chunk in chunks:
-            removed_lines, matched_line_pairs = self._organize_chunk(chunk)
-            removals.extend([(offset, offset + len(line) + 1) for (prefix, offset, line) in removed_lines])
-            for rline, aline in matched_line_pairs:
-                _, offset1, string1 = rline
-                _, offset2, string2 = aline
-                seqm = difflib.SequenceMatcher(None, string1, string2)
-                removals.extend(
-                    [(offset1 + i1, offset1 + i2) for opcode, i1, i2, j1, j2 in seqm.get_opcodes() if
-                     opcode == 'delete'])
+        with open(path, 'r') as f:
+            edited_content = f.read()
+        removals = self.removals_from_copy(edited_content)
         removed_count = 0
         for a, b in removals:
             self.coverup(a - removed_count, b - removed_count, virtual=True)

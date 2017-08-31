@@ -5,6 +5,7 @@ import pytest
 
 from pyromhackit.rom import ROM, IROM
 from pyromhackit.tree import SimpleTopology
+from selection import Selection
 
 package_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -38,3 +39,47 @@ class TestIROM(object):
     def test_index_raises(self):
         with pytest.raises(IndexError):
             self.irom[3]
+
+class Test_removals_from_copy(object):
+    @pytest.fixture(scope="function")
+    def two_line_content(self):
+        return """
+hello
+world
+        """.strip()
+
+    @pytest.fixture(scope="function")
+    def four_line_content(self):
+        return """
+HelloREEE
+YOOO
+HEY
+AAWorld
+        """.strip()
+
+    def test_identical(self, two_line_content):
+        edited_content = """
+hello
+world
+        """.strip()
+        removal = IROM.removals_from_copy(two_line_content, edited_content)
+        assert len(removal) == 0
+
+    def test_one_char_missing(self, two_line_content):
+        edited_content = """
+hell
+world
+        """.strip()
+        removal = IROM.removals_from_copy(two_line_content, edited_content)
+        assert list(removal) == [(4, 5)]
+
+    def test_lines_missing(self, four_line_content):
+        edited_content = """
+Hello
+World
+        """.strip()
+        removal = IROM.removals_from_copy(four_line_content, edited_content)
+        assert list(removal) == [
+            (5, 9),  # REEE
+            (10, 21),  # YOOO\nHEY\nAA
+        ]

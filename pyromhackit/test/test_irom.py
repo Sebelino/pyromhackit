@@ -56,6 +56,17 @@ HEY
 AAWorld
         """.strip()
 
+    @pytest.fixture(scope="function")
+    def two_chunks(self):
+        return """
+hello
+Nodiff
+HelloREEE
+YOOO
+HEY
+AAWorld
+        """.strip()
+
     def test_identical(self, two_line_content):
         edited_content = """
 hello
@@ -81,4 +92,18 @@ World
         assert list(removal) == [
             (5, 9),  # REEE
             (10, 21),  # YOOO\nHEY\nAA
+        ]
+
+    def test_two_chunks(self, two_chunks):
+        edited_content = """
+hell
+Nodiff
+Hello
+World
+        """.strip()
+        removal = IROM.removals_from_copy(two_chunks, edited_content)
+        assert list(removal) == [
+            (4, 5),  # o
+            (18, 22), # REEE
+            (23, 34), # YOOO\nHEY\nAA
         ]

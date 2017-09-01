@@ -6,7 +6,6 @@ import random
 import unicodedata
 
 from pyromhackit.rom import ROM
-from pyromhackit.morphism import Morphism
 from pyromhackit.morphism import Hacker
 import pyromhackit.thousandcurses.codec as codec
 from pyromhackit.tree import SimpleTopology
@@ -26,6 +25,7 @@ persona_codec_path = os.path.join(package_dir, "resources/persona_codec.json")
 persona_visage_path = os.path.join(package_dir, "resources/persona_visage.json")
 tensi_selection_path = os.path.join(package_dir, "resources/tensi_selection.json")
 e0_selection_path = os.path.join(package_dir, "resources/e0_selection.json")
+e1_selection_path = os.path.join(package_dir, "resources/e1_selection.json")
 
 class Archive(object):  # File that can be unzipped into one or more ROMs.
     pass
@@ -70,6 +70,7 @@ def hack(path):
     path_mapper = {
         tensi_path: tensi_selection_path,
         e0_path: e0_selection_path,
+        e1_path: e1_selection_path,
     }
     if path in path_mapper:
         hacker.load_selection(path_mapper[path])
@@ -78,9 +79,10 @@ def hack(path):
     return hacker
 
 if __name__ == '__main__':
-    hacker = hack(tensi_path)
-    hacker[chr(9166)] = '\n'
-    hacker.load_selection_from_copy('tensidump.txt')
+    hacker = hack(e1_path)
+    #hacker[chr(9166)] = '\n'
+    #hacker.reveal(None, None); hacker.load_selection_from_copy('e1dump.txt')
+
 
 
 # Decoding function:

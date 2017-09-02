@@ -8,7 +8,8 @@ from typing import Union
 import re
 from bidict import bidict, KeyAndValueDuplicationError, OVERWRITE
 
-from pyromhackit.rom import ROM, IROM
+from pyromhackit.rom import ROM
+from pyromhackit.irom import IROM
 from pyromhackit.thousandcurses.codec import Tree
 
 

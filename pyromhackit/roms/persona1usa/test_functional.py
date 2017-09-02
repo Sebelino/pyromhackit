@@ -7,7 +7,7 @@ import os
 import pytest
 
 from pyromhackit.rom import ROM
-from pyromhackit.morphism import Hacker
+from pyromhackit.hacker import Hacker
 from pyromhackit.tree import SimpleTopology
 from pyromhackit.roms.persona1usa.dump import tensi_path, persona_codec_path, persona_visage_path, tensi_selection_path
 

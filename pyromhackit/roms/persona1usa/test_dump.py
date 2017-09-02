@@ -2,7 +2,7 @@
 
 import os
 from pyromhackit.rom import ROM
-from pyromhackit.morphism import Hacker
+from pyromhackit.hacker import Hacker
 from pyromhackit.thousandcurses.codec import Tree
 import pytest
 

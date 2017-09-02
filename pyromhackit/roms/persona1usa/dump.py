@@ -6,7 +6,7 @@ import random
 import unicodedata
 
 from pyromhackit.rom import ROM
-from pyromhackit.morphism import Hacker
+from pyromhackit.hacker import Hacker
 import pyromhackit.thousandcurses.codec as codec
 from pyromhackit.tree import SimpleTopology
 from pyromhackit.roms.persona1usa.hexmap import transliter

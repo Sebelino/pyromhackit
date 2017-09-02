@@ -499,7 +499,7 @@ class StringMmap(Additive, ListlikeGMmap, PhysicallyIndexedGMmap, metaclass=ABCM
         return operand + str(self)
 
 
-class IROMMmap(SourcedGMmap, StringMmap):  # TODO rename
+class BytestringSourcedStringMmap(SourcedGMmap, StringMmap):
     """ A StringMmap where the source is extracted from a bytestring iterator and a codec mapping those bytestrings to
     strings. """
 
@@ -533,10 +533,10 @@ class IROMMmap(SourcedGMmap, StringMmap):  # TODO rename
         self._m_path = value
 
 
-class SelectiveIROMMmap(SelectiveGMmap, IROMMmap):  # TODO rename
+class SelectiveBytestringSourcedStringMmap(SelectiveGMmap, BytestringSourcedStringMmap):
 
-    def __init__(self, bytestring_iterator, codec):  # TODO reduce coupling, Hacker mediator
-        super(SelectiveIROMMmap, self).__init__(bytestring_iterator, codec)
+    def __init__(self, bytestring_iterator, codec):
+        super(SelectiveBytestringSourcedStringMmap, self).__init__(bytestring_iterator, codec)
         self._selection = Selection(universe=slice(0, self._length))
 
     @property

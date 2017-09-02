@@ -5,12 +5,10 @@ from copy import deepcopy
 from math import ceil
 
 import re
-from typing import Optional
 
-import mmap
 from prettytable import PrettyTable
 
-from pyromhackit.gmmap import SelectiveIROMMmap
+from pyromhackit.gmmap import SelectiveBytestringSourcedStringMmap
 from pyromhackit.selection import Selection
 from pyromhackit.thousandcurses.codec import Tree
 from pyromhackit.tree import SimpleTopology
@@ -24,7 +22,7 @@ class IROM(object):
         """ Constructs an IROM object from a ROM and a codec transliterating every ROM atom into an IROM atom. """
         self.structure = SimpleTopology(1)  # This will do for now
         self.text_encoding = 'utf-32'
-        self.memory = SelectiveIROMMmap(rom, codec)
+        self.memory = SelectiveBytestringSourcedStringMmap(rom, codec)
 
     def selection(self):
         return deepcopy(self.memory.selection)

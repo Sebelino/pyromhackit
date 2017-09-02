@@ -10,63 +10,11 @@ from typing import Optional
 import mmap
 from prettytable import PrettyTable
 
-from pyromhackit.gmmap import StringMmap, SourcedGMmap, SelectiveGMmap
+from pyromhackit.gmmap import SelectiveIROMMmap
 from pyromhackit.selection import Selection
 from pyromhackit.thousandcurses.codec import Tree
 from pyromhackit.tree import SimpleTopology
 from pyromhackit.rom import ROM
-
-
-class IROMMmap(SourcedGMmap, StringMmap):  # TODO rename
-    # TODO make these IROM Gmmaps not depend on ROM, then move to gmmap.py. Should be decoupled from this library
-    """ A StringMmap where the source is extracted from a bytestring iterator and a codec mapping those bytestrings to
-    strings. """
-
-    def __init__(self, bytestring_iterator, codec):
-        source = (codec[atom] for atom in bytestring_iterator)
-        self._content, self._length = self._source2mmap(source)
-        self._path = None
-
-    @property
-    def _content(self) -> mmap.mmap:
-        return self._m_content
-
-    @property
-    def _path(self) -> Optional[str]:
-        return self._m_path
-
-    @property
-    def _length(self) -> int:
-        return self._m_length
-
-    @_content.setter
-    def _content(self, value):
-        self._m_content = value
-
-    @_length.setter
-    def _length(self, value):
-        self._m_length = value
-
-    @_path.setter
-    def _path(self, value):
-        self._m_path = value
-
-
-class SelectiveIROMMmap(SelectiveGMmap, IROMMmap):  # TODO rename
-
-    def __init__(self, bytestring_iterator, codec):  # TODO reduce coupling, Hacker mediator
-        super(SelectiveIROMMmap, self).__init__(bytestring_iterator, codec)
-        self._selection = Selection(universe=slice(0, self._length))
-
-    @property
-    def selection(self) -> Selection:
-        return self._selection
-
-    def _nonvirtualint2physical(self, location: int):
-        return slice(4 * location, 4 * (location + 1))
-
-    def _nonvirtualselection2physical(self, location: Selection):
-        return location * 4
 
 
 class IROM(object):

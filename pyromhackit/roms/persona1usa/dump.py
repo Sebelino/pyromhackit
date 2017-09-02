@@ -27,6 +27,8 @@ tensi_selection_path = os.path.join(package_dir, "resources/tensi_selection.json
 e0_selection_path = os.path.join(package_dir, "resources/e0_selection.json")
 e1_selection_path = os.path.join(package_dir, "resources/e1_selection.json")
 e2_selection_path = os.path.join(package_dir, "resources/e2_selection.json")
+e3_selection_path = os.path.join(package_dir, "resources/e3_selection.json")
+e4_selection_path = os.path.join(package_dir, "resources/e4_selection.json")
 
 class Archive(object):  # File that can be unzipped into one or more ROMs.
     pass
@@ -73,6 +75,8 @@ def hack(path):
         e0_path: e0_selection_path,
         e1_path: e1_selection_path,
         e2_path: e2_selection_path,
+        e3_path: e3_selection_path,
+        e4_path: e4_selection_path,
     }
     if path in path_mapper:
         hacker.load_selection(path_mapper[path])

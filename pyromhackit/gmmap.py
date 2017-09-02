@@ -112,16 +112,17 @@ class SourcedGMmap(GMmap, metaclass=ABCMeta):
         return content, length, path
 
     @classmethod
-    def _source2mmap(cls, source):
+    def _source2mmap(cls, source) -> (mmap.mmap, int):
         if isinstance(source, io.TextIOWrapper):  # Source is file
-            return cls._file2mmap(source)
+            return cls._file2mmap(source), None  # FIXME
         else:
             return cls._sequence2mmap(source)
 
     @classmethod
-    def _sequence2mmap(cls, sequence) -> mmap.mmap:  # Final
-        """ :return An anonymous mmap storing the bytestring representation of the sequence @sequence. @sequence needs
-        to either be a bytestring or an iterable containing only elements that implement __len__. """
+    def _sequence2mmap(cls, sequence) -> (mmap.mmap, int):  # Final
+        """ :return An anonymous mmap storing the bytestring representation of the sequence @sequence, paired with the
+        number of elements in the sequence. @sequence needs to either be a bytestring or an iterable containing only
+        elements that implement __len__. """
 
         def double_mmap_capacity(m):
             new_m = mmap.mmap(-1, capacity)
@@ -133,11 +134,13 @@ class SourcedGMmap(GMmap, metaclass=ABCMeta):
         if isinstance(sequence, bytes):
             m = mmap.mmap(-1, len(sequence), access=protection)
             m.write(sequence)
-            return m
+            return m, len(m)
         capacity = mmap.PAGESIZE  # Initial capacity. Cannot do len(sequence) since it is a generator.
         m = mmap.mmap(-1, capacity)
         currentsize = 0
+        element_count = 0
         for element in sequence:
+            element_count += 1
             bs = cls._encode(element)
             currentsize += len(bs)
             while currentsize > capacity:
@@ -145,7 +148,7 @@ class SourcedGMmap(GMmap, metaclass=ABCMeta):
                 m = double_mmap_capacity(m)  # Because m.resize() is apparently bugged and causes SIGBUS
             m.write(bs)
         m.resize(currentsize)
-        return m
+        return m, element_count
 
     @classmethod
     def _file2mmap(cls, file) -> mmap.mmap:  # Final
@@ -306,16 +309,15 @@ class BytesMmap(Additive, ListlikeGMmap, PhysicallyIndexedGMmap, metaclass=ABCMe
         return operand + bytes(self)
 
 
-#class FixedWidthGMmap(GMmap, metaclass=ABCMeta):
-
-
 class FixedWidthBytesMmap(SourcedGMmap, BytesMmap):
-    """ A GMmap which is a sequence of bytestrings where all bytestrings share the same (positive) length. """
+    """ A SourcedGMmap which is a sequence of bytestrings where all bytestrings share the same (positive)
+    length. """
 
     def __init__(self, width, source):
         self.width = width
-        self._content = self._source2mmap(source)
-        self._length = len(self._content) // width
+        self._content, self._length = self._source2mmap(source)
+        if self._length is None:
+            self._length = len(self._content) // width
         if isinstance(source, io.TextIOWrapper):
             self._path = source.name
         else:

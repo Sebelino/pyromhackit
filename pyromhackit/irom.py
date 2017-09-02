@@ -17,14 +17,14 @@ from pyromhackit.tree import SimpleTopology
 from pyromhackit.rom import ROM
 
 
-class IROMMmap(SourcedGMmap, StringMmap):
+class IROMMmap(SourcedGMmap, StringMmap):  # TODO rename
     # TODO make these IROM Gmmaps not depend on ROM, then move to gmmap.py. Should be decoupled from this library
-    """ A StringMmap where the source is extracted from a ROM and a codec mapping ROM atoms to strings. """
+    """ A StringMmap where the source is extracted from a bytestring iterator and a codec mapping those bytestrings to
+    strings. """
 
-    def __init__(self, rom: ROM, codec):
-        source = (codec[atom] for atom in rom)
-        self._content = self._source2mmap(source)
-        self._length = rom.atomcount()
+    def __init__(self, bytestring_iterator, codec):
+        source = (codec[atom] for atom in bytestring_iterator)
+        self._content, self._length = self._source2mmap(source)
         self._path = None
 
     @property
@@ -52,10 +52,10 @@ class IROMMmap(SourcedGMmap, StringMmap):
         self._m_path = value
 
 
-class SelectiveIROMMmap(SelectiveGMmap, IROMMmap):
+class SelectiveIROMMmap(SelectiveGMmap, IROMMmap):  # TODO rename
 
-    def __init__(self, rom: ROM, codec):  # TODO reduce coupling, Hacker mediator
-        super(SelectiveIROMMmap, self).__init__(rom, codec)
+    def __init__(self, bytestring_iterator, codec):  # TODO reduce coupling, Hacker mediator
+        super(SelectiveIROMMmap, self).__init__(bytestring_iterator, codec)
         self._selection = Selection(universe=slice(0, self._length))
 
     @property

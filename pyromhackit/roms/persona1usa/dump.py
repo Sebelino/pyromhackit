@@ -13,22 +13,49 @@ from pyromhackit.roms.persona1usa.hexmap import transliter
 
 package_dir = os.path.dirname(os.path.abspath(__file__))
 
-tensi_path = os.path.join(package_dir, "resources/copyrighted/TENSI.BIN")  # Angel talk
-e0_path = os.path.join(package_dir, "resources/copyrighted/E0.BIN")  # SEBEC story text, beginning, ending
-e1_path = os.path.join(package_dir, "resources/copyrighted/E1.BIN")  # SQQ story text
-e2_path = os.path.join(package_dir, "resources/copyrighted/E2.BIN")  # SEBEC story text
-e3_path = os.path.join(package_dir, "resources/copyrighted/E3.BIN")  # SQQ story text
-e4_path = os.path.join(package_dir, "resources/copyrighted/E4.BIN")  # Crapload of dupes (Agastya, Trish, Igor...)
-dvlan_path = os.path.join(package_dir, "resources/copyrighted/DVLAN.BIN")  # No text here (?)
+sources = {
+    "resources/copyrighted/psp_game/usrdir/pack/talk/alien.bin": dict(),
+    "resources/copyrighted/psp_game/usrdir/pack/talk/basket.bin": dict(),
+    "resources/copyrighted/psp_game/usrdir/pack/talk/doppel.bin": dict(),
+    "resources/copyrighted/psp_game/usrdir/pack/talk/etc.bin": dict(),
+    "resources/copyrighted/psp_game/usrdir/pack/talk/gaki.bin": dict(),
+    "resources/copyrighted/psp_game/usrdir/pack/talk/hiho.bin": dict(),
+    "resources/copyrighted/psp_game/usrdir/pack/talk/kemono.bin": dict(),
+    "resources/copyrighted/psp_game/usrdir/pack/talk/kokuri.bin": dict(),
+    "resources/copyrighted/psp_game/usrdir/pack/talk/korou.bin": dict(),
+    "resources/copyrighted/psp_game/usrdir/pack/talk/kosiki.bin": dict(),
+    "resources/copyrighted/psp_game/usrdir/pack/talk/kouman.bin": dict(),
+    "resources/copyrighted/psp_game/usrdir/pack/talk/kutisake.bin": dict(),
+    "resources/copyrighted/psp_game/usrdir/pack/talk/kyouki.bin": dict(),
+    "resources/copyrighted/psp_game/usrdir/pack/talk/mayoeru.bin": dict(),
+    "resources/copyrighted/psp_game/usrdir/pack/talk/polutar.bin": dict(),
+    "resources/copyrighted/psp_game/usrdir/pack/talk/qsiruba.bin": dict(),
+    "resources/copyrighted/psp_game/usrdir/pack/talk/sinsi.bin": dict(),
+    "resources/copyrighted/psp_game/usrdir/pack/talk/slime.bin": dict(),
+    "resources/copyrighted/psp_game/usrdir/pack/talk/syoujo.bin": dict(),
+    "resources/copyrighted/psp_game/usrdir/pack/talk/tensi.bin": dict(),
+    "resources/copyrighted/psp_game/usrdir/pack/talk/tinpra.bin": dict(),
+    "resources/copyrighted/psp_game/usrdir/pack/talk/toilet.bin": dict(),
+    "resources/copyrighted/psp_game/usrdir/pack/talk/worm.bin": dict(),
+    "resources/copyrighted/psp_game/usrdir/pack/talk/wtensi.bin": dict(),
+    "resources/copyrighted/psp_game/usrdir/pack/talk/yakuza.bin": dict(),
+    "resources/copyrighted/psp_game/usrdir/pack/talk/youen.bin": dict(),
+    "resources/copyrighted/psp_game/usrdir/pack/talk/zmbityan.bin": dict(),
+    "resources/copyrighted/psp_game/usrdir/pack/talk/zombiko.bin": dict(),
+    "resources/copyrighted/psp_game/usrdir/pack/talk/zomb_man.bin": dict(),
+}
 
-persona_codec_path = os.path.join(package_dir, "resources/persona_codec.json")
-persona_visage_path = os.path.join(package_dir, "resources/persona_visage.json")
-tensi_selection_path = os.path.join(package_dir, "resources/tensi_selection.json")
-e0_selection_path = os.path.join(package_dir, "resources/e0_selection.json")
-e1_selection_path = os.path.join(package_dir, "resources/e1_selection.json")
-e2_selection_path = os.path.join(package_dir, "resources/e2_selection.json")
-e3_selection_path = os.path.join(package_dir, "resources/e3_selection.json")
-e4_selection_path = os.path.join(package_dir, "resources/e4_selection.json")
+os.makedirs("output")
+
+persona_codec_path = "resources/persona_codec.json"
+persona_visage_path = "resources/persona_visage.json"
+
+for infile, outfiles in sources.items():
+    outfiles["codec"] = persona_codec_path
+    outfiles["visage"] = persona_visage_path
+    outfiles["selection"] = os.path.join("resources", "{}.sel.json".format(os.path.basename(infile)))
+    outfiles["irom"] = os.path.join("output", "{}.irom.txt".format(os.path.basename(infile)))
+
 
 class Archive(object):  # File that can be unzipped into one or more ROMs.
     pass
@@ -46,48 +73,53 @@ class Persona1Codec(codec.Codec):
 
 def any_lo_char():
     return any_lo_char.los_chars[random.randint(0, len(any_lo_char.los_chars))]
+
+
 any_lo_char.los_chars = [chr(i) for i in range(2 ** 16) if unicodedata.category(chr(i)) == 'Lo']
+
 
 def g(bytetreeish):
     return bytetreeish[1] if bytetreeish[0] == '0' else bytetreeish[1].decode()
 
+
 def f(bytetreeish):
     return ['['] + reversed(g(c) for c in bytetreeish) + [']']
+
 
 def persona1usa_structure(bs):
     return [[bs[i:i + 1], bs[i + 1:i + 2]] for i in range(0, len(bs), 2)]
 
-def two_byte_structure(bs):
-    return [bs[i:i+2] for i in range(0, len(bs), 2)]
 
-def hack(path):
+def two_byte_structure(bs):
+    return [bs[i:i + 2] for i in range(0, len(bs), 2)]
+
+
+def hack(path, outfiles):
+    print("Hacking {}".format(path))
     import time; t = time.time()
     r = ROM(path, structure=SimpleTopology(2))
-    print("Created ROM: {}".format(time.time()-t))
+    #print("Created ROM: {}".format(time.time() - t))
     hacker = Hacker(r)
-    print("Created Hacker: {}".format(time.time()-t))
-    hacker.load_codec(persona_codec_path)
-    print("Loaded codec: {}".format(time.time()-t))
-    hacker.load_visage(persona_visage_path)
-    print("Loaded visage: {}".format(time.time()-t))
-    path_mapper = {
-        tensi_path: tensi_selection_path,
-        e0_path: e0_selection_path,
-        e1_path: e1_selection_path,
-        e2_path: e2_selection_path,
-        e3_path: e3_selection_path,
-        e4_path: e4_selection_path,
-    }
-    if path in path_mapper:
-        hacker.load_selection(path_mapper[path])
-        print("Loaded selection: {}".format(time.time()-t))
+    #print("Created Hacker: {}".format(time.time() - t))
+    hacker.load_codec(outfiles["codec"])
+    #print("Loaded codec: {}".format(time.time() - t))
+    hacker.load_visage(outfiles["visage"])
+    #print("Loaded visage: {}".format(time.time() - t))
+    try:
+        hacker.load_selection(outfiles["selection"])
+        print("Loaded selection: {}".format(time.time() - t))
+    except FileNotFoundError:
+        pass
     hacker.set_codec_behavior(Hacker.Behavior.RAISE)
     return hacker
 
+
 if __name__ == '__main__':
-    hacker = hack(e1_path)
-    #hacker[chr(9166)] = '\n'
-    #hacker.reveal(None, None); hacker.load_selection_from_copy('e1dump.txt')
+    for infile, outfiles in sources.items():
+        hacker = hack(infile, outfiles)
+        hacker[chr(9166)] = '\n'
+        hacker.dump(outfiles["irom"])
+        # hacker.reveal(None, None); hacker.load_selection_from_copy('e2dump.txt')
 
 
 
@@ -102,16 +134,16 @@ if __name__ == '__main__':
 # 3. Left-uniqueness.
 # 4. Right-uniqueness.
 
-#<Bytestring> ::= {<Unit>}
-#<Unit> ::= <Mod><Alpha>
-#<Mod> ::= 0 | 1
+# <Bytestring> ::= {<Unit>}
+# <Unit> ::= <Mod><Alpha>
+# <Mod> ::= 0 | 1
 #
 #   b'0a1b1c0d1E'
-#-> [[b'0', b'a'], [b'1', b'b'], [b'1', b'c'], [b'0', b'd'], [b'1', b'E']]
-#-> f([[b'0', b'a'], [b'1', b'b'], [b'1', b'c'], [b'0', b'd'], [b'1', b'E']])
-#== ['[', g([b'1', b'E']), g([b'0', b'd']), g([b'1', b'c']), g([b'1', b'b']), g([b'0', b'a']), ']']:[None, (4,), (3,), (2,), (1,), (0,), None]
-#== ['[', 'E ', 'd', 'C', 'B', 'a', ']']:[None, (4,), (3,), (2,), (1,), (0,), None]
-#-> '[EdCBa]'
+# -> [[b'0', b'a'], [b'1', b'b'], [b'1', b'c'], [b'0', b'd'], [b'1', b'E']]
+# -> f([[b'0', b'a'], [b'1', b'b'], [b'1', b'c'], [b'0', b'd'], [b'1', b'E']])
+# == ['[', g([b'1', b'E']), g([b'0', b'd']), g([b'1', b'c']), g([b'1', b'b']), g([b'0', b'a']), ']']:[None, (4,), (3,), (2,), (1,), (0,), None]
+# == ['[', 'E ', 'd', 'C', 'B', 'a', ']']:[None, (4,), (3,), (2,), (1,), (0,), None]
+# -> '[EdCBa]'
 
 # High-level properties:
 # 1. Totality. NOT maintained since e.g. b'2c' and b'0a1' are not part of the grammar.
@@ -124,11 +156,11 @@ if __name__ == '__main__':
 # 4. Right-uniqueness since every bytestring leaf affects at most one string node.
 
 
-#b'0a1b1c0d1E'
-#-> [b'0a1b1c0d1E']
-#-> f([b'0a1b1c0d1E'])
-#== ['[', 'EdCBa', ']']:[None, (0,), None]
-#-> '[EdCBa]'
+# b'0a1b1c0d1E'
+# -> [b'0a1b1c0d1E']
+# -> f([b'0a1b1c0d1E'])
+# == ['[', 'EdCBa', ']']:[None, (0,), None]
+# -> '[EdCBa]'
 
 # High-level properties:
 # 1. Totality. NOT maintained since e.g. b'2c' and b'0a1' are not part of the grammar.
@@ -141,16 +173,16 @@ if __name__ == '__main__':
 # 4. Right-uniqueness since the bytestring leaf affects at most one string node.
 
 
-#<Bytestring> ::= {<Unit>}
-#<Unit> ::= <Mod><Alpha>
-#<Mod> ::= 0 | 1
+# <Bytestring> ::= {<Unit>}
+# <Unit> ::= <Mod><Alpha>
+# <Mod> ::= 0 | 1
 #
-#b'0a1b1c0d1E'
-#-> [[b'0', b'a'], [b'1', b'b'], [b'1', b'c'], [b'0', b'd'], [b'1', b'E']]
-#-> f([[b'0', b'a'], [b'1', b'b'], [b'1', b'c'], [b'0', b'd'], [b'1', b'E']])
-#== ['[', g([b'1', b'E']), g([b'0', b'd']), g([b'1', b'c']), g([b'1', b'b']), g([b'0', b'a']), ']']:[None, (4,), (3,), (2,), (1,), (0,), None]
-#== ['[', 'e ', 'd', 'C', 'B', 'a', ']']:[None, (4,), (3,), (2,), (1,), (0,), None]
-#-> '[edCBa]'
+# b'0a1b1c0d1E'
+# -> [[b'0', b'a'], [b'1', b'b'], [b'1', b'c'], [b'0', b'd'], [b'1', b'E']]
+# -> f([[b'0', b'a'], [b'1', b'b'], [b'1', b'c'], [b'0', b'd'], [b'1', b'E']])
+# == ['[', g([b'1', b'E']), g([b'0', b'd']), g([b'1', b'c']), g([b'1', b'b']), g([b'0', b'a']), ']']:[None, (4,), (3,), (2,), (1,), (0,), None]
+# == ['[', 'e ', 'd', 'C', 'B', 'a', ']']:[None, (4,), (3,), (2,), (1,), (0,), None]
+# -> '[edCBa]'
 
 # High-level properties:
 # 1. Totality. NOT maintained since e.g. b'2c' and b'0a1' are not part of the grammar.

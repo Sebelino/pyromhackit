@@ -274,6 +274,9 @@ class Hacker(object):
             yield Entry(vbyteindex, vatomindex, vatomindexpath, pbyteindex, ratom,
                         icharindex, iatomindex, iatomindexpath, ibyteindex, iatom)
 
+    def dump(self, path):
+        self.dst.dump(path)
+
     def dump_selection(self, json_path=None):
         """ Dump a list of interval lists [a, b] describing the revealed intervals to the JSON file with path
         @json_path. """

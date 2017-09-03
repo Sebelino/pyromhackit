@@ -13,39 +13,15 @@ from pyromhackit.roms.persona1usa.hexmap import transliter
 
 package_dir = os.path.dirname(os.path.abspath(__file__))
 
-sources = {
-    "resources/copyrighted/psp_game/usrdir/pack/talk/alien.bin": dict(),
-    "resources/copyrighted/psp_game/usrdir/pack/talk/basket.bin": dict(),
-    "resources/copyrighted/psp_game/usrdir/pack/talk/doppel.bin": dict(),
-    "resources/copyrighted/psp_game/usrdir/pack/talk/etc.bin": dict(),
-    "resources/copyrighted/psp_game/usrdir/pack/talk/gaki.bin": dict(),
-    "resources/copyrighted/psp_game/usrdir/pack/talk/hiho.bin": dict(),
-    "resources/copyrighted/psp_game/usrdir/pack/talk/kemono.bin": dict(),
-    "resources/copyrighted/psp_game/usrdir/pack/talk/kokuri.bin": dict(),
-    "resources/copyrighted/psp_game/usrdir/pack/talk/korou.bin": dict(),
-    "resources/copyrighted/psp_game/usrdir/pack/talk/kosiki.bin": dict(),
-    "resources/copyrighted/psp_game/usrdir/pack/talk/kouman.bin": dict(),
-    "resources/copyrighted/psp_game/usrdir/pack/talk/kutisake.bin": dict(),
-    "resources/copyrighted/psp_game/usrdir/pack/talk/kyouki.bin": dict(),
-    "resources/copyrighted/psp_game/usrdir/pack/talk/mayoeru.bin": dict(),
-    "resources/copyrighted/psp_game/usrdir/pack/talk/polutar.bin": dict(),
-    "resources/copyrighted/psp_game/usrdir/pack/talk/qsiruba.bin": dict(),
-    "resources/copyrighted/psp_game/usrdir/pack/talk/sinsi.bin": dict(),
-    "resources/copyrighted/psp_game/usrdir/pack/talk/slime.bin": dict(),
-    "resources/copyrighted/psp_game/usrdir/pack/talk/syoujo.bin": dict(),
-    "resources/copyrighted/psp_game/usrdir/pack/talk/tensi.bin": dict(),
-    "resources/copyrighted/psp_game/usrdir/pack/talk/tinpra.bin": dict(),
-    "resources/copyrighted/psp_game/usrdir/pack/talk/toilet.bin": dict(),
-    "resources/copyrighted/psp_game/usrdir/pack/talk/worm.bin": dict(),
-    "resources/copyrighted/psp_game/usrdir/pack/talk/wtensi.bin": dict(),
-    "resources/copyrighted/psp_game/usrdir/pack/talk/yakuza.bin": dict(),
-    "resources/copyrighted/psp_game/usrdir/pack/talk/youen.bin": dict(),
-    "resources/copyrighted/psp_game/usrdir/pack/talk/zmbityan.bin": dict(),
-    "resources/copyrighted/psp_game/usrdir/pack/talk/zombiko.bin": dict(),
-    "resources/copyrighted/psp_game/usrdir/pack/talk/zomb_man.bin": dict(),
-}
+with open("resources/paths.txt") as f:
+    sources_paths = f.read().strip().split()
 
-os.makedirs("output")
+sources = {os.path.join("resources", path): dict() for path in sources_paths}
+
+try:
+    os.makedirs("output")
+except FileExistsError:
+    pass
 
 persona_codec_path = "resources/persona_codec.json"
 persona_visage_path = "resources/persona_visage.json"
@@ -54,7 +30,8 @@ for infile, outfiles in sources.items():
     outfiles["codec"] = persona_codec_path
     outfiles["visage"] = persona_visage_path
     outfiles["selection"] = os.path.join("resources", "{}.sel.json".format(os.path.basename(infile)))
-    outfiles["irom"] = os.path.join("output", "{}.irom.txt".format(os.path.basename(infile)))
+    #outfiles["irom"] = os.path.join("output", "{}.irom.txt".format(os.path.basename(infile)))
+    outfiles["view"] = os.path.join("output", "{}.view.txt".format(os.path.basename(infile)))
 
 
 class Archive(object):  # File that can be unzipped into one or more ROMs.
@@ -95,7 +72,6 @@ def two_byte_structure(bs):
 
 
 def hack(path, outfiles):
-    print("Hacking {}".format(path))
     import time; t = time.time()
     r = ROM(path, structure=SimpleTopology(2))
     #print("Created ROM: {}".format(time.time() - t))
@@ -116,9 +92,13 @@ def hack(path, outfiles):
 
 if __name__ == '__main__':
     for infile, outfiles in sources.items():
+        if 'view' in outfiles and os.path.exists(outfiles['view']):
+            print("Skipping {}".format(infile))
+            continue
+        print("Hacking {}".format(infile))
         hacker = hack(infile, outfiles)
         hacker[chr(9166)] = '\n'
-        hacker.dump(outfiles["irom"])
+        hacker.dump_view(outfiles["view"])
         # hacker.reveal(None, None); hacker.load_selection_from_copy('e2dump.txt')
 
 

@@ -6,20 +6,22 @@ from pyromhackit.hacker import Hacker
 from pyromhackit.thousandcurses.codec import Tree
 import pytest
 
+from pyromhackit.roms.persona1usa.dump import sources
+
 package_dir = os.path.dirname(os.path.abspath(__file__))
 
-path_tensi = os.path.join(package_dir, "resources/copyrighted/TENSI.BIN")
+tensi_path, = [key for key in sources if '/tensi.bin' in key]
 
-@pytest.mark.skipif(not os.path.isfile(path_tensi), reason="Copyright infringement")
+@pytest.mark.skipif(not os.path.isfile(os.path.join(package_dir, tensi_path)), reason="Copyright infringement")
 def test_read_rom():
-    ROM(path_tensi)
+    ROM(os.path.join(package_dir, tensi_path))
 
 
-@pytest.mark.skipif(not os.path.isfile(path_tensi), reason="Copyright infringement")
+@pytest.mark.skipif(not os.path.isfile(os.path.join(package_dir, tensi_path)), reason="Copyright infringement")
 @pytest.mark.skip()
 class TestWord(object):
     def setup_class(self):
-        rom = ROM(path_tensi)
+        rom = ROM(os.path.join(package_dir, tensi_path))
         idx = 25704*2  # Index of "How"
         wordlength = 6
         rom = rom[idx:idx+wordlength]

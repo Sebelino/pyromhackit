@@ -9,21 +9,23 @@ import pytest
 from pyromhackit.rom import ROM
 from pyromhackit.hacker import Hacker
 from pyromhackit.tree import SimpleTopology
-from pyromhackit.roms.persona1usa.dump import tensi_path, persona_codec_path, persona_visage_path, tensi_selection_path
+from pyromhackit.roms.persona1usa.dump import sources
 
 package_dir = os.path.dirname(os.path.abspath(__file__))
 
+tensi_path, = [key for key in sources if '/tensi.bin' in key]
 
-@pytest.mark.skipif(not os.path.exists(tensi_path), reason="File not found")
+
+@pytest.mark.skipif(not os.path.exists(os.path.join(package_dir, tensi_path)), reason="File not found")
 class TestDumpAndFind:
     def setup_class(self):
         self.created_files = [os.path.join(package_dir, "tensi.txt")]
 
     def test_dump_tensi(self):
-        rom = ROM(tensi_path, structure=SimpleTopology(2))
+        rom = ROM(os.path.join(package_dir, tensi_path), structure=SimpleTopology(2))
         hacker = Hacker(rom)
-        hacker.load_codec(persona_codec_path)
-        hacker.load_visage(persona_visage_path)
+        hacker.load_codec(os.path.join(package_dir, sources[tensi_path]['codec']))
+        hacker.load_visage(os.path.join(package_dir, sources[tensi_path]['visage']))
         #hacker.load_selection(tensi_selection_path)
         dump_path = self.created_files[0]
         hacker.dump_view(dump_path)
@@ -49,18 +51,18 @@ class TestDumpAndFind:
             except FileNotFoundError:
                 pass
 
-@pytest.mark.skipif(not os.path.exists(tensi_path), reason="File not found")
+@pytest.mark.skipif(not os.path.exists(os.path.join(package_dir, tensi_path)), reason="File not found")
 class TestCoverup:
     def setup(self):
         self.created_files = [os.path.join(package_dir, "tensi.txt")]
-        rom = ROM(tensi_path, structure=SimpleTopology(2))
+        rom = ROM(os.path.join(package_dir, tensi_path), structure=SimpleTopology(2))
         self.hacker = Hacker(rom)
-        self.hacker.load_codec(persona_codec_path)
-        self.hacker.load_visage(persona_visage_path)
+        self.hacker.load_codec(os.path.join(package_dir, sources[tensi_path]['codec']))
+        self.hacker.load_visage(os.path.join(package_dir, sources[tensi_path]['visage']))
 
     def test_load_selection(self):
         """ Assert that the garbage in the beginning of the file is stripped off. """
-        self.hacker.load_selection(tensi_selection_path)
+        self.hacker.load_selection(os.path.join(package_dir, sources[tensi_path]['selection']))
         assert self.hacker[0:5] == "Since"
         assert self.hacker[-8:] == "I don't."
 

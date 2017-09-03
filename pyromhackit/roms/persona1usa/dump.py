@@ -13,7 +13,7 @@ from pyromhackit.roms.persona1usa.hexmap import transliter
 
 package_dir = os.path.dirname(os.path.abspath(__file__))
 
-with open("resources/paths.txt") as f:
+with open(os.path.join(package_dir, "resources/paths.txt")) as f:
     sources_paths = f.read().strip().split()
 
 sources = {os.path.join("resources", path): dict() for path in sources_paths}

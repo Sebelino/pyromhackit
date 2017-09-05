@@ -63,8 +63,11 @@ class Selection(GSlice):  # TODO -> GSlice
         original_length = len(self)
         if isinstance(from_index, int) and -self.universe.stop <= from_index < 0:
             from_index = from_index % self.universe.stop
-        if isinstance(to_index, int) and -self.universe.stop <= to_index < 0:
-            to_index = to_index % self.universe.stop
+        if isinstance(to_index, int):
+            if to_index > self.universe.stop:
+                return self.coverup(from_index, None)
+            if -self.universe.stop <= to_index < 0:
+                to_index = to_index % self.universe.stop
         assert from_index is None or self.universe.start <= from_index < self.universe.stop
         assert to_index is None or self.universe.start < to_index <= self.universe.stop
         if from_index is None:

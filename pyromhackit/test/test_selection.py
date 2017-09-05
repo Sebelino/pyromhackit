@@ -80,6 +80,14 @@ class TestCoverup(object):
         self.v.coverup(8, 9)
         assert self.v.revealed == [slice(3, 7)]
 
+    def test_in_ab_eq_universe(self):
+        self.v.coverup(4, 10)
+        assert self.v.revealed == [slice(3, 4)]
+
+    def test_in_ab_gt_universe(self):
+        self.v.coverup(4, 11)
+        assert self.v.revealed == [slice(3, 4)]
+
 
 class TestReveal(object):
     def setup(self):

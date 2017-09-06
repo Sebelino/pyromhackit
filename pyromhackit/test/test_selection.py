@@ -328,3 +328,61 @@ class TestVirtualCoverup(object):
     def test_cover_all(self):
         self.v.coverup_virtual(None, 7)
         assert self.v == Selection(universe=slice(0, 5), revealed=[])
+
+
+class TestRevealPartially(object):
+    def setup(self):
+        self.v = Selection(slice(0, 10))
+        self.v.coverup(2, 7)
+
+    def test_lt_a_lt_a(self):
+        self.v.reveal_partially(0, 1, 1)
+        assert self.v.revealed == [slice(0, 2), slice(7, 10)]
+
+    def test_lt_a_eq_a(self):
+        self.v.reveal_partially(1, 2, 1)
+        assert self.v.revealed == [slice(0, 2), slice(7, 10)]
+
+    def test_lt_a_in_ab(self):
+        self.v.reveal_partially(1, 5, 1)
+        assert self.v.revealed == [slice(0, 3), slice(4, 5), slice(7, 10)]
+
+    def test_lt_a_eq_b(self):
+        self.v.reveal_partially(1, 7, 1)
+        assert self.v.revealed == [slice(0, 3), slice(6, 10)]
+
+    def test_lt_a_gt_b(self):
+        self.v.reveal_partially(1, 8, 1)
+        assert self.v.revealed == [slice(0, 3), slice(6, 10)]
+
+    def test_eq_a_in_ab(self):
+        self.v.reveal_partially(2, 5, 1)
+        assert self.v.revealed == [slice(0, 3), slice(4, 5), slice(7, 10)]
+
+    def test_eq_a_eq_b(self):
+        self.v.reveal_partially(2, 7, 1)
+        assert self.v.revealed == [slice(0, 3), slice(6, 10)]
+
+    def test_eq_a_gt_b(self):
+        self.v.reveal_partially(2, 8, 1)
+        assert self.v.revealed == [slice(0, 3), slice(6, 10)]
+
+    def test_in_ab_in_ab(self):
+        self.v.reveal_partially(5, 6, 1)
+        assert self.v.revealed == [slice(0, 2), slice(5, 6), slice(7, 10)]
+
+    def test_in_ab_eq_b(self):
+        self.v.reveal_partially(5, 7, 1)
+        assert self.v.revealed == [slice(0, 2), slice(5, 10)]
+
+    def test_in_ab_gt_b(self):
+        self.v.reveal_partially(5, 8, 1)
+        assert self.v.revealed == [slice(0, 2), slice(5, 10)]
+
+    def test_eq_b_gt_b(self):
+        self.v.reveal_partially(7, 8, 1)
+        assert self.v.revealed == [slice(0, 2), slice(7, 10)]
+
+    def test_gt_b_gt_b(self):
+        self.v.reveal_partially(8, 9, 1)
+        assert self.v.revealed == [slice(0, 2), slice(7, 10)]

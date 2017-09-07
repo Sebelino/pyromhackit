@@ -295,6 +295,11 @@ class TestThreeRevealedIntervals(object):
         with pytest.raises(IndexError):
             self.v._slice_index(pindex)
 
+    def test_reveal_partially(self):
+        assert self.v.revealed == [slice(0, 2), slice(4, 6), slice(9, 10)]
+        self.v.reveal_partially(1, 9, 1)
+        assert self.v.revealed == [slice(0, 3), slice(4, 6)]
+
 
 class TestNormalization(object):
     def setup(self):

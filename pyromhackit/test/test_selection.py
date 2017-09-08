@@ -300,6 +300,10 @@ class TestThreeRevealedIntervals(object):
         self.v.reveal(2, 3)
         assert self.v.revealed == [slice(0, 3), slice(4, 6), slice(9, 10)]
 
+    def test_reveal_slice_fully(self):
+        self.v.reveal(2, 4)
+        assert self.v.revealed == [slice(0, 6), slice(9, 10)]
+
     @pytest.mark.skip()
     def test_reveal_partially(self):
         self.v.reveal_partially(1, 9, 1)

@@ -134,9 +134,6 @@ class Selection(GSlice):  # TODO -> GSlice
             if self._within_bounds(to_index):
                 n = self._slice_index(to_index)
                 self.revealed[m:n + 1] = [slice(self.revealed[m].start, self.revealed[n].stop)]
-            elif self._within_bounds(to_index + 1):
-                n = self._slice_index(to_index + 1)
-                self.revealed[m:n + 1] = [slice(self.revealed[m].start, self.revealed[n].stop)]
             else:
                 n = self._gap_index(to_index)
                 self.revealed[m:n] = [slice(self.revealed[m].start, to_index)]

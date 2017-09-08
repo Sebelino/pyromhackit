@@ -277,6 +277,7 @@ class TestThreeRevealedIntervals(object):
         self.v = Selection(slice(0, 10))
         self.v.coverup(2, 4)
         self.v.coverup(6, 9)
+        assert self.v.revealed == [slice(0, 2), slice(4, 6), slice(9, 10)]
 
     @pytest.mark.parametrize("pindex, expected", [
         (0, 0),
@@ -295,8 +296,12 @@ class TestThreeRevealedIntervals(object):
         with pytest.raises(IndexError):
             self.v._slice_index(pindex)
 
+    def test_reveal_slice_partially(self):
+        self.v.reveal(2, 3)
+        assert self.v.revealed == [slice(0, 3), slice(4, 6), slice(9, 10)]
+
+    @pytest.mark.skip()
     def test_reveal_partially(self):
-        assert self.v.revealed == [slice(0, 2), slice(4, 6), slice(9, 10)]
         self.v.reveal_partially(1, 9, 1)
         assert self.v.revealed == [slice(0, 3), slice(4, 6)]
 
@@ -335,6 +340,7 @@ class TestVirtualCoverup(object):
         assert self.v == Selection(universe=slice(0, 5), revealed=[])
 
 
+@pytest.mark.skip()
 class TestRevealPartially(object):
     def setup(self):
         self.v = Selection(slice(0, 10))

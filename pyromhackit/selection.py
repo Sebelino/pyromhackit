@@ -163,11 +163,11 @@ class Selection(GSlice):  # TODO -> GSlice
         if isinstance(count, int):
             return self.reveal_partially(from_index, to_index, (count, count))
         head_count, tail_count = count
-        head_revealed_count = self._reveal_partially_left(from_index, to_index, head_count)
-        tail_revealed_count = self._reveal_partially_right(from_index, to_index, tail_count)
+        head_revealed_count = self._reveal_partially_from_left(from_index, to_index, head_count)
+        tail_revealed_count = self._reveal_partially_from_right(from_index, to_index, tail_count)
         return head_revealed_count + tail_revealed_count
 
-    def _reveal_partially_left(self, from_index: int, to_index: int, count: int):
+    def _reveal_partially_from_left(self, from_index: int, to_index: int, count: int):
         subsel = self.complement().subselection(from_index, to_index)
         revealed_count = 0
         for covered_start, covered_stop in subsel:
@@ -181,7 +181,7 @@ class Selection(GSlice):  # TODO -> GSlice
                 break
         return revealed_count
 
-    def _reveal_partially_right(self, from_index: int, to_index: int, count: int):
+    def _reveal_partially_from_right(self, from_index: int, to_index: int, count: int):
         subsel = self.complement().subselection(from_index, to_index)
         revealed_count = 0
         for covered_start, covered_stop in reversed(list(subsel)):
@@ -194,6 +194,19 @@ class Selection(GSlice):  # TODO -> GSlice
                 revealed_count = count
                 break
         return revealed_count
+
+    def reveal_expand(self, from_index: Optional[int], to_index: Optional[int], count: Union[int, tuple]):
+        """ Let S be the sub-selection of this selection between @from_index <= i < @to_index. For each revealed slice
+        (a, b) in S, reveals each ith element, where a - n <= i < a or b <= i < b + m, where either
+        n = m = @count or (n, m) = @count. :return The number of covered elements that were revealed. """
+        if isinstance(count, int):
+            return self.reveal_expand(from_index, to_index, (count, count))
+        head_count, tail_count = count
+        for a, b in self.complement().subselection(from_index, to_index):
+            self.reveal_partially(a, b, (tail_count, head_count))
+
+    def coverup_shrink(self, from_index: Optional[int], to_index: Optional[int], count: Union[int, tuple]):
+        raise NotImplementedError
 
     def reveal_virtual(self, from_index, to_index):
         """ Expands this selection by including any element between the @from_index'th and @to_index'th visible

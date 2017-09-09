@@ -331,16 +331,27 @@ class TestThreeRevealedIntervals(object):
         assert self.v.complement().revealed == [slice(2, 4), slice(6, 9)]
 
     def test_reveal_partially_left(self):
-        self.v._reveal_partially_left(1, 9, 1)
+        self.v._reveal_partially_from_left(1, 9, 1)
         assert self.v.revealed == [slice(0, 3), slice(4, 6), slice(9, 10)]
 
     def test_reveal_partially_right(self):
-        self.v._reveal_partially_right(1, 9, 1)
+        self.v._reveal_partially_from_right(1, 9, 1)
         assert self.v.revealed == [slice(0, 2), slice(4, 6), slice(8, 10)]
 
     def test_reveal_partially(self):
         self.v.reveal_partially(None, None, 1)
         assert self.v.revealed == [slice(0, 3), slice(4, 6), slice(8, 10)]
+
+    @pytest.mark.parametrize("from_index, to_index, count, expected_revealed", [
+        (None, None, 1, [slice(0, 7), slice(8, 10)]),
+        (None, None, (1, 1), [slice(0, 7), slice(8, 10)]),
+        (None, None, (1, 0), [slice(0, 2), slice(3, 6), slice(8, 10)]),
+        (None, None, (0, 1), [slice(0, 3), slice(4, 7), slice(9, 10)]),
+        (None, None, 2, [slice(0, 10)]),
+    ])
+    def test_reveal_expand(self, from_index, to_index, count, expected_revealed):
+        self.v.reveal_expand(from_index, to_index, count)
+        assert self.v.revealed == expected_revealed
 
 
 class TestNormalization(object):

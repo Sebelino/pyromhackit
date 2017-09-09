@@ -68,8 +68,8 @@ class Selection(GSlice):  # TODO -> GSlice
                 return self.coverup(from_index, None)
             if -self.universe.stop <= to_index < 0:
                 to_index = to_index % self.universe.stop
-        assert from_index is None or self.universe.start <= from_index < self.universe.stop
-        assert to_index is None or self.universe.start < to_index <= self.universe.stop
+        assert from_index is None or self.universe.start <= from_index <= self.universe.stop
+        assert to_index is None or self.universe.start <= to_index <= self.universe.stop
         if from_index is None:
             from_index = self.universe.start
         if to_index is None:

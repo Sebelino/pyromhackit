@@ -80,13 +80,21 @@ class TestCoverup(object):
         self.v.coverup(8, 9)
         assert self.v.revealed == [slice(3, 7)]
 
-    def test_in_ab_eq_universe(self):
+    def test_in_ab_eq_max(self):
         self.v.coverup(4, 10)
         assert self.v.revealed == [slice(3, 4)]
 
-    def test_in_ab_gt_universe(self):
+    def test_in_ab_gt_max(self):
         self.v.coverup(4, 11)
         assert self.v.revealed == [slice(3, 4)]
+
+    def test_eq_min_eq_min(self):
+        self.v.coverup(0, 0)
+        assert self.v.revealed == [slice(3, 7)]
+
+    def test_eq_max_eq_max(self):
+        self.v.coverup(10, 10)
+        assert self.v.revealed == [slice(3, 7)]
 
 
 class TestReveal(object):

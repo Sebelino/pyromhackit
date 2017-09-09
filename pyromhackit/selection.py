@@ -4,6 +4,7 @@ from copy import deepcopy
 
 
 # TODO create interface/type Selection
+from typing import Optional, Union
 
 
 class GSlice(metaclass=ABCMeta):  # TODO -> AbstractGSlice
@@ -155,6 +156,45 @@ class Selection(GSlice):  # TODO -> GSlice
                 self.revealed[m:n] = [slice(from_index, to_index)]
         return len(self) - original_length
 
+    def reveal_partially(self, from_index: Optional[int], to_index: Optional[int], count: Union[int, tuple]):
+        """ Let S be the sub-sequence of covered elements such that each element in S is the ith element in the
+        super-sequence, where @from_index <= i < @to_index. Reveals the first n and the last m elements in S, where
+        either n = m = @count or (n, m) = @count. :return The number of covered elements that were revealed. """
+        if isinstance(count, int):
+            return self.reveal_partially(from_index, to_index, (count, count))
+        head_count, tail_count = count
+        head_revealed_count = self._reveal_partially_left(from_index, to_index, head_count)
+        tail_revealed_count = self._reveal_partially_right(from_index, to_index, tail_count)
+        return head_revealed_count + tail_revealed_count
+
+    def _reveal_partially_left(self, from_index: int, to_index: int, count: int):
+        subsel = self.complement().subselection(from_index, to_index)
+        revealed_count = 0
+        for covered_start, covered_stop in subsel:
+            coverage = covered_stop - covered_start
+            if revealed_count + coverage < count:
+                self.reveal(covered_start, covered_stop)
+                revealed_count += coverage
+            else:
+                self.reveal(covered_start, covered_start + count - revealed_count)
+                revealed_count = count
+                break
+        return revealed_count
+
+    def _reveal_partially_right(self, from_index: int, to_index: int, count: int):
+        subsel = self.complement().subselection(from_index, to_index)
+        revealed_count = 0
+        for covered_start, covered_stop in reversed(list(subsel)):
+            coverage = covered_stop - covered_start
+            if revealed_count + coverage < count:
+                self.reveal(covered_start, covered_stop)
+                revealed_count += coverage
+            else:
+                self.reveal(covered_stop - (count - revealed_count), covered_stop)
+                revealed_count = count
+                break
+        return revealed_count
+
     def reveal_virtual(self, from_index, to_index):
         """ Expands this selection by including any element between the @from_index'th and @to_index'th visible
         elements. :return The number of revealed elements that were revealed. """
@@ -171,6 +211,24 @@ class Selection(GSlice):  # TODO -> GSlice
     def __iter__(self):
         for sl in self.revealed:
             yield (sl.start, sl.stop)  # FIXME should probably generate slices instead, or every index
+
+    def complement(self):
+        """ :return A Selection which is identical to this one except that every revealed element has become covered,
+        and every covered element has become revealed. """
+        sel = Selection(universe=self.universe, revealed=[self.universe])
+        for a, b in self:
+            sel.coverup(a, b)
+        return sel
+
+    def subselection(self, from_index: Optional[int], to_index: Optional[int]):
+        """ :return A Selection which is identical to this one except that any intervals outside
+        [@from_index, @to_index) are covered. """
+        sel = deepcopy(self)
+        if isinstance(from_index, int):
+            sel.coverup(None, from_index)
+        if isinstance(to_index, int):
+            sel.coverup(to_index, None)
+        return sel
 
     def _slice_index(self, pindex):
         """ :return n if @pindex is in the nth slice (zero-indexed).

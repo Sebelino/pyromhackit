@@ -304,6 +304,14 @@ class TestThreeRevealedIntervals(object):
         with pytest.raises(IndexError):
             self.v._slice_index(pindex)
 
+    @pytest.mark.parametrize("from_index, to_index, expected_revealed", [
+        (0, 10, [slice(0, 2), slice(4, 6), slice(9, 10)]),
+        (None, None, [slice(0, 2), slice(4, 6), slice(9, 10)]),
+    ])
+    def test_subselection(self, from_index, to_index, expected_revealed):
+        subsel = self.v.subselection(from_index, to_index)
+        assert subsel.revealed == expected_revealed
+
     def test_reveal_slice_partially(self):
         self.v.reveal(2, 3)
         assert self.v.revealed == [slice(0, 3), slice(4, 6), slice(9, 10)]
@@ -316,10 +324,23 @@ class TestThreeRevealedIntervals(object):
         self.v.reveal(2, 4)
         assert self.v.revealed == [slice(0, 6), slice(9, 10)]
 
-    @pytest.mark.skip()
+    def test_complement_universe(self):
+        assert self.v.complement().universe == self.v.universe
+
+    def test_complement_revealed(self):
+        assert self.v.complement().revealed == [slice(2, 4), slice(6, 9)]
+
+    def test_reveal_partially_left(self):
+        self.v._reveal_partially_left(1, 9, 1)
+        assert self.v.revealed == [slice(0, 3), slice(4, 6), slice(9, 10)]
+
+    def test_reveal_partially_right(self):
+        self.v._reveal_partially_right(1, 9, 1)
+        assert self.v.revealed == [slice(0, 2), slice(4, 6), slice(8, 10)]
+
     def test_reveal_partially(self):
-        self.v.reveal_partially(1, 9, 1)
-        assert self.v.revealed == [slice(0, 3), slice(4, 6)]
+        self.v.reveal_partially(None, None, 1)
+        assert self.v.revealed == [slice(0, 3), slice(4, 6), slice(8, 10)]
 
 
 class TestNormalization(object):
@@ -356,7 +377,6 @@ class TestVirtualCoverup(object):
         assert self.v == Selection(universe=slice(0, 5), revealed=[])
 
 
-@pytest.mark.skip()
 class TestRevealPartially(object):
     def setup(self):
         self.v = Selection(slice(0, 10))

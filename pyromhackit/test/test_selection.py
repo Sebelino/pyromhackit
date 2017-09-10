@@ -287,6 +287,10 @@ class TestThreeRevealedIntervals(object):
         self.v.coverup(6, 9)
         assert self.v.revealed == [slice(0, 2), slice(4, 6), slice(9, 10)]
 
+    def test_coverup(self):
+        self.v.coverup(2, None)
+        assert self.v.revealed == [slice(0, 2)]
+
     @pytest.mark.parametrize("pindex, expected", [
         (0, 0),
         (1, 0),

@@ -86,6 +86,7 @@ class Selection(GSlice):  # TODO -> GSlice
                     self.revealed[i] = slice(to_index, b)
                 elif b <= to_index:
                     self.revealed.pop(i)
+                    i -= 1
             elif a < from_index < b:
                 if to_index < b:
                     self.revealed[i:i + 1] = [slice(a, from_index), slice(to_index, b)]

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """ Provides algorithms for identifying English text in files that may contain English text mixed with other data. """
-
+from copy import deepcopy
 from io import TextIOBase
 from langid.langid import LanguageIdentifier, model
 
@@ -28,6 +28,7 @@ def duplicate(n, lst):
 def annotate(classifications):
     return ''.join(' ' if c[0] == 'en' else 'x' for c in classifications)
 
+
 def judge(content):
     verdict1 = identify_language(content, 200)
     verdict2 = identify_language(content, 100)
@@ -48,15 +49,23 @@ def separate(verdict) -> Selection:
         not_english = label.strip() == label
         if not_english:
             garbage_selection.coverup(offset, offset + len(substring))
-    tolerance = 25
-    garbage_selection.reveal_partially(None, None, tolerance)
     return garbage_selection
 
-judgement = judge(content)
-separation = separate(judgement)
+
+def tolerate(garbage_selection):
+    tolerance = 25
+    sel = deepcopy(garbage_selection)
+    sel.reveal_expand(None, None, tolerance)
+    return sel
 
 
 def stream2english(stream: TextIOBase):
     """ @stream A stream of arbitrary Unicode characters. :return an iterator for substrings of @stream such that every
     every substring consists only of English characters and such that all substrings together constitute all of the
     English text in the stream. """
+    import time; t = time.time()
+    verdict = judge(content)
+    print("judge time: {}".format(time.time() - t))
+    selection = separate(verdict)
+    tolerated_selection = tolerate(selection)
+    return tolerated_selection.select(stream)

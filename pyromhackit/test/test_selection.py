@@ -358,6 +358,27 @@ class TestThreeRevealedIntervals(object):
         assert self.v.revealed == expected_revealed
 
 
+class TestThreeCoveredIntervals(object):
+    def setup(self):
+        self.v = Selection(slice(0, 10))
+        self.v.revealed = [slice(2, 4), slice(6, 9)]  # Poor man's mocking
+
+    def test_reveal_partially_from_right(self):
+        self.v._reveal_partially_from_right(0, 2, 1)
+        assert self.v.revealed == [slice(1, 4), slice(6, 9)]
+
+    @pytest.mark.parametrize("from_index, to_index, count, expected_revealed", [
+        (None, None, 1, [slice(1, 10)]),
+        (None, None, (1, 1), [slice(1, 10)]),
+        (None, None, (1, 0), [slice(1, 4), slice(5, 9)]),
+        (None, None, (0, 1), [slice(2, 5), slice(6, 10)]),
+        (None, None, 2, [slice(0, 10)]),
+    ])
+    def test_reveal_expand(self, from_index, to_index, count, expected_revealed):
+        self.v.reveal_expand(from_index, to_index, count)
+        assert self.v.revealed == expected_revealed
+
+
 class TestNormalization(object):
     def setup(self):
         self.v = Selection(slice(0, 5))

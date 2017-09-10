@@ -203,11 +203,47 @@ class Selection(GSlice):  # TODO -> GSlice
         if isinstance(count, int):
             return self.reveal_expand(from_index, to_index, (count, count))
         head_count, tail_count = count
-        for a, b in self.complement().subselection(from_index, to_index):
-            self.reveal_partially(a, b, (tail_count, head_count))
+        subsel = self.subselection(from_index, to_index)
+        revealed_counter = 0
+        for revealed_start, revealed_stop in subsel:
+            try:
+                previous_covered = self._previous_slice(slice(revealed_start, revealed_stop))
+                revealed_counter += self._reveal_partially_from_right(previous_covered.start, revealed_start, head_count)
+            except ValueError:
+                pass
+            try:
+                next_covered = self._next_slice(slice(revealed_start, revealed_stop))
+                revealed_counter += self._reveal_partially_from_left(revealed_stop, next_covered.stop, tail_count)
+            except ValueError:
+                pass
+        return revealed_counter
 
     def coverup_shrink(self, from_index: Optional[int], to_index: Optional[int], count: Union[int, tuple]):
         raise NotImplementedError
+
+    def _previous_slice(self, sl: slice):
+        """ :return The revealed or covered slice immediately to the left of @sl.
+        :raise ValueError if there is none. """
+        if sl.start == self.universe.start:
+            raise ValueError("There is no slice to the left of {}.".format(sl))
+        # TODO O(n) -> O(1)
+        zero_or_one = [s for s in self.revealed + self.complement().revealed if s.stop == sl.start]
+        if len(zero_or_one) == 1:
+            return zero_or_one[0]
+        else:
+            raise ValueError("Slice not found: {}.".format(sl))
+
+    def _next_slice(self, sl: slice):
+        """ :return The revealed or covered slice immediately to the right of @sl.
+        :raise ValueError if there is none. """
+        if sl.stop == self.universe.stop:
+            raise ValueError("There is no slice to the right of {}.".format(sl))
+        # TODO O(n)
+        zero_or_one = [s for s in self.revealed + self.complement().revealed if s.start == sl.stop]
+        if len(zero_or_one) == 1:
+            return zero_or_one[0]
+        else:
+            raise ValueError("Slice not found: {}.".format(sl))
 
     def reveal_virtual(self, from_index, to_index):
         """ Expands this selection by including any element between the @from_index'th and @to_index'th visible

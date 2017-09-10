@@ -247,7 +247,12 @@ class Selection(GSlice):  # TODO -> GSlice
 
     def reveal_virtual(self, from_index, to_index):
         """ Expands this selection by including any element between the @from_index'th and @to_index'th visible
-        elements. :return The number of revealed elements that were revealed. """
+        elements. If @count is a supplied non-negative integer argument, and C is a sequence of covered chunks between
+        @from_index and @to_index, then for every chunk in C, only the first @count elements and the last @count
+        elements will be revealed. If @count is a pair (head_count, tail_count), then only the first head_count
+        elements and the last tail_count element will be covered.
+        :return The number of covered elements that were revealed.
+        """
         if from_index is None or from_index < -len(self) or from_index >= len(self):
             p_from_index = None
         else:
@@ -258,6 +263,19 @@ class Selection(GSlice):  # TODO -> GSlice
             p_to_index = self.virtual2physical(to_index)
         return self.reveal(p_from_index, p_to_index)
 
+    def reveal_partially_virtual(self, from_index, to_index, count: Union[int, tuple]):
+        if from_index is None or from_index < -len(self) or from_index >= len(self):
+            p_from_index = None
+        else:
+            p_from_index = self.virtual2physical(from_index)
+        if to_index is None or to_index < -len(self) or to_index >= len(self):
+            p_to_index = None
+        else:
+            p_to_index = self.virtual2physical(to_index)
+        return self.reveal_partially(p_from_index, p_to_index, count)
+
+    # FIXME Inconsistent with reversed(selection). Should probably make this use the default implementation and instead
+    # rewrite this one to iter_slices or something.
     def __iter__(self):
         for sl in self.revealed:
             yield (sl.start, sl.stop)  # FIXME should probably generate slices instead, or every index

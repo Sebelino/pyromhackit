@@ -7,18 +7,13 @@ from langid.langid import LanguageIdentifier, model
 
 from selection import Selection
 
-identifier = LanguageIdentifier.from_modelstring(model, norm_probs=True)
-
-path = "/home/sebelino/lib/python3/pyromhackit/pyromhackit/roms/persona1usa/output/basket.bin.view.txt"
-
-with open(path, 'r') as f:
-    content = f.read()
 
 
 def identify_language(content, segment_size: int):
     segmented_content = [(i, content[i:i + segment_size]) for i in range(0, len(content), segment_size)]
-    verdict = [(offset, string, identifier.classify(string)) for offset, string in segmented_content]
+    verdict = [(offset, string, identify_language.identifier.classify(string)) for offset, string in segmented_content]
     return verdict
+identify_language.identifier = LanguageIdentifier.from_modelstring(model, norm_probs=True)
 
 
 def duplicate(n, lst):
@@ -59,13 +54,16 @@ def tolerate(garbage_selection):
     return sel
 
 
+def stream2englishselection(stream: TextIOBase):
+    verdict = judge(stream)
+    selection = separate(verdict)
+    tolerated_selection = tolerate(selection)
+    return tolerated_selection
+
+
 def stream2english(stream: TextIOBase):
     """ @stream A stream of arbitrary Unicode characters. :return an iterator for substrings of @stream such that every
     every substring consists only of English characters and such that all substrings together constitute all of the
     English text in the stream. """
-    import time; t = time.time()
-    verdict = judge(content)
-    print("judge time: {}".format(time.time() - t))
-    selection = separate(verdict)
-    tolerated_selection = tolerate(selection)
-    return tolerated_selection.select(stream)
+    sel = stream2englishselection(stream)
+    return sel.select(stream)

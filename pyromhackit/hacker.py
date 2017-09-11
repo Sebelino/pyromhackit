@@ -288,10 +288,12 @@ class Hacker(object):
 
     def load_selection(self, json_path=None):
         """ Reveal only the sections of the ROM specified in the JSON file with path @json_path. """
-        self.coverup(None, None)
+        if json_path is None:
+            json_path = self.last_selection_path
         with open(json_path, 'r') as f:
             loaded = json.load(f)
             assert isinstance(loaded, list)
+            self.coverup(None, None)
             for element in loaded:
                 assert isinstance(element, list)
                 a, b = element

@@ -6,6 +6,7 @@ import pytest
 from pyromhackit.rom import ROM
 from pyromhackit.hacker import Hacker
 from pyromhackit.tree import SimpleTopology
+from selection import Selection
 
 package_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -57,6 +58,13 @@ class TestTinyHacker(object):
         assert self.hacker.codec[b'\x00\xe7'] == 'h'
         assert self.hacker.codec[b'\x01\x0f'] == 'e'
         assert self.hacker.codec[b'\x01\x17'] == 'y'
+
+    def test_load_selection__file_does_not_exist__selection_unchanged(self):
+        try:
+            self.hacker.load_selection('any_file_that_shouldnt_exist')
+        except FileNotFoundError:
+            pass
+        assert self.hacker.dst.selection() == Selection(universe=slice(0, 3), revealed=[slice(0, 3)])
 
     @pytest.mark.skip(reason="Decide on a semantics for this (i.e. propagate changes to codec or ROM?)")
     def test_setitem(self):

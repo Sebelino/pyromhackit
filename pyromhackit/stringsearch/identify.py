@@ -5,7 +5,7 @@ from copy import deepcopy
 from io import TextIOBase
 from langid.langid import LanguageIdentifier, model
 
-from selection import Selection
+from pyromhackit.selection import Selection
 
 
 

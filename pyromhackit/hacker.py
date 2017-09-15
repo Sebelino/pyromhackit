@@ -40,15 +40,16 @@ class Hacker(object):
 
     def _compute_dst(self):
         """ Uses the information in self.src, self.affection, and self.codec to update self.dst. """
-        selection = self.src.selection() if self.dst else None
+        selection = self.src.selection() if self.dst is not None else None
         self.src.reveal(None, None)
         self.dst = IROM(self.src, self.codec)
-        if selection:
-            self.coverup(None, None)
-            for a, b in selection:
-                self.reveal(a, b)
-                #self.dst = self.dsttree.transliterate(self.codec)
-                #self.dst = self.dsttree.restructured(self.affection)
+        if selection is None:
+            return
+        self.coverup(None, None)
+        for a, b in selection:
+            self.reveal(a, b)
+            #self.dst = self.dsttree.transliterate(self.codec)
+            #self.dst = self.dsttree.restructured(self.affection)
 
     # TODO Requires Tree to be mutable. Could let srctree be immutable Tree and dsttree be MutableTree
     def _compute_leaf(self, dstleafpath):

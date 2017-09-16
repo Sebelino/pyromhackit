@@ -147,3 +147,14 @@ class EnglishLangidBasedIdentifier(TextIdentifier):
         sel = deepcopy(garbage_selection)
         sel.reveal_expand(None, None, tolerance)
         return sel
+
+
+if __name__ == '__main__':
+    """ Reads Unicode data from stdin and finds English text in it. """
+    identifier = EnglishDictionaryBasedIdentifier(tolerated_char_count=0)
+    content = sys.stdin.read()
+    textselection = identifier.str2selection(content)
+    print(list(textselection))
+    print()
+    for a, b in textselection:
+        print("{}: {}".format(a, repr(content[a:b])))

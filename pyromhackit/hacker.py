@@ -275,6 +275,11 @@ class Hacker(object):
             yield Entry(vbyteindex, vatomindex, vatomindexpath, pbyteindex, ratom,
                         icharindex, iatomindex, iatomindexpath, ibyteindex, iatom)
 
+    def set_selection(self, selection):
+        self.coverup(None, None)
+        for revealed_start, revealed_stop in selection:
+            self.reveal(revealed_start, revealed_stop)
+
     def dump(self, path):
         self.dst.dump(path)
 

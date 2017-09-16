@@ -4,41 +4,96 @@
 from abc import ABCMeta, abstractmethod
 from copy import deepcopy
 from io import TextIOBase
+
+import sys
 from langid.langid import LanguageIdentifier, model
 
 from pyromhackit.selection import Selection
+from pyromhackit.util import findall
 
 
-class ITextIdentifier(metaclass=ABCMeta):
+class TextIdentifier(metaclass=ABCMeta):
     """ Abstraction for a way of identifying text in a sequence of arbitrary Unicode characters. """
 
-    @classmethod
     @abstractmethod
-    def stream2selection(cls, stream: TextIOBase) -> Selection:
-        """ :return A selection of the stream of Unicode characters @stream such that it selects the desired text. """
+    def stream2selection(self, stream: TextIOBase) -> Selection:
+        """ :return A selection of the stream of Unicode characters @stream such that it selects the desired text.
+        Must not be called before the instance has been initialized. """
         raise NotImplementedError
 
-    @classmethod
     @abstractmethod
-    def str2selection(cls, string: str) -> Selection:
-        """ :return A selection of the Unicode string @string such that it selects the desired text. """
+    def str2selection(self, string: str) -> Selection:
+        """ :return A selection of the Unicode string @string such that it selects the desired text.
+        Must not be called before the instance has been initialized. """
         raise NotImplementedError
 
 
-class EnglishIdentifierLangid(ITextIdentifier):
+class DictionaryBasedTextIdentifier(TextIdentifier, metaclass=ABCMeta):
+    """ ITextIdentifier based on finding text using a set of strings ("words"). """
+
+    @abstractmethod
+    def dictionary(self) -> frozenset:
+        """ :return The set of words used for lookup. """
+        raise NotImplementedError
+
+    @abstractmethod
+    def str2dictionaryselection(self, string: str) -> Selection:
+        """ :return A selection of the Unicode string @string such that it selects all words found in @string. """
+        raise NotImplementedError
+
+    @abstractmethod
+    def caseinsensitivestr2dictionaryselection(self, string: str) -> Selection:
+        """ :return A selection of the Unicode string @string such that it selects all words found in @string. """
+        raise NotImplementedError
+
+
+class EnglishDictionaryBasedIdentifier(DictionaryBasedTextIdentifier):
+    def __init__(self, tolerated_char_count=0):
+        """ @tolerated_char_count is the number of characters surrounding the found words that will be included in the
+        identified text. """
+        with open("/home/sebelino/lib/python3/pyromhackit/pyromhackit/cracklib-small-subset.txt") as f:
+            self._dictionary = f.read()
+        self._dictionary = self._dictionary.strip()
+        self._dictionary = self._dictionary.split()
+        self._dictionary = frozenset(self._dictionary)
+        self._tolerated_char_count = tolerated_char_count
+
+    def dictionary(self) -> frozenset:
+        return self._dictionary
+
+    def str2dictionaryselection(self, string: str) -> Selection:
+        textselection = Selection(universe=slice(0, len(string)))
+        textselection.coverup(None, None)
+        for word in iter(self.dictionary()):
+            for startindex in findall(word, string):
+                textselection.reveal(startindex, startindex + len(word))
+        return textselection
+
+    def caseinsensitivestr2dictionaryselection(self, string: str) -> Selection:
+        return self.str2dictionaryselection(string.lower())
+
+    def stream2selection(self, stream: TextIOBase) -> Selection:
+        return self.str2selection(stream.read())
+
+    def str2selection(self, string: str) -> Selection:
+        dictselection = self.caseinsensitivestr2dictionaryselection(string)
+        textselection = deepcopy(dictselection)
+        textselection.reveal_expand(None, None, self._tolerated_char_count)
+        return textselection
+
+
+class EnglishLangidBasedIdentifier(TextIdentifier):
     """ Identifies English text by using the langid library. """
 
     _identifier = LanguageIdentifier.from_modelstring(model, norm_probs=True)
 
-    @classmethod
-    def stream2selection(cls, stream: TextIOBase) -> Selection:
-        return cls.str2selection(stream.read())
+    def stream2selection(self, stream: TextIOBase) -> Selection:
+        return self.str2selection(stream.read())
 
-    @classmethod
-    def str2selection(cls, string: str) -> Selection:
-        verdict = cls._judge(string)
-        selection = cls._separate(verdict)
-        tolerated_selection = cls._tolerate(selection)
+    def str2selection(self, string: str) -> Selection:
+        verdict = self._judge(string)
+        selection = self._separate(verdict)
+        tolerated_selection = self._tolerate(selection)
         return tolerated_selection
 
     @classmethod

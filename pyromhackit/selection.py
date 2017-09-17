@@ -55,7 +55,8 @@ class Selection(GSlice):  # TODO -> GSlice
         if revealed is None:
             self.revealed = [self.universe]
         else:
-            self.revealed = revealed
+            self.revealed = deepcopy(revealed)
+        self._revealed_count = self._compute_len()
 
     def coverup(self, from_index, to_index):
         """ Shrinks this selection by excluding any element with index i, where @from_index <= i < @to_index, if it is
@@ -96,6 +97,7 @@ class Selection(GSlice):  # TODO -> GSlice
             elif b <= from_index:
                 pass
             i += 1
+        self._revealed_count = self._compute_len()
         return original_length - len(self)
 
     def coverup_virtual(self, from_index, to_index):
@@ -129,6 +131,7 @@ class Selection(GSlice):  # TODO -> GSlice
             to_index = self.universe.stop
         if not self.revealed:
             self.revealed.append(slice(from_index, to_index))
+            self._revealed_count = self._compute_len()
             return to_index - from_index
 
         if self._within_bounds(from_index):
@@ -155,6 +158,7 @@ class Selection(GSlice):  # TODO -> GSlice
             else:
                 n = self._gap_index(to_index)
                 self.revealed[m:n] = [slice(from_index, to_index)]
+        self._revealed_count = self._compute_len()
         return len(self) - original_length
 
     def reveal_partially(self, from_index: Optional[int], to_index: Optional[int], count: Union[int, tuple]):
@@ -412,9 +416,13 @@ class Selection(GSlice):  # TODO -> GSlice
     def __getitem__(self, item):
         return self.virtual2physical(item)
 
-    def __len__(self):
+    def _compute_len(self):
         """ :return the total number of revealed elements. """
         return sum(segment.stop - segment.start for segment in self.revealed)
+
+    def __len__(self):
+        """ :return the total number of revealed elements. """
+        return self._revealed_count
 
     def __eq__(self, other):
         return repr(self) == repr(other)

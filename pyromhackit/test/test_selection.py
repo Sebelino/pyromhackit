@@ -25,8 +25,7 @@ def test_init2():
 
 class TestCoverup(object):
     def setup(self):
-        self.v = Selection(slice(0, 10))
-        self.v.revealed = [slice(3, 7)]  # Poor man's mocking
+        self.v = Selection(universe=slice(0, 10), revealed=[slice(3, 7)])
 
     def test_lt_a_lt_a(self):
         self.v.coverup(1, 2)
@@ -99,8 +98,7 @@ class TestCoverup(object):
 
 class TestReveal(object):
     def setup(self):
-        self.v = Selection(slice(0, 10))
-        self.v.revealed = [slice(3, 7)]  # Poor man's mocking
+        self.v = Selection(universe=slice(0, 10), revealed=[slice(3, 7)])
 
     def test_lt_a_lt_a(self):
         self.v.reveal(1, 2)
@@ -153,6 +151,15 @@ class TestReveal(object):
     def test_gt_b_gt_b(self):
         self.v.reveal(8, 9)
         assert self.v.revealed == [slice(3, 7), slice(8, 9)]
+
+
+class TestMiddleGap(object):
+    def setup(self):
+        self.v = Selection(universe=slice(0, 10), revealed=[slice(0, 3), slice(7, 10)])
+
+    def test_eq_min_in_ab(self):
+        self.v.coverup(0, 1)
+        assert self.v.revealed == [slice(1, 3), slice(7, 10)]
 
 
 def test_cover_all():
@@ -239,8 +246,11 @@ class TestIndexing(object):
 
 class TestFullyCovered(object):
     def setup(self):
-        self.v = Selection(slice(0, 10))
-        self.v.revealed = []  # Poor man's mocking
+        self.v = Selection(universe=slice(0, 10), revealed=[])
+
+    def test_len_eq_min_eq_max(self):
+        self.v.reveal(0, 10)
+        assert len(self.v) == 10
 
     def test_index_raises(self):
         with pytest.raises(IndexError):
@@ -360,8 +370,7 @@ class TestThreeRevealedIntervals(object):
 
 class TestThreeCoveredIntervals(object):
     def setup(self):
-        self.v = Selection(slice(0, 10))
-        self.v.revealed = [slice(2, 4), slice(6, 9)]  # Poor man's mocking
+        self.v = Selection(universe=slice(0, 10), revealed=[slice(2, 4), slice(6, 9)])
 
     def test_reveal_partially_from_right(self):
         self.v._reveal_partially_from_right(0, 2, 1)

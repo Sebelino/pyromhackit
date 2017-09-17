@@ -1,3 +1,4 @@
+termcolor
 langid
 bidict
 treelib

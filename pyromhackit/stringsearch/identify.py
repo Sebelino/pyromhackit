@@ -86,7 +86,8 @@ class EnglishDictionaryBasedIdentifier(DictionaryBasedTextIdentifier):
 class EnglishLangidBasedIdentifier(TextIdentifier):
     """ Identifies English text by using the langid library. """
 
-    _identifier = LanguageIdentifier.from_modelstring(model, norm_probs=True)
+    def __init__(self):
+        self._identifier = LanguageIdentifier.from_modelstring(model, norm_probs=True)
 
     def stream2selection(self, stream: TextIOBase) -> Selection:
         return self.str2selection(stream.read())
@@ -105,10 +106,9 @@ class EnglishLangidBasedIdentifier(TextIdentifier):
         sel = cls.stream2selection(stream)
         return sel.select(stream)
 
-    @classmethod
-    def _identify_language(cls, content, segment_size: int):
+    def _identify_language(self, content, segment_size: int):
         segmented_content = [(i, content[i:i + segment_size]) for i in range(0, len(content), segment_size)]
-        verdict = [(offset, string, cls._identifier.classify(string)) for offset, string in segmented_content]
+        verdict = [(offset, string, self._identifier.classify(string)) for offset, string in segmented_content]
         return verdict
 
     @staticmethod
@@ -169,4 +169,4 @@ if __name__ == '__main__':
             seekindex = d
             print(repr(gap)[1:-1] + colored(repr(body)[1:-1], "blue"), end="")
         endgap = content[seekindex:b]
-        print(repr(endgap)[1:-1]+"\"")
+        print(repr(endgap)[1:-1] + "\"")

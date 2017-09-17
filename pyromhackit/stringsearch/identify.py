@@ -7,6 +7,7 @@ from io import TextIOBase
 
 import sys
 from langid.langid import LanguageIdentifier, model
+from termcolor import colored
 
 from pyromhackit.selection import Selection
 from pyromhackit.util import findall
@@ -151,10 +152,21 @@ class EnglishLangidBasedIdentifier(TextIdentifier):
 
 if __name__ == '__main__':
     """ Reads Unicode data from stdin and finds English text in it. """
-    identifier = EnglishDictionaryBasedIdentifier(tolerated_char_count=0)
+    identifier = EnglishDictionaryBasedIdentifier(tolerated_char_count=10)
     content = sys.stdin.read()
+    dictselection = identifier.caseinsensitivestr2dictionaryselection(content)
     textselection = identifier.str2selection(content)
-    print(list(textselection))
+    print("Dictionary selection: {}".format(list(dictselection)))
+    print("Text selection: {}".format(list(textselection)))
     print()
     for a, b in textselection:
-        print("{}: {}".format(a, repr(content[a:b])))
+        print("{:3}...{:3}: \"".format(a, b), end="")
+        subselection = dictselection.subselection(a, b)
+        seekindex = a
+        for c, d in subselection:
+            gap = content[seekindex:c]
+            body = content[c:d]
+            seekindex = d
+            print(repr(gap)[1:-1] + colored(repr(body)[1:-1], "blue"), end="")
+        endgap = content[seekindex:b]
+        print(repr(endgap)[1:-1]+"\"")

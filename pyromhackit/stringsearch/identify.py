@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 """ Provides algorithms for identifying English text in files that may contain English text mixed with other data. """
+import os
 from abc import ABCMeta, abstractmethod
 from copy import deepcopy
 from io import TextIOBase
@@ -12,6 +13,7 @@ from termcolor import colored
 from pyromhackit.selection import Selection
 from pyromhackit.util import findall
 
+package_dir = os.path.dirname(os.path.abspath(__file__))
 
 class TextIdentifier(metaclass=ABCMeta):
     """ Abstraction for a way of identifying text in a sequence of arbitrary Unicode characters. """
@@ -52,7 +54,7 @@ class EnglishDictionaryBasedIdentifier(DictionaryBasedTextIdentifier):
     def __init__(self, tolerated_char_count=0):
         """ @tolerated_char_count is the number of characters surrounding the found words that will be included in the
         identified text. """
-        with open("/home/sebelino/lib/python3/pyromhackit/pyromhackit/cracklib-small-subset.txt") as f:
+        with open(os.path.join(package_dir, "resources/cracklib-small-subset.txt")) as f:
             self._dictionary = f.read()
         self._dictionary = self._dictionary.strip()
         self._dictionary = self._dictionary.split()

@@ -88,7 +88,7 @@ class EnglishDictionaryBasedIdentifier(DictionaryBasedTextIdentifier):
 if __name__ == '__main__':
     """ Reads Unicode data from stdin and finds English text in it. """
     identifier = EnglishDictionaryBasedIdentifier(tolerated_char_count=10)
-    content = sys.stdin.read()
+    content = open(sys.argv[1]).read() if len(sys.argv) == 2 else sys.stdin.read()
     dictselection = identifier.caseinsensitivestr2dictionaryselection(content)
     textselection = identifier.str2selection(content)
     print("Dictionary selection: {}".format(list(dictselection)))

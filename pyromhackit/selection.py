@@ -3,13 +3,12 @@ from abc import ABCMeta, abstractmethod
 from copy import deepcopy
 
 
-# TODO create interface/type Selection
 from typing import Optional, Union
 
 
-class GSlice(metaclass=ABCMeta):  # TODO -> AbstractGSlice
-    """ A GSlice (generalized slice) is any subset of the set of non-negative integers. It provides a way to select
-     certain elements from a sequence. """
+class IGSlice(metaclass=ABCMeta):
+    """ A GSlice (generalized slice) is any subset of the set of non-negative integers, paired with an upper bound for
+    them. It provides a way to select zero or more elements from a sequence. """
 
     @abstractmethod
     def select(self, sequence):
@@ -18,34 +17,83 @@ class GSlice(metaclass=ABCMeta):  # TODO -> AbstractGSlice
         themselves. """
         raise NotImplementedError
 
+    @abstractmethod
+    def intervals(self):
+        """ :return A sequence of pairs (a, b) such that for every a <= n < b, n is contained in this IGSlice. """
+        raise NotImplementedError
 
-class PrimitiveGSlice(GSlice, metaclass=ABCMeta):  # TODO rename
-    pass
+    @abstractmethod
+    def complement(self) -> 'IGSlice':
+        """ :return An IGslice which is identical to this one except that for every 0 <= n < upperbound, n is contained
+        in the IGSlice if and only if it was not contained in this one. """
+        raise NotImplementedError
 
+    def subslice(self, from_index: Optional[int], to_index: Optional[int]) -> 'IGSlice':
+        """ :return A IGSlice which is identical to this one except that any integers outside
+        [@from_index, @to_index) are excluded. """
+        raise NotImplementedError
 
-class Integer(PrimitiveGSlice):
-    def __init__(self, *args):
-        self.content = int(*args)
-
-    def select(self, sequence):
-        return sequence[self.content]
-
-    def __call__(self, *args, **kwargs):
-        return self.content
-
-
-class Slice(PrimitiveGSlice):
-    def __init__(self, *args):
-        self.content = slice(*args)
-
-    def select(self, sequence):
-        return sequence[self.content]
-
-    def __call__(self, *args, **kwargs):
-        return self.content
+    def __len__(self):
+        """ :return The cardinality of the set of integers. """
+        raise NotImplementedError
 
 
-class Selection(GSlice):  # TODO -> GSlice
+class IMutableGSlice(IGSlice, metaclass=ABCMeta):
+    """ An IMutableGSlice is an IGSlice where integers can be added or removed. """
+
+    @abstractmethod
+    def include(self, from_index: Optional[int], to_index: Optional[int]):
+        """ Expands this generalized slice by including any integer in [@from_index, @to_index).
+        :return The number of excluded integers that were included. """
+        raise NotImplementedError
+
+    @abstractmethod
+    def include_partially(self, from_index: Optional[int], to_index: Optional[int], count: Union[int, tuple]):
+        """ Let S be the sequence of excluded integers in [@from_index, @to_index). Includes the first n and the last m
+        integers in S, where either n = m = @count or (n, m) = @count.
+        :return The number of excluded elements that were included. """
+        raise NotImplementedError
+
+    @abstractmethod
+    def include_virtual(self, from_index: Optional[int], to_index: Optional[int]):
+        """ Let S denote the sequence of integers currently included in this generalized slice. This method expands this
+        generalized slice by including each integer in [Sa, Sb), where Sa is the @from_index'th integer in S and Sb is
+        the @to_index'th integer in S.
+        :return The number of excluded integers that were included. """
+        raise NotImplementedError
+
+    @abstractmethod
+    def include_partially_virtual(self, from_index: Optional[int], to_index: Optional[int], count: Union[int, tuple]):
+        """ Let S denote the sequence of integers currently included in this generalized slice. This method expands this
+        generalized slice by including the first n and the last m integers in [Sa, Sb), where Sa is the @from_index'th
+        integer in S, Sb is the @to_index'th integer in S, and either n = m = @count or (n, m) = @count.
+        :return The number of excluded integers that were included. """
+        raise NotImplementedError
+
+    @abstractmethod
+    def include_expand(self, from_index: Optional[int], to_index: Optional[int], count: Union[int, tuple]):
+        """ Let S be the subslice of this generalized slice where each integer is in [@from_index, @to_index). For each
+        continuous sub-sequence of integers in S, includes every integer in [max(@from_index, a - n), a) and in
+        [b, min(to_index, b + m)), where either n = m = @count or (n, m) = @count.
+        :return The number of excluded elements that were included. """
+        raise NotImplementedError
+
+    @abstractmethod
+    def exclude(self, from_index: Optional[int], to_index: Optional[int]):
+        """ Shrinks this generalized slice by excluding any integer in [@from_index, @to_index).
+        :return The number of included elements that were excluded. """
+        raise NotImplementedError
+
+    def exclude_virtual(self, from_index: Optional[int], to_index: Optional[int]):
+        """ Let S denote the sequence of integers currently included in this generalized slice. This method shrinks this
+        generalized slice by excluding each ith integer in S, where @from_index <= i < @to_index.
+        :return The number of included integers that were excluded. """
+        raise NotImplementedError
+
+
+
+
+class Selection(IMutableGSlice):
     def __init__(self, universe: slice, revealed: list = None):
         assert isinstance(universe, slice)  # Should universe even be visible/exist?
         assert universe.start == 0
@@ -58,16 +106,16 @@ class Selection(GSlice):  # TODO -> GSlice
             self.revealed = deepcopy(revealed)
         self._revealed_count = self._compute_len()
 
-    def coverup(self, from_index, to_index):
-        """ Shrinks this selection by excluding any element with index i, where @from_index <= i < @to_index, if it is
-            not already excluded.
-            :return The number of revealed elements that were covered. """
+    def intervals(self):
+        return self.revealed
+
+    def exclude(self, from_index, to_index):
         original_length = len(self)
         if isinstance(from_index, int) and -self.universe.stop <= from_index < 0:
             from_index = from_index % self.universe.stop
         if isinstance(to_index, int):
             if to_index > self.universe.stop:
-                return self.coverup(from_index, None)
+                return self.exclude(from_index, None)
             if -self.universe.stop <= to_index < 0:
                 to_index = to_index % self.universe.stop
         assert from_index is None or self.universe.start <= from_index <= self.universe.stop
@@ -100,10 +148,7 @@ class Selection(GSlice):  # TODO -> GSlice
         self._revealed_count = self._compute_len()
         return original_length - len(self)
 
-    def coverup_virtual(self, from_index, to_index):
-        """ Shrinks this selection by excluding any element in the sub-sequence of visible elements with index i, where
-            @from_index <= i < @to_index.
-            :return The number of revealed elements that were covered. """
+    def exclude_virtual(self, from_index, to_index):
         if from_index is None or from_index < -len(self) or from_index >= len(self):
             p_from_index = None
         else:
@@ -112,12 +157,9 @@ class Selection(GSlice):  # TODO -> GSlice
             p_to_index = None
         else:
             p_to_index = self.virtual2physical(to_index)
-        return self.coverup(p_from_index, p_to_index)
+        return self.exclude(p_from_index, p_to_index)
 
-    def reveal(self, from_index, to_index):
-        """ Expands this selection by including any element with index i, where @from_index <= i < @to_index, if it is
-            not already included.
-            :return The number of covered elements that were revealed. """
+    def include(self, from_index, to_index):
         original_length = len(self)
         if isinstance(from_index, int) and -self.universe.stop <= from_index < 0:
             from_index = from_index % self.universe.stop
@@ -161,69 +203,60 @@ class Selection(GSlice):  # TODO -> GSlice
         self._revealed_count = self._compute_len()
         return len(self) - original_length
 
-    def reveal_partially(self, from_index: Optional[int], to_index: Optional[int], count: Union[int, tuple]):
-        """ Let S be the sub-sequence of covered elements such that each element in S is the ith element in the
-        super-sequence, where @from_index <= i < @to_index. Reveals the first n and the last m elements in S, where
-        either n = m = @count or (n, m) = @count. :return The number of covered elements that were revealed. """
+    def include_partially(self, from_index: Optional[int], to_index: Optional[int], count: Union[int, tuple]):
         if isinstance(count, int):
-            return self.reveal_partially(from_index, to_index, (count, count))
+            return self.include_partially(from_index, to_index, (count, count))
         head_count, tail_count = count
-        head_revealed_count = self._reveal_partially_from_left(from_index, to_index, head_count)
-        tail_revealed_count = self._reveal_partially_from_right(from_index, to_index, tail_count)
+        head_revealed_count = self._include_partially_from_left(from_index, to_index, head_count)
+        tail_revealed_count = self._include_partially_from_right(from_index, to_index, tail_count)
         return head_revealed_count + tail_revealed_count
 
-    def _reveal_partially_from_left(self, from_index: int, to_index: int, count: int):
-        subsel = self.complement().subselection(from_index, to_index)
+    def _include_partially_from_left(self, from_index: int, to_index: int, count: int):
+        subsel = self.complement().subslice(from_index, to_index)
         revealed_count = 0
         for covered_start, covered_stop in subsel:
             coverage = covered_stop - covered_start
             if revealed_count + coverage < count:
-                self.reveal(covered_start, covered_stop)
+                self.include(covered_start, covered_stop)
                 revealed_count += coverage
             else:
-                self.reveal(covered_start, covered_start + count - revealed_count)
+                self.include(covered_start, covered_start + count - revealed_count)
                 revealed_count = count
                 break
         return revealed_count
 
-    def _reveal_partially_from_right(self, from_index: int, to_index: int, count: int):
-        subsel = self.complement().subselection(from_index, to_index)
+    def _include_partially_from_right(self, from_index: int, to_index: int, count: int):
+        subsel = self.complement().subslice(from_index, to_index)
         revealed_count = 0
         for covered_start, covered_stop in reversed(list(subsel)):
             coverage = covered_stop - covered_start
             if revealed_count + coverage < count:
-                self.reveal(covered_start, covered_stop)
+                self.include(covered_start, covered_stop)
                 revealed_count += coverage
             else:
-                self.reveal(covered_stop - (count - revealed_count), covered_stop)
+                self.include(covered_stop - (count - revealed_count), covered_stop)
                 revealed_count = count
                 break
         return revealed_count
 
-    def reveal_expand(self, from_index: Optional[int], to_index: Optional[int], count: Union[int, tuple]):
-        """ Let S be the sub-selection of this selection between @from_index <= i < @to_index. For each revealed slice
-        (a, b) in S, reveals each ith element, where a - n <= i < a or b <= i < b + m, where either
-        n = m = @count or (n, m) = @count. :return The number of covered elements that were revealed. """
+    def include_expand(self, from_index: Optional[int], to_index: Optional[int], count: Union[int, tuple]):
         if isinstance(count, int):
-            return self.reveal_expand(from_index, to_index, (count, count))
+            return self.include_expand(from_index, to_index, (count, count))
         head_count, tail_count = count
-        subsel = self.subselection(from_index, to_index)
+        subsel = self.subslice(from_index, to_index)
         revealed_counter = 0
         for revealed_start, revealed_stop in subsel:
             try:
                 previous_covered = self._previous_slice(slice(revealed_start, revealed_stop))
-                revealed_counter += self._reveal_partially_from_right(previous_covered.start, revealed_start, head_count)
+                revealed_counter += self._include_partially_from_right(previous_covered.start, revealed_start, head_count)
             except ValueError:
                 pass
             try:
                 next_covered = self._next_slice(slice(revealed_start, revealed_stop))
-                revealed_counter += self._reveal_partially_from_left(revealed_stop, next_covered.stop, tail_count)
+                revealed_counter += self._include_partially_from_left(revealed_stop, next_covered.stop, tail_count)
             except ValueError:
                 pass
         return revealed_counter
-
-    def coverup_shrink(self, from_index: Optional[int], to_index: Optional[int], count: Union[int, tuple]):
-        raise NotImplementedError
 
     def _previous_slice(self, sl: slice):
         """ :return The revealed or covered slice immediately to the left of @sl.
@@ -249,14 +282,7 @@ class Selection(GSlice):  # TODO -> GSlice
         else:
             raise ValueError("Slice not found: {}.".format(sl))
 
-    def reveal_virtual(self, from_index, to_index):
-        """ Expands this selection by including any element between the @from_index'th and @to_index'th visible
-        elements. If @count is a supplied non-negative integer argument, and C is a sequence of covered chunks between
-        @from_index and @to_index, then for every chunk in C, only the first @count elements and the last @count
-        elements will be revealed. If @count is a pair (head_count, tail_count), then only the first head_count
-        elements and the last tail_count element will be covered.
-        :return The number of covered elements that were revealed.
-        """
+    def include_virtual(self, from_index, to_index):
         if from_index is None or from_index < -len(self) or from_index >= len(self):
             p_from_index = None
         else:
@@ -265,9 +291,9 @@ class Selection(GSlice):  # TODO -> GSlice
             p_to_index = None
         else:
             p_to_index = self.virtual2physical(to_index)
-        return self.reveal(p_from_index, p_to_index)
+        return self.include(p_from_index, p_to_index)
 
-    def reveal_partially_virtual(self, from_index, to_index, count: Union[int, tuple]):
+    def include_partially_virtual(self, from_index: Optional[int], to_index: Optional[int], count: Union[int, tuple]):
         if from_index is None or from_index < -len(self) or from_index >= len(self):
             p_from_index = None
         else:
@@ -276,7 +302,7 @@ class Selection(GSlice):  # TODO -> GSlice
             p_to_index = None
         else:
             p_to_index = self.virtual2physical(to_index)
-        return self.reveal_partially(p_from_index, p_to_index, count)
+        return self.include_partially(p_from_index, p_to_index, count)
 
     # FIXME Inconsistent with reversed(selection). Should probably make this use the default implementation and instead
     # rewrite this one to iter_slices or something.
@@ -285,21 +311,17 @@ class Selection(GSlice):  # TODO -> GSlice
             yield (sl.start, sl.stop)  # FIXME should probably generate slices instead, or every index
 
     def complement(self):
-        """ :return A Selection which is identical to this one except that every revealed element has become covered,
-        and every covered element has become revealed. """
         sel = Selection(universe=self.universe, revealed=[self.universe])
         for a, b in self:
-            sel.coverup(a, b)
+            sel.exclude(a, b)
         return sel
 
-    def subselection(self, from_index: Optional[int], to_index: Optional[int]):
-        """ :return A Selection which is identical to this one except that any intervals outside
-        [@from_index, @to_index) are covered. """
+    def subslice(self, from_index: Optional[int], to_index: Optional[int]):
         sel = deepcopy(self)
         if isinstance(from_index, int):
-            sel.coverup(None, from_index)
+            sel.exclude(None, from_index)
         if isinstance(to_index, int):
-            sel.coverup(to_index, None)
+            sel.exclude(to_index, None)
         return sel
 
     def _slice_index(self, pindex):
@@ -333,13 +355,12 @@ class Selection(GSlice):  # TODO -> GSlice
         except IndexError:
             return False
 
-    def index(self, pindex):
+    def _index(self, pindex):
         """ Returns the slice that @pindex is in. """
         sliceindex = self._slice_index(pindex)
         return self.revealed[sliceindex]
 
     def select(self, listlike):
-        """ Returns the selection of the subscriptable object @listlike. """
         # TODO only works for stringlike objects
         lst = []
         for interval in self.revealed:
@@ -421,7 +442,6 @@ class Selection(GSlice):  # TODO -> GSlice
         return sum(segment.stop - segment.start for segment in self.revealed)
 
     def __len__(self):
-        """ :return the total number of revealed elements. """
         return self._revealed_count
 
     def __eq__(self, other):

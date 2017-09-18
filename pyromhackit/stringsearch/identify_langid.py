@@ -64,12 +64,12 @@ class EnglishLangidBasedIdentifier(TextIdentifier):
         for label, offset, substring in verdict:
             not_english = label.strip() == label
             if not_english:
-                garbage_selection.coverup(offset, offset + len(substring))
+                garbage_selection.exclude(offset, offset + len(substring))
         return garbage_selection
 
     @staticmethod
     def _tolerate(garbage_selection: Selection):
         tolerance = 25
         sel = deepcopy(garbage_selection)
-        sel.reveal_expand(None, None, tolerance)
+        sel.include_expand(None, None, tolerance)
         return sel

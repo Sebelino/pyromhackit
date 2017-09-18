@@ -409,19 +409,19 @@ class SelectiveGMmap(ListlikeGMmap, PhysicallyIndexedGMmap, metaclass=ABCMeta):
     def coverup(self, from_index, to_index):
         """ Let N denote the total number of elements in the sequence. This method causes every element with index i,
         where @from_index <= i < @to_index, to become hidden (if it is not already). """
-        covered_count = self.selection.coverup(from_index, to_index)
+        covered_count = self.selection.exclude(from_index, to_index)
         self._length -= covered_count
 
     def coverup_virtual(self, from_index, to_index):
         """ Let I_0, I_1, ..., I_(M-1) denote the indices of the visible elements in the sequence. This method causes
         every element with index I_i, where @from_index <= i < @to_index, to become hidden. """
-        covered_count = self.selection.coverup_virtual(from_index, to_index)
+        covered_count = self.selection.exclude_virtual(from_index, to_index)
         self._length -= covered_count
 
     def uncover(self, from_index, to_index):
         """ Let N denote the total number of elements in the sequence. This method causes every element with index i,
         where @from_index <= i < @to_index, to become visible (if it is not already). """
-        revealed_count = self.selection.reveal(from_index, to_index)
+        revealed_count = self.selection.include(from_index, to_index)
         self._length += revealed_count
 
     def uncover_virtual(self, from_index, to_index):
@@ -430,7 +430,7 @@ class SelectiveGMmap(ListlikeGMmap, PhysicallyIndexedGMmap, metaclass=ABCMeta):
         and @to_index is not None, the condition becomes i < I_@to_index. If @from_index is not None and @to_index is
         None, the condition becomes I_@from_index < i. If both are None, all elements in the sequence become visible.
         """
-        revealed_count = self.selection.reveal(from_index, to_index)
+        revealed_count = self.selection.include(from_index, to_index)
         self._length += revealed_count
 
 

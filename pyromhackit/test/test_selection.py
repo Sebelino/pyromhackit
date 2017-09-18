@@ -28,71 +28,71 @@ class TestCoverup(object):
         self.v = Selection(universe=slice(0, 10), revealed=[slice(3, 7)])
 
     def test_lt_a_lt_a(self):
-        self.v.coverup(1, 2)
+        self.v.exclude(1, 2)
         assert self.v.revealed == [slice(3, 7)]
 
     def test_lt_a_eq_a(self):
-        self.v.coverup(1, 3)
+        self.v.exclude(1, 3)
         assert self.v.revealed == [slice(3, 7)]
 
     def test_lt_a_in_ab(self):
-        self.v.coverup(1, 5)
+        self.v.exclude(1, 5)
         assert self.v.revealed == [slice(5, 7)]
 
     def test_lt_a_eq_b(self):
-        self.v.coverup(1, 7)
+        self.v.exclude(1, 7)
         assert self.v.revealed == []
 
     def test_lt_a_gt_b(self):
-        self.v.coverup(1, 8)
+        self.v.exclude(1, 8)
         assert self.v.revealed == []
 
     def test_eq_a_in_ab(self):
-        self.v.coverup(3, 5)
+        self.v.exclude(3, 5)
         assert self.v.revealed == [slice(5, 7)]
 
     def test_eq_a_eq_b(self):
-        self.v.coverup(3, 7)
+        self.v.exclude(3, 7)
         assert self.v.revealed == []
 
     def test_eq_a_gt_b(self):
-        self.v.coverup(3, 8)
+        self.v.exclude(3, 8)
         assert self.v.revealed == []
 
     def test_in_ab_in_ab(self):
-        self.v.coverup(4, 6)
+        self.v.exclude(4, 6)
         assert self.v.revealed == [slice(3, 4), slice(6, 7)]
 
     def test_in_ab_eq_b(self):
-        self.v.coverup(4, 7)
+        self.v.exclude(4, 7)
         assert self.v.revealed == [slice(3, 4)]
 
     def test_in_ab_gt_b(self):
-        self.v.coverup(4, 8)
+        self.v.exclude(4, 8)
         assert self.v.revealed == [slice(3, 4)]
 
     def test_eq_b_gt_b(self):
-        self.v.coverup(7, 8)
+        self.v.exclude(7, 8)
         assert self.v.revealed == [slice(3, 7)]
 
     def test_gt_b_gt_b(self):
-        self.v.coverup(8, 9)
+        self.v.exclude(8, 9)
         assert self.v.revealed == [slice(3, 7)]
 
     def test_in_ab_eq_max(self):
-        self.v.coverup(4, 10)
+        self.v.exclude(4, 10)
         assert self.v.revealed == [slice(3, 4)]
 
     def test_in_ab_gt_max(self):
-        self.v.coverup(4, 11)
+        self.v.exclude(4, 11)
         assert self.v.revealed == [slice(3, 4)]
 
     def test_eq_min_eq_min(self):
-        self.v.coverup(0, 0)
+        self.v.exclude(0, 0)
         assert self.v.revealed == [slice(3, 7)]
 
     def test_eq_max_eq_max(self):
-        self.v.coverup(10, 10)
+        self.v.exclude(10, 10)
         assert self.v.revealed == [slice(3, 7)]
 
 
@@ -101,55 +101,55 @@ class TestReveal(object):
         self.v = Selection(universe=slice(0, 10), revealed=[slice(3, 7)])
 
     def test_lt_a_lt_a(self):
-        self.v.reveal(1, 2)
+        self.v.include(1, 2)
         assert self.v.revealed == [slice(1, 2), slice(3, 7)]
 
     def test_lt_a_eq_a(self):
-        self.v.reveal(1, 3)
+        self.v.include(1, 3)
         assert self.v.revealed == [slice(1, 7)]
 
     def test_lt_a_in_ab(self):
-        self.v.reveal(1, 5)
+        self.v.include(1, 5)
         assert self.v.revealed == [slice(1, 7)]
 
     def test_lt_a_eq_b(self):
-        self.v.reveal(1, 7)
+        self.v.include(1, 7)
         assert self.v.revealed == [slice(1, 7)]
 
     def test_lt_a_gt_b(self):
-        self.v.reveal(1, 8)
+        self.v.include(1, 8)
         assert self.v.revealed == [slice(1, 8)]
 
     def test_eq_a_in_ab(self):
-        self.v.reveal(3, 5)
+        self.v.include(3, 5)
         assert self.v.revealed == [slice(3, 7)]
 
     def test_eq_a_eq_b(self):
-        self.v.reveal(3, 7)
+        self.v.include(3, 7)
         assert self.v.revealed == [slice(3, 7)]
 
     def test_eq_a_gt_b(self):
-        self.v.reveal(3, 8)
+        self.v.include(3, 8)
         assert self.v.revealed == [slice(3, 8)]
 
     def test_in_ab_in_ab(self):
-        self.v.reveal(4, 6)
+        self.v.include(4, 6)
         assert self.v.revealed == [slice(3, 7)]
 
     def test_in_ab_eq_b(self):
-        self.v.reveal(4, 7)
+        self.v.include(4, 7)
         assert self.v.revealed == [slice(3, 7)]
 
     def test_in_ab_gt_b(self):
-        self.v.reveal(4, 8)
+        self.v.include(4, 8)
         assert self.v.revealed == [slice(3, 8)]
 
     def test_eq_b_gt_b(self):
-        self.v.reveal(7, 8)
+        self.v.include(7, 8)
         assert self.v.revealed == [slice(3, 8)]
 
     def test_gt_b_gt_b(self):
-        self.v.reveal(8, 9)
+        self.v.include(8, 9)
         assert self.v.revealed == [slice(3, 7), slice(8, 9)]
 
 
@@ -158,31 +158,31 @@ class TestMiddleGap(object):
         self.v = Selection(universe=slice(0, 10), revealed=[slice(0, 3), slice(7, 10)])
 
     def test_eq_min_in_ab(self):
-        self.v.coverup(0, 1)
+        self.v.exclude(0, 1)
         assert self.v.revealed == [slice(1, 3), slice(7, 10)]
 
 
 def test_cover_all():
     v = Selection(slice(0, 10))
-    v.coverup(0, 10)
+    v.exclude(0, 10)
     assert v.revealed == []
-    v.reveal(3, 7)
+    v.include(3, 7)
     assert v.revealed == [slice(3, 7)]
 
 
 class TestIndexing(object):
     def setup(self):
         self.v = Selection(slice(0, 10))
-        self.v.coverup(0, 3)
-        self.v.coverup(7, 10)
+        self.v.exclude(0, 3)
+        self.v.exclude(7, 10)
 
     def test_index(self):
-        assert self.v.index(5) == slice(3, 7)
+        assert self.v._index(5) == slice(3, 7)
 
     @pytest.mark.parametrize("pindex", [2, 7])
     def test_index_raises(self, pindex):
         with pytest.raises(IndexError):
-            self.v.index(pindex)
+            self.v._index(pindex)
 
     @pytest.mark.parametrize("vindex, expected", [
         (0, 3),
@@ -249,12 +249,12 @@ class TestFullyCovered(object):
         self.v = Selection(universe=slice(0, 10), revealed=[])
 
     def test_len_eq_min_eq_max(self):
-        self.v.reveal(0, 10)
+        self.v.include(0, 10)
         assert len(self.v) == 10
 
     def test_index_raises(self):
         with pytest.raises(IndexError):
-            self.v.index(0)
+            self.v._index(0)
 
     def test_v2p_raises(self):
         with pytest.raises(IndexError):
@@ -293,12 +293,12 @@ class TestFullyCovered(object):
 class TestThreeRevealedIntervals(object):
     def setup(self):
         self.v = Selection(slice(0, 10))
-        self.v.coverup(2, 4)
-        self.v.coverup(6, 9)
+        self.v.exclude(2, 4)
+        self.v.exclude(6, 9)
         assert self.v.revealed == [slice(0, 2), slice(4, 6), slice(9, 10)]
 
     def test_coverup(self):
-        self.v.coverup(2, None)
+        self.v.exclude(2, None)
         assert self.v.revealed == [slice(0, 2)]
 
     @pytest.mark.parametrize("pindex, expected", [
@@ -323,19 +323,19 @@ class TestThreeRevealedIntervals(object):
         (None, None, [slice(0, 2), slice(4, 6), slice(9, 10)]),
     ])
     def test_subselection(self, from_index, to_index, expected_revealed):
-        subsel = self.v.subselection(from_index, to_index)
+        subsel = self.v.subslice(from_index, to_index)
         assert subsel.revealed == expected_revealed
 
     def test_reveal_slice_partially(self):
-        self.v.reveal(2, 3)
+        self.v.include(2, 3)
         assert self.v.revealed == [slice(0, 3), slice(4, 6), slice(9, 10)]
 
     def test_reveal_slice_partially_overlapping(self):
-        self.v.reveal(1, 3)
+        self.v.include(1, 3)
         assert self.v.revealed == [slice(0, 3), slice(4, 6), slice(9, 10)]
 
     def test_reveal_slice_fully(self):
-        self.v.reveal(2, 4)
+        self.v.include(2, 4)
         assert self.v.revealed == [slice(0, 6), slice(9, 10)]
 
     def test_complement_universe(self):
@@ -345,15 +345,15 @@ class TestThreeRevealedIntervals(object):
         assert self.v.complement().revealed == [slice(2, 4), slice(6, 9)]
 
     def test_reveal_partially_left(self):
-        self.v._reveal_partially_from_left(1, 9, 1)
+        self.v._include_partially_from_left(1, 9, 1)
         assert self.v.revealed == [slice(0, 3), slice(4, 6), slice(9, 10)]
 
     def test_reveal_partially_right(self):
-        self.v._reveal_partially_from_right(1, 9, 1)
+        self.v._include_partially_from_right(1, 9, 1)
         assert self.v.revealed == [slice(0, 2), slice(4, 6), slice(8, 10)]
 
     def test_reveal_partially(self):
-        self.v.reveal_partially(None, None, 1)
+        self.v.include_partially(None, None, 1)
         assert self.v.revealed == [slice(0, 3), slice(4, 6), slice(8, 10)]
 
     @pytest.mark.parametrize("from_index, to_index, count, expected_revealed", [
@@ -364,7 +364,7 @@ class TestThreeRevealedIntervals(object):
         (None, None, 2, [slice(0, 10)]),
     ])
     def test_reveal_expand(self, from_index, to_index, count, expected_revealed):
-        self.v.reveal_expand(from_index, to_index, count)
+        self.v.include_expand(from_index, to_index, count)
         assert self.v.revealed == expected_revealed
 
 
@@ -373,7 +373,7 @@ class TestThreeCoveredIntervals(object):
         self.v = Selection(universe=slice(0, 10), revealed=[slice(2, 4), slice(6, 9)])
 
     def test_reveal_partially_from_right(self):
-        self.v._reveal_partially_from_right(0, 2, 1)
+        self.v._include_partially_from_right(0, 2, 1)
         assert self.v.revealed == [slice(1, 4), slice(6, 9)]
 
     @pytest.mark.parametrize("from_index, to_index, count, expected_revealed", [
@@ -384,7 +384,7 @@ class TestThreeCoveredIntervals(object):
         (None, None, 2, [slice(0, 10)]),
     ])
     def test_reveal_expand(self, from_index, to_index, count, expected_revealed):
-        self.v.reveal_expand(from_index, to_index, count)
+        self.v.include_expand(from_index, to_index, count)
         assert self.v.revealed == expected_revealed
 
 
@@ -393,12 +393,12 @@ class TestNormalization(object):
         self.v = Selection(slice(0, 5))
 
     def test_reveal_revealed(self):
-        self.v.reveal(1, 2)
+        self.v.include(1, 2)
         assert self.v.revealed == [slice(0, 5)]
 
     def test_cover_and_reveal_revealed(self):
-        self.v.coverup(1, 2)
-        self.v.reveal(2, 3)
+        self.v.exclude(1, 2)
+        self.v.include(2, 3)
         assert self.v.revealed == [slice(0, 1), slice(2, 5)]
 
 
@@ -407,74 +407,74 @@ class TestVirtualCoverup(object):
         self.v = Selection(slice(0, 5))
 
     def test_cover_cumulatively(self):
-        self.v.coverup_virtual(1, 2)
-        self.v.coverup_virtual(1, 2)
+        self.v.exclude_virtual(1, 2)
+        self.v.exclude_virtual(1, 2)
         assert self.v == Selection(universe=slice(0, 5), revealed=[slice(0, 1), slice(3, 5)])
 
     def test_cover_and_reveal(self):
-        self.v.coverup_virtual(1, 2)
-        self.v.coverup_virtual(1, 2)
-        self.v.reveal_virtual(0, 1)
+        self.v.exclude_virtual(1, 2)
+        self.v.exclude_virtual(1, 2)
+        self.v.include_virtual(0, 1)
         assert self.v == Selection(universe=slice(0, 5), revealed=[slice(0, 5)])
 
     def test_cover_all(self):
-        self.v.coverup_virtual(None, 7)
+        self.v.exclude_virtual(None, 7)
         assert self.v == Selection(universe=slice(0, 5), revealed=[])
 
 
 class TestRevealPartially(object):
     def setup(self):
         self.v = Selection(slice(0, 10))
-        self.v.coverup(2, 7)
+        self.v.exclude(2, 7)
 
     def test_lt_a_lt_a(self):
-        self.v.reveal_partially(0, 1, 1)
+        self.v.include_partially(0, 1, 1)
         assert self.v.revealed == [slice(0, 2), slice(7, 10)]
 
     def test_lt_a_eq_a(self):
-        self.v.reveal_partially(1, 2, 1)
+        self.v.include_partially(1, 2, 1)
         assert self.v.revealed == [slice(0, 2), slice(7, 10)]
 
     def test_lt_a_in_ab(self):
-        self.v.reveal_partially(1, 5, 1)
+        self.v.include_partially(1, 5, 1)
         assert self.v.revealed == [slice(0, 3), slice(4, 5), slice(7, 10)]
 
     def test_lt_a_eq_b(self):
-        self.v.reveal_partially(1, 7, 1)
+        self.v.include_partially(1, 7, 1)
         assert self.v.revealed == [slice(0, 3), slice(6, 10)]
 
     def test_lt_a_gt_b(self):
-        self.v.reveal_partially(1, 8, 1)
+        self.v.include_partially(1, 8, 1)
         assert self.v.revealed == [slice(0, 3), slice(6, 10)]
 
     def test_eq_a_in_ab(self):
-        self.v.reveal_partially(2, 5, 1)
+        self.v.include_partially(2, 5, 1)
         assert self.v.revealed == [slice(0, 3), slice(4, 5), slice(7, 10)]
 
     def test_eq_a_eq_b(self):
-        self.v.reveal_partially(2, 7, 1)
+        self.v.include_partially(2, 7, 1)
         assert self.v.revealed == [slice(0, 3), slice(6, 10)]
 
     def test_eq_a_gt_b(self):
-        self.v.reveal_partially(2, 8, 1)
+        self.v.include_partially(2, 8, 1)
         assert self.v.revealed == [slice(0, 3), slice(6, 10)]
 
     def test_in_ab_in_ab(self):
-        self.v.reveal_partially(5, 6, 1)
+        self.v.include_partially(5, 6, 1)
         assert self.v.revealed == [slice(0, 2), slice(5, 6), slice(7, 10)]
 
     def test_in_ab_eq_b(self):
-        self.v.reveal_partially(5, 7, 1)
+        self.v.include_partially(5, 7, 1)
         assert self.v.revealed == [slice(0, 2), slice(5, 10)]
 
     def test_in_ab_gt_b(self):
-        self.v.reveal_partially(5, 8, 1)
+        self.v.include_partially(5, 8, 1)
         assert self.v.revealed == [slice(0, 2), slice(5, 10)]
 
     def test_eq_b_gt_b(self):
-        self.v.reveal_partially(7, 8, 1)
+        self.v.include_partially(7, 8, 1)
         assert self.v.revealed == [slice(0, 2), slice(7, 10)]
 
     def test_gt_b_gt_b(self):
-        self.v.reveal_partially(8, 9, 1)
+        self.v.include_partially(8, 9, 1)
         assert self.v.revealed == [slice(0, 2), slice(7, 10)]

@@ -66,10 +66,10 @@ class EnglishDictionaryBasedIdentifier(DictionaryBasedTextIdentifier):
 
     def str2dictionaryselection(self, string: str) -> Selection:
         textselection = Selection(universe=slice(0, len(string)))
-        textselection.coverup(None, None)
+        textselection.exclude(None, None)
         for word in iter(self.dictionary()):
             for startindex in findall(word, string):
-                textselection.reveal(startindex, startindex + len(word))
+                textselection.include(startindex, startindex + len(word))
         return textselection
 
     def caseinsensitivestr2dictionaryselection(self, string: str) -> Selection:
@@ -96,7 +96,7 @@ if __name__ == '__main__':
     print()
     for a, b in textselection:
         print("{:3}...{:3}: \"".format(a, b), end="")
-        subselection = dictselection.subselection(a, b)
+        subselection = dictselection.subslice(a, b)
         seekindex = a
         for c, d in subselection:
             gap = content[seekindex:c]

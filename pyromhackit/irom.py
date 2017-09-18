@@ -219,14 +219,14 @@ class IROM(object):
         for chunk in chunks:
             removed_lines, matched_line_pairs = cls._organize_chunk(chunk)
             for prefix, offset, line in removed_lines:
-                removals.reveal(offset, offset + len(line) + 1)
+                removals.include(offset, offset + len(line) + 1)
             for rline, aline in matched_line_pairs:
                 _, offset1, string1 = rline
                 _, offset2, string2 = aline
                 seqm = difflib.SequenceMatcher(None, string1, string2)
                 for opcode, i1, i2, _, _ in seqm.get_opcodes():
                     if opcode == 'delete':
-                        removals.reveal(offset1 + i1, offset1 + i2)
+                        removals.include(offset1 + i1, offset1 + i2)
         return removals
 
     def load_selection_from_copy(self, path):

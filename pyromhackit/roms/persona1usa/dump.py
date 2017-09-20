@@ -10,6 +10,7 @@ from pyromhackit.hacker import Hacker
 import pyromhackit.thousandcurses.codec as codec
 from pyromhackit.tree import SimpleTopology
 from pyromhackit.roms.persona1usa.hexmap import transliter
+from pyromhackit.stringsearch.identify import EnglishDictionaryBasedIdentifier
 
 package_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -30,7 +31,7 @@ for infile, outfiles in sources.items():
     outfiles["codec"] = persona_codec_path
     outfiles["visage"] = persona_visage_path
     outfiles["selection"] = os.path.join("resources", "{}.sel.json".format(os.path.basename(infile)))
-    #outfiles["irom"] = os.path.join("output", "{}.irom.txt".format(os.path.basename(infile)))
+    outfiles["irom"] = os.path.join("output", "{}.irom.txt".format(os.path.basename(infile)))
     outfiles["view"] = os.path.join("output", "{}.view.txt".format(os.path.basename(infile)))
 
 
@@ -90,16 +91,43 @@ def hack(path, outfiles):
     return hacker
 
 
-if __name__ == '__main__':
-    for infile, outfiles in sources.items():
+def dump_iroms_and_views():
+    print("Dumping views for {} files...".format(len(sources)))
+    for iterationno, (infile, outfiles) in enumerate(sources.items()):
+        print("({}/{})".format(iterationno + 1, len(sources)), end=" ")
         if 'view' in outfiles and os.path.exists(outfiles['view']):
             print("Skipping {}".format(infile))
             continue
         print("Hacking {}".format(infile))
         hacker = hack(infile, outfiles)
-        hacker[chr(9166)] = '\n'
+        #hacker[chr(9166)] = '\n'
+        hacker.dump(outfiles["irom"])
         hacker.dump_view(outfiles["view"])
         # hacker.reveal(None, None); hacker.load_selection_from_copy('e2dump.txt')
+
+
+def dump_selections():
+    for iterationno, (infile, outfiles) in enumerate(sources.items()):
+        print("({}/{})".format(iterationno + 1, len(sources)), end=" ")
+        if 'selection' in outfiles and os.path.exists(outfiles['selection']):
+            print("Skipping {}".format(infile))
+            continue
+        print("Dumping selection for {}".format(infile))
+        import time; t = time.time()
+        hacker = hack(infile, outfiles)
+        #hacker[chr(9166)] = '\n'
+        sel = EnglishDictionaryBasedIdentifier(tolerated_char_count=15).str2selection(str(hacker.dst))
+        hacker.set_selection(sel)
+        hacker.dump_selection(outfiles["selection"])
+        print("Elapsed: {}".format(time.time() - t))
+
+
+if __name__ == '__main__':
+    dump_selections()
+    dump_iroms_and_views()
+
+    #infile = "resources/copyrighted/psp_game/usrdir/pack/dng/d01/d01.bin"
+    #hacker = hack(infile, sources[infile])
 
 
 

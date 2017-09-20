@@ -309,10 +309,40 @@ class Selection(IMutableGSlice):
             yield (sl.start, sl.stop)  # FIXME should probably generate slices instead, or every index
 
     def complement(self):
-        sel = Selection(universe=self.universe, revealed=[self.universe])
-        for a, b in self:
-            sel.exclude(a, b)
-        return sel
+        if len(self.revealed) == 0:
+            return Selection(universe=self.universe, revealed=[self.universe])
+        covered = []
+        if self.revealed[0].start == self.universe.start:
+            if self.revealed[-1].stop == self.universe.stop:
+                previous_stop = self.revealed[0].stop
+                for i in range(1, len(self.revealed)):
+                    sl = self.revealed[i]
+                    covered.append(slice(previous_stop, sl.start))
+                    previous_stop = sl.stop
+            else:
+                previous_stop = self.revealed[0].stop
+                for i in range(1, len(self.revealed)):
+                    sl = self.revealed[i]
+                    covered.append(slice(previous_stop, sl.start))
+                    previous_stop = sl.stop
+                covered.append(slice(self.revealed[-1].stop, self.universe.stop))
+        else:
+            if self.revealed[-1].stop == self.universe.stop:
+                covered.append(slice(self.universe.start, self.revealed[0].start))
+                previous_stop = self.revealed[0].stop
+                for i in range(1, len(self.revealed)):
+                    sl = self.revealed[i]
+                    covered.append(slice(previous_stop, sl.start))
+                    previous_stop = sl.stop
+            else:
+                covered.append(slice(self.universe.start, self.revealed[0].start))
+                previous_stop = self.revealed[0].stop
+                for i in range(1, len(self.revealed)):
+                    sl = self.revealed[i]
+                    covered.append(slice(previous_stop, sl.start))
+                    previous_stop = sl.stop
+                covered.append(slice(self.revealed[-1].stop, self.universe.stop))
+        return Selection(universe=self.universe, revealed=covered)
 
     def subslice(self, from_index: Optional[int], to_index: Optional[int]):
         sel = deepcopy(self)

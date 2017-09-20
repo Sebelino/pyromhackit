@@ -100,20 +100,20 @@ class TestPreviousSlice(object):
         for i in range(0, n):
             selection._previous_slice(slice(2 * i + 1, 2 * i + 2))
 
-    def test_previous_slice_500_covered(self, benchmark):
-        benchmark(self.covered_previous_slice_n_times, self.v, 500)
+    def test_previous_slice_50_covered(self, benchmark):
+        benchmark(self.covered_previous_slice_n_times, self.v, 50)
 
-    def test_previous_slice_1000_covered(self, benchmark):
-        benchmark(self.covered_previous_slice_n_times, self.v, 1000)
+    def test_previous_slice_100_covered(self, benchmark):
+        benchmark(self.covered_previous_slice_n_times, self.v, 100)
 
-    def test_previous_slice_2000_covered(self, benchmark):
-        benchmark(self.covered_previous_slice_n_times, self.v, 2000)
+    def test_previous_slice_200_covered(self, benchmark):
+        benchmark(self.covered_previous_slice_n_times, self.v, 200)
 
-    def test_previous_slice_500_revealed(self, benchmark):
-        benchmark(self.revealed_previous_slice_n_times, self.v, 500)
+    def test_previous_slice_50_revealed(self, benchmark):
+        benchmark(self.revealed_previous_slice_n_times, self.v, 50)
 
-    def test_previous_slice_1000_revealed(self, benchmark):
-        benchmark(self.revealed_previous_slice_n_times, self.v, 1000)
+    def test_previous_slice_100_revealed(self, benchmark):
+        benchmark(self.revealed_previous_slice_n_times, self.v, 100)
 
-    def test_previous_slice_2000_revealed(self, benchmark):
-        benchmark(self.revealed_previous_slice_n_times, self.v, 2000)
+    def test_previous_slice_200_revealed(self, benchmark):
+        benchmark(self.revealed_previous_slice_n_times, self.v, 200)

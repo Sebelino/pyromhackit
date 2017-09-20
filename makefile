@@ -16,6 +16,7 @@ venv/bin/activate: requirements.txt
 	virtualenv --no-site-packages venv
 	source venv/bin/activate && \
 	pip install -Ur requirements.txt;
+	chmod u+x ./venv/bin/activate
 
 # Beware of circular dependency black magic:
 #requirements.txt: venv

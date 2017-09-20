@@ -2,7 +2,6 @@
 from abc import ABCMeta, abstractmethod
 from copy import deepcopy
 
-
 from typing import Optional, Union
 
 
@@ -89,8 +88,6 @@ class IMutableGSlice(IGSlice, metaclass=ABCMeta):
         generalized slice by excluding each ith integer in S, where @from_index <= i < @to_index.
         :return The number of included integers that were excluded. """
         raise NotImplementedError
-
-
 
 
 class Selection(IMutableGSlice):
@@ -248,7 +245,8 @@ class Selection(IMutableGSlice):
         for revealed_start, revealed_stop in subsel:
             try:
                 previous_covered = self._previous_slice(slice(revealed_start, revealed_stop))
-                revealed_counter += self._include_partially_from_right(previous_covered.start, revealed_start, head_count)
+                revealed_counter += self._include_partially_from_right(previous_covered.start, revealed_start,
+                                                                       head_count)
             except ValueError:
                 pass
             try:

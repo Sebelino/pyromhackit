@@ -3,6 +3,7 @@ langid
 bidict
 treelib
 pytest
+pytest-benchmark
 pytest-cov
 nose>=1.3.7
 coverage>=4.1

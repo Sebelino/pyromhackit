@@ -289,6 +289,19 @@ class TestFullyCovered(object):
     def test_v2p_selection(self, vslice, expected):  # TODO negatives; slices (a,b) where a > b
         assert self.v.virtual2physicalselection(vslice) == expected
 
+@pytest.mark.parametrize("revealed, expected", [
+    ([], [slice(0, 10)]),
+    ([slice(0, 10)], []),
+    ([slice(0, 3)], [slice(3, 10)]),
+    ([slice(3, 10)], [slice(0, 3)]),
+    ([slice(0, 3), slice(5, 10)], [slice(3, 5)]),
+    ([slice(0, 3), slice(5, 7)], [slice(3, 5), slice(7, 10)]),
+    ([slice(1, 3), slice(5, 10)], [slice(0, 1), slice(3, 5)]),
+    ([slice(1, 3), slice(5, 7)], [slice(0, 1), slice(3, 5), slice(7, 10)]),
+])
+def test_complement(revealed, expected):
+    selection = Selection(universe=slice(0, 10), revealed=revealed)
+    assert selection.complement().revealed == expected
 
 class TestThreeRevealedIntervals(object):
     def setup(self):

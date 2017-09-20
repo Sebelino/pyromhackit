@@ -325,12 +325,18 @@ class Selection(IMutableGSlice):
     def _slice_index(self, pindex):
         """ :return n if @pindex is in the nth slice (zero-indexed).
         :raise IndexError if @pindex is outside any slice. """
-        for i, (a, b) in enumerate(self):
-            if a <= pindex:
-                if pindex < b:
-                    return i
-            else:
-                break
+        # Binary search
+        lower = 0
+        upper = len(self.revealed) - 1
+        while lower <= upper:
+            middle = (lower + upper) // 2
+            midsl = self.revealed[middle]
+            if pindex < midsl.start:
+                upper = middle - 1
+            elif midsl.stop <= pindex:
+                lower = middle + 1
+            else:  # midsl.start <= pindex < midsl.stop:
+                return middle
         raise IndexError("{} is not in any interval.".format(pindex))
 
     def _gap_index(self, pindex):

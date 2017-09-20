@@ -81,7 +81,7 @@ class EnglishDictionaryBasedIdentifier(DictionaryBasedTextIdentifier):
     def str2selection(self, string: str) -> Selection:
         dictselection = self.caseinsensitivestr2dictionaryselection(string)
         textselection = deepcopy(dictselection)
-        textselection.reveal_expand(None, None, self._tolerated_char_count)
+        textselection.include_expand(None, None, self._tolerated_char_count)
         return textselection
 
 

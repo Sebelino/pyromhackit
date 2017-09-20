@@ -100,7 +100,7 @@ class Selection(IMutableGSlice):
         if revealed is None:
             self.revealed = [self.universe]
         else:
-            self.revealed = deepcopy(revealed)
+            self.revealed = list(revealed)
         self._revealed_count = self._compute_len()
 
     def intervals(self):

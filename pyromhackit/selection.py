@@ -121,27 +121,33 @@ class Selection(IMutableGSlice):
             from_index = self.universe.start
         if to_index is None:
             to_index = self.universe.stop
-        i = 0
-        while i < len(self.revealed):
-            sl = self.revealed[i]
-            a, b = sl.start, sl.stop
-            if from_index <= a:
-                if to_index <= a:
-                    pass
-                elif a < to_index < b:
-                    self.revealed[i] = slice(to_index, b)
-                elif b <= to_index:
-                    self.revealed.pop(i)
-                    i -= 1
-            elif a < from_index < b:
-                if to_index < b:
-                    self.revealed[i:i + 1] = [slice(a, from_index), slice(to_index, b)]
-                    i += 1
-                elif b <= to_index:
-                    self.revealed[i] = slice(a, from_index)
-            elif b <= from_index:
-                pass
-            i += 1
+
+        if self._within_bounds(from_index):
+            m = self._slice_index(from_index)
+            if from_index == self.revealed[m].start:
+                if self._within_bounds(to_index):
+                    n = self._slice_index(to_index)
+                    self.revealed[m:n + 1] = [slice(to_index, self.revealed[n].stop)]
+                else:
+                    n = self._gap_index(to_index)
+                    self.revealed[m:n] = []
+            else:
+                if self._within_bounds(to_index):
+                    n = self._slice_index(to_index)
+                    self.revealed[m:n + 1] = [slice(self.revealed[m].start, from_index),
+                                              slice(to_index, self.revealed[n].stop)]
+                else:
+                    n = self._gap_index(to_index)
+                    self.revealed[m:n] = [slice(self.revealed[m].start, from_index)]
+        else:
+            m = self._gap_index(from_index)
+            if self._within_bounds(to_index):
+                n = self._slice_index(to_index)
+                self.revealed[m:n + 1] = [slice(to_index, self.revealed[n].stop)]
+            else:
+                n = self._gap_index(to_index)
+                self.revealed[m:n] = []
+
         self._revealed_count = self._compute_len()
         return original_length - len(self)
 

@@ -345,7 +345,7 @@ class Selection(IMutableGSlice):
         return Selection(universe=self.universe, revealed=covered)
 
     def subslice(self, from_index: Optional[int], to_index: Optional[int]):
-        sel = deepcopy(self)
+        sel = Selection(universe=self.universe, revealed=list(self.revealed))
         if isinstance(from_index, int):
             sel.exclude(None, from_index)
         if isinstance(to_index, int):

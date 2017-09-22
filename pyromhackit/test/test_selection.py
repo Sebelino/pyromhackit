@@ -23,9 +23,11 @@ def test_init2():
     assert v.revealed == [slice(3, 5)]
 
 
-class TestCoverup(object):
+class TestGapSliceGap(object):
     def setup(self):
         self.v = Selection(universe=slice(0, 10), revealed=[slice(3, 7)])
+
+    """ Selection.exclude """
 
     def test_lt_a_lt_a(self):
         self.v.exclude(1, 2)
@@ -95,10 +97,7 @@ class TestCoverup(object):
         self.v.exclude(10, 10)
         assert self.v.revealed == [slice(3, 7)]
 
-
-class TestReveal(object):
-    def setup(self):
-        self.v = Selection(universe=slice(0, 10), revealed=[slice(3, 7)])
+    """ Selection.include """
 
     def test_lt_a_lt_a(self):
         self.v.include(1, 2)
@@ -244,7 +243,7 @@ class TestIndexing(object):
         assert self.v.virtual2physicalselection(vslice) == expected
 
 
-class TestFullyCovered(object):
+class TestFullyExcluded(object):
     def setup(self):
         self.v = Selection(universe=slice(0, 10), revealed=[])
 
@@ -303,7 +302,8 @@ def test_complement(revealed, expected):
     selection = Selection(universe=slice(0, 10), revealed=revealed)
     assert selection.complement().revealed == expected
 
-class TestThreeRevealedIntervals(object):
+
+class TestThreeIncludedIntervals(object):
     def setup(self):
         self.v = Selection(slice(0, 10))
         self.v.exclude(2, 4)
@@ -357,15 +357,15 @@ class TestThreeRevealedIntervals(object):
     def test_complement_revealed(self):
         assert self.v.complement().revealed == [slice(2, 4), slice(6, 9)]
 
-    def test_reveal_partially_left(self):
+    def test_include_partially_left(self):
         self.v._include_partially_from_left(1, 9, 1)
         assert self.v.revealed == [slice(0, 3), slice(4, 6), slice(9, 10)]
 
-    def test_reveal_partially_right(self):
+    def test_include_partially_right(self):
         self.v._include_partially_from_right(1, 9, 1)
         assert self.v.revealed == [slice(0, 2), slice(4, 6), slice(8, 10)]
 
-    def test_reveal_partially(self):
+    def test_include_partially(self):
         self.v.include_partially(None, None, 1)
         assert self.v.revealed == [slice(0, 3), slice(4, 6), slice(8, 10)]
 
@@ -376,12 +376,12 @@ class TestThreeRevealedIntervals(object):
         (None, None, (0, 1), [slice(0, 3), slice(4, 7), slice(9, 10)]),
         (None, None, 2, [slice(0, 10)]),
     ])
-    def test_reveal_expand(self, from_index, to_index, count, expected_revealed):
+    def test_include_expand(self, from_index, to_index, count, expected_revealed):
         self.v.include_expand(from_index, to_index, count)
         assert self.v.revealed == expected_revealed
 
 
-class TestThreeCoveredIntervals(object):
+class TestThreeExcludedIntervals(object):
     def setup(self):
         self.v = Selection(universe=slice(0, 10), revealed=[slice(2, 4), slice(6, 9)])
 
@@ -396,7 +396,7 @@ class TestThreeCoveredIntervals(object):
         (None, None, (0, 1), [slice(2, 5), slice(6, 10)]),
         (None, None, 2, [slice(0, 10)]),
     ])
-    def test_reveal_expand(self, from_index, to_index, count, expected_revealed):
+    def test_include_expand(self, from_index, to_index, count, expected_revealed):
         self.v.include_expand(from_index, to_index, count)
         assert self.v.revealed == expected_revealed
 
@@ -405,17 +405,17 @@ class TestNormalization(object):
     def setup(self):
         self.v = Selection(slice(0, 5))
 
-    def test_reveal_revealed(self):
+    def test_include(self):
         self.v.include(1, 2)
         assert self.v.revealed == [slice(0, 5)]
 
-    def test_cover_and_reveal_revealed(self):
+    def test_exclude_and_include(self):
         self.v.exclude(1, 2)
         self.v.include(2, 3)
         assert self.v.revealed == [slice(0, 1), slice(2, 5)]
 
 
-class TestVirtualCoverup(object):
+class TestVirtualExclusion(object):
     def setup(self):
         self.v = Selection(slice(0, 5))
 
@@ -424,18 +424,18 @@ class TestVirtualCoverup(object):
         self.v.exclude_virtual(1, 2)
         assert self.v == Selection(universe=slice(0, 5), revealed=[slice(0, 1), slice(3, 5)])
 
-    def test_cover_and_reveal(self):
+    def test_exclude_and_include(self):
         self.v.exclude_virtual(1, 2)
         self.v.exclude_virtual(1, 2)
         self.v.include_virtual(0, 1)
         assert self.v == Selection(universe=slice(0, 5), revealed=[slice(0, 5)])
 
-    def test_cover_all(self):
+    def test_exclude_virtual_all(self):
         self.v.exclude_virtual(None, 7)
         assert self.v == Selection(universe=slice(0, 5), revealed=[])
 
 
-class TestRevealPartially(object):
+class TestIncludePartially(object):
     def setup(self):
         self.v = Selection(slice(0, 10))
         self.v.exclude(2, 7)

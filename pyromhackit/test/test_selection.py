@@ -101,6 +101,10 @@ class TestGapSliceGap(object):
         self.v.exclude(0, 0)
         assert self.v.revealed == [slice(3, 7)]
 
+    def test_exclude_eq_min_eq_b(self):
+        self.v.exclude(0, 7)
+        assert self.v.revealed == []
+
     def test_exclude_eq_max_eq_max(self):
         self.v.exclude(10, 10)
         assert self.v.revealed == [slice(3, 7)]
@@ -234,7 +238,7 @@ class TestIndexing(object):
         assert self.v.virtual2physical(vindex) == expected
 
     @pytest.mark.parametrize("vindex, expected", [
-        #(-1, IndexError),
+        # (-1, IndexError),
         (4, IndexError),
     ])
     def test_v2p_raises(self, vindex, expected):
@@ -288,6 +292,10 @@ class TestIndexing(object):
 class TestFullyExcluded(object):
     def setup(self):
         self.v = Selection(universe=slice(0, 10), revealed=[])
+
+    def test_exclude_in_universe_eq_max(self):
+        self.v.exclude(5, 10)
+        assert self.v.revealed == []
 
     def test_include_len_eq_min_eq_max(self):
         self.v.include(0, 10)
@@ -534,8 +542,7 @@ class TestVirtualExclusion(object):
 
 class TestIncludePartially(object):
     def setup(self):
-        self.v = Selection(slice(0, 10))
-        self.v.exclude(2, 7)
+        self.v = Selection(slice(0, 10), revealed=[slice(0, 2), slice(7, 10)])
 
     def test_include_partially_lt_a_lt_a(self):
         self.v.include_partially(0, 1, 1)

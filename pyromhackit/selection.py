@@ -390,16 +390,33 @@ class Selection(IMutableGSlice):
 
     def _gap_index(self, pindex):
         """ :return n if there are n slices to the left to @pindex.
-        :raise IndexError if @pindex is in a slice. """
-        n = 0
-        for (a, b) in self:
-            if a <= pindex:
-                if pindex < b:
-                    raise IndexError("{} is not in any gap.".format(pindex))
-            else:
-                break
-            n += 1
-        return n
+        :raise IndexError if @pindex is outside any slice in the complement selection. """
+        if self.universe.stop <= pindex:
+            raise IndexError("{} is outside universe {}.".format(pindex, self.universe))
+        if len(self.revealed) == 0:
+            return 0
+        if len(self.revealed) == 1:
+            if pindex < self.revealed[0].start:
+                return 0
+            elif self.revealed[0].stop <= pindex:
+                return 0 + (0 if self.revealed[0].start == self.universe.start else 1)
+            raise IndexError("{} is in interval {}.".format(pindex, self.revealed[0]))
+        if pindex < self.revealed[0].start:
+            return 0
+        if self.revealed[-1].stop <= pindex:
+            return len(self.revealed) + (-1 if self.revealed[0].start == self.universe.start else 0)
+        lower = 0
+        upper = len(self.revealed) - 1
+        while lower + 1 < upper:
+            middle = (lower + upper) // 2
+            midsl = self.revealed[middle]
+            if pindex < midsl.start:
+                upper = middle
+            elif midsl.stop <= pindex:
+                lower = middle
+            else:  # midsl.start <= pindex < midsl.stop:
+                raise IndexError("{} is in interval {}.".format(pindex, midsl))
+        return lower + (0 if self.revealed[0].start == self.universe.start else 1)
 
     def _within_bounds(self, pindex):
         try:

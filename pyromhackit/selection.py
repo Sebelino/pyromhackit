@@ -121,6 +121,8 @@ class Selection(IMutableGSlice):
             from_index = self.universe.start
         if to_index is None:
             to_index = self.universe.stop
+        if len(self.revealed) == 0:
+            return 0
 
         if self._within_bounds(from_index):
             m = self._slice_index(from_index)
@@ -128,6 +130,8 @@ class Selection(IMutableGSlice):
                 if self._within_bounds(to_index):
                     n = self._slice_index(to_index)
                     self.revealed[m:n + 1] = [slice(to_index, self.revealed[n].stop)]
+                elif to_index == self.universe.stop:
+                    self.revealed[m:] = []
                 else:
                     n = self._gap_index(to_index)
                     self.revealed[m:n] = []
@@ -136,14 +140,20 @@ class Selection(IMutableGSlice):
                     n = self._slice_index(to_index)
                     self.revealed[m:n + 1] = [slice(self.revealed[m].start, from_index),
                                               slice(to_index, self.revealed[n].stop)]
+                elif to_index == self.universe.stop:
+                    self.revealed[m:] = [slice(self.revealed[m].start, from_index)]
                 else:
                     n = self._gap_index(to_index)
                     self.revealed[m:n] = [slice(self.revealed[m].start, from_index)]
+        elif from_index == self.universe.stop:
+            pass
         else:
-            m = self._gap_index(from_index)
+            m = self._gap_index(from_index) + (1 if self.revealed[0].start == self.universe.start else 0)
             if self._within_bounds(to_index):
                 n = self._slice_index(to_index)
                 self.revealed[m:n + 1] = [slice(to_index, self.revealed[n].stop)]
+            elif to_index == self.universe.stop:
+                self.revealed[m:] = []
             else:
                 n = self._gap_index(to_index)
                 self.revealed[m:n] = []
@@ -166,10 +176,13 @@ class Selection(IMutableGSlice):
         original_length = len(self)
         if isinstance(from_index, int) and -self.universe.stop <= from_index < 0:
             from_index = from_index % self.universe.stop
-        if isinstance(to_index, int) and -self.universe.stop <= to_index < 0:
-            to_index = to_index % self.universe.stop
-        assert from_index is None or self.universe.start <= from_index < self.universe.stop
-        assert to_index is None or self.universe.start < to_index <= self.universe.stop
+        if isinstance(to_index, int):
+            if to_index > self.universe.stop:
+                return self.include(from_index, None)
+            if -self.universe.stop <= to_index < 0:
+                to_index = to_index % self.universe.stop
+        assert from_index is None or self.universe.start <= from_index <= self.universe.stop
+        assert to_index is None or self.universe.start <= to_index <= self.universe.stop
         if from_index is None:
             from_index = self.universe.start
         if to_index is None:
@@ -184,22 +197,30 @@ class Selection(IMutableGSlice):
             if self._within_bounds(to_index):
                 n = self._slice_index(to_index)
                 self.revealed[m:n + 1] = [slice(self.revealed[m].start, self.revealed[n].stop)]
+            elif to_index == self.universe.stop:
+                self.revealed[m:] = [slice(self.revealed[m].start, self.universe.stop)]
             else:
                 n = self._gap_index(to_index)
-                self.revealed[m:n] = [slice(self.revealed[m].start, to_index)]
+                self.revealed[m:n + 1] = [slice(self.revealed[m].start, to_index)]
         elif self._within_bounds(from_index - 1):
             m = self._slice_index(from_index - 1)
             if self._within_bounds(to_index):
                 n = self._slice_index(to_index)
                 self.revealed[m:n + 1] = [slice(self.revealed[m].start, self.revealed[n].stop)]
+            elif to_index == self.universe.stop:
+                self.revealed[m:] = [slice(self.revealed[m].start, self.universe.stop)]
             else:
-                n = self._gap_index(to_index)
-                self.revealed[m:n] = [slice(self.revealed[m].start, to_index)]
+                n = self._gap_index(to_index) + (0 if self.revealed[0].start == self.universe.start else -1)
+                self.revealed[m:n + 1] = [slice(self.revealed[m].start, to_index)]
+        elif from_index == self.universe.stop:
+            pass
         else:
-            m = self._gap_index(from_index)
+            m = self._gap_index(from_index) + (1 if self.revealed[0].start == self.universe.start else 0)
             if self._within_bounds(to_index):
                 n = self._slice_index(to_index)
                 self.revealed[m:n + 1] = [slice(from_index, self.revealed[n].stop)]
+            elif to_index <= from_index:
+                pass
             else:
                 n = self._gap_index(to_index)
                 self.revealed[m:n] = [slice(from_index, to_index)]
@@ -246,20 +267,13 @@ class Selection(IMutableGSlice):
         if isinstance(count, int):
             return self.include_expand(from_index, to_index, (count, count))
         head_count, tail_count = count
-        subsel = self.subslice(from_index, to_index)
         revealed_counter = 0
-        for revealed_start, revealed_stop in subsel:
-            try:
-                previous_covered = self._previous_slice(slice(revealed_start, revealed_stop))
-                revealed_counter += self._include_partially_from_right(previous_covered.start, revealed_start,
-                                                                       head_count)
-            except ValueError:
-                pass
-            try:
-                next_covered = self._next_slice(slice(revealed_start, revealed_stop))
-                revealed_counter += self._include_partially_from_left(revealed_stop, next_covered.stop, tail_count)
-            except ValueError:
-                pass
+        gaps = self.complement().subslice(from_index, to_index).revealed
+        for gap in gaps:
+            if gap.stop < self.universe.stop:
+                revealed_counter += self._include_partially_from_right(gap.start, gap.stop, head_count)
+            if gap.start > self.universe.start:
+                revealed_counter += self._include_partially_from_left(gap.start, gap.stop, tail_count)
         return revealed_counter
 
     def _previous_slice(self, sl: slice):
@@ -361,7 +375,6 @@ class Selection(IMutableGSlice):
     def _slice_index(self, pindex):
         """ :return n if @pindex is in the nth slice (zero-indexed).
         :raise IndexError if @pindex is outside any slice. """
-        # Binary search
         lower = 0
         upper = len(self.revealed) - 1
         while lower <= upper:

@@ -221,6 +221,8 @@ class Selection(IMutableGSlice):
                 self.revealed[m:n + 1] = [slice(from_index, self.revealed[n].stop)]
             elif to_index <= from_index:
                 pass
+            elif to_index == self.universe.stop:
+                self.revealed[m:] = [slice(from_index, self.universe.stop)]
             else:
                 n = self._gap_index(to_index)
                 self.revealed[m:n] = [slice(from_index, to_index)]

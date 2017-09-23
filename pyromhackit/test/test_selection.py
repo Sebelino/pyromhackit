@@ -23,6 +23,19 @@ def test_init2():
     assert v.revealed == [slice(3, 5)]
 
 
+class TestGapSlice(object):
+    def setup(self):
+        self.v = Selection(universe=slice(0, 10), revealed=[slice(4, 10)])
+
+    def test_include_eq_min_eq_max(self):
+        self.v.include(0, 10)
+        assert self.v.revealed == [slice(0, 10)]
+
+    def test_include_lt_mid_eq_max(self):
+        self.v.include(2, 10)
+        assert self.v.revealed == [slice(2, 10)]
+
+
 class TestGapSliceGap(object):
     def setup(self):
         self.v = Selection(universe=slice(0, 10), revealed=[slice(3, 7)])

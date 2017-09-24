@@ -35,12 +35,12 @@ class DictionaryBasedTextIdentifier(TextIdentifier, metaclass=ABCMeta):
     """ ITextIdentifier based on finding text using a set of strings ("words"). """
 
     @abstractmethod
-    def dictionary(self) -> frozenset:
+    def wordlist(self) -> frozenset:
         """ :return The set of words used for lookup. """
         raise NotImplementedError
 
     @abstractmethod
-    def str2dictionaryselection(self, string: str) -> Selection:
+    def str2wordlistselection(self, string: str) -> Selection:
         """ :return A selection of the Unicode string @string such that it selects all words found in @string. """
         raise NotImplementedError
 
@@ -55,25 +55,25 @@ class EnglishDictionaryBasedIdentifier(DictionaryBasedTextIdentifier):
         """ @tolerated_char_count is the number of characters surrounding the found words that will be included in the
         identified text. """
         with open(os.path.join(package_dir, "resources/cracklib-small-subset.txt")) as f:
-            self._dictionary = f.read()
-        self._dictionary = self._dictionary.strip()
-        self._dictionary = self._dictionary.split()
-        self._dictionary = frozenset(self._dictionary)
+            self._wordlist = f.read()
+        self._wordlist = self._wordlist.strip()
+        self._wordlist = self._wordlist.split()
+        self._wordlist = frozenset(self._wordlist)
         self._tolerated_char_count = tolerated_char_count
 
-    def dictionary(self) -> frozenset:
-        return self._dictionary
+    def wordlist(self) -> frozenset:
+        return self._wordlist
 
-    def str2dictionaryselection(self, string: str) -> Selection:
+    def str2wordlistselection(self, string: str) -> Selection:
         textselection = Selection(universe=slice(0, len(string)))
         textselection.exclude(None, None)
-        for word in iter(self.dictionary()):
+        for word in iter(self.wordlist()):
             for startindex in findall(word, string):
                 textselection.include(startindex, startindex + len(word))
         return textselection
 
     def caseinsensitivestr2dictionaryselection(self, string: str) -> Selection:
-        return self.str2dictionaryselection(string.lower())
+        return self.str2wordlistselection(string.lower())
 
     def stream2selection(self, stream: TextIOBase) -> Selection:
         return self.str2selection(stream.read())

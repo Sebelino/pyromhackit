@@ -494,10 +494,10 @@ class TestThreeExcludedIntervals(object):
     def test_gap_index(self, pindex, expected):
         assert self.v._gap_index(pindex) == expected
 
-
     @pytest.mark.parametrize("from_index, to_index, expected", [
         (4, 5, [slice(2, 5), slice(6, 9)]),
         (4, 4, [slice(2, 4), slice(6, 9)]),
+        (2, 5, [slice(2, 5), slice(6, 9)]),
     ])
     def test_include(self, from_index, to_index, expected):
         self.v.include(from_index, to_index)

@@ -268,6 +268,8 @@ class Selection(IMutableGSlice):
     def include_expand(self, from_index: Optional[int], to_index: Optional[int], count: Union[int, tuple]):
         if isinstance(count, int):
             return self.include_expand(from_index, to_index, (count, count))
+        if count == (0, 0):
+            return 0
         head_count, tail_count = count
         revealed_counter = 0
         gaps = self.complement().subslice(from_index, to_index).revealed

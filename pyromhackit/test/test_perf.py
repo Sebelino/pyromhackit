@@ -4,6 +4,7 @@ import os
 import pytest
 
 from pyromhackit.selection import Selection
+from pyromhackit.stringsearch.identify import EnglishDictionaryBasedIdentifier
 
 package_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -117,3 +118,26 @@ class TestPreviousSlice(object):
 
     def test_previous_slice_200_revealed(self, benchmark):
         benchmark(self.revealed_previous_slice_n_times, self.v, 200)
+
+
+class TestEnglishDictionaryBasedIdentifier(object):
+    def setup(self):
+        self.identifier = EnglishDictionaryBasedIdentifier(tolerated_char_count=0)
+        #self.corpus = lorem.ipsum()[:1000]
+        self.corpus = ("hello " * 1000)[:1000]
+
+    def test_str2selection_1000_chars(self, benchmark):
+        corpus = self.corpus * 1
+        benchmark(self.identifier.str2selection, corpus)
+
+    def test_str2selection_2000_chars(self, benchmark):
+        corpus = self.corpus * 2
+        benchmark(self.identifier.str2selection, corpus)
+
+    def test_str2selection_4000_chars(self, benchmark):
+        corpus = self.corpus * 4
+        benchmark(self.identifier.str2selection, corpus)
+
+    def test_str2selection_8000_chars(self, benchmark):
+        corpus = self.corpus * 8
+        benchmark(self.identifier.str2selection, corpus)

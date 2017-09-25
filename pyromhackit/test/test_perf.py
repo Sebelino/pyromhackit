@@ -126,18 +126,22 @@ class TestEnglishDictionaryBasedIdentifier(object):
         #self.corpus = lorem.ipsum()[:1000]
         self.corpus = ("hello " * 1000)[:1000]
 
-    def test_str2selection_1000_chars(self, benchmark):
-        corpus = self.corpus * 1
+    def test_str2selection_2pow0(self, benchmark):
+        corpus = self.corpus * 2**0
         benchmark(self.identifier.str2selection, corpus)
 
-    def test_str2selection_2000_chars(self, benchmark):
-        corpus = self.corpus * 2
+    def test_str2selection_2pow1(self, benchmark):
+        corpus = self.corpus * 2**1
         benchmark(self.identifier.str2selection, corpus)
 
-    def test_str2selection_4000_chars(self, benchmark):
-        corpus = self.corpus * 4
+    def test_str2selection_2pow2(self, benchmark):
+        corpus = self.corpus * 2**2
         benchmark(self.identifier.str2selection, corpus)
 
-    def test_str2selection_8000_chars(self, benchmark):
-        corpus = self.corpus * 8
+    def test_str2selection_2pow3(self, benchmark):
+        corpus = self.corpus * 2**3
+        benchmark(self.identifier.str2selection, corpus)
+
+    def test_str2selection_2pow4(self, benchmark):
+        corpus = self.corpus * 2**4
         benchmark(self.identifier.str2selection, corpus)

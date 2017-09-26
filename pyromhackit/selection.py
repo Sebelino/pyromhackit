@@ -2,7 +2,7 @@
 from abc import ABCMeta, abstractmethod
 from copy import deepcopy
 
-from typing import Optional, Union
+from typing import Optional, Union, List
 
 
 class IGSlice(metaclass=ABCMeta):
@@ -101,7 +101,7 @@ class Selection(IMutableGSlice):
             self.revealed = [self.universe]
         else:
             self.revealed = list(revealed)
-        self._revealed_count = self._compute_len()
+        self._revealed_count = Selection._compute_len(self.revealed)
 
     def intervals(self):
         return self.revealed
@@ -158,7 +158,7 @@ class Selection(IMutableGSlice):
                 n = self._gap_index(to_index)
                 self.revealed[m:n] = []
 
-        self._revealed_count = self._compute_len()
+        self._revealed_count = Selection._compute_len(self.revealed)
         return original_length - len(self)
 
     def exclude_virtual(self, from_index, to_index):
@@ -189,28 +189,34 @@ class Selection(IMutableGSlice):
             to_index = self.universe.stop
         if not self.revealed:
             self.revealed.append(slice(from_index, to_index))
-            self._revealed_count = self._compute_len()
+            self._revealed_count += to_index - from_index
             return to_index - from_index
 
         if self._within_bounds(from_index):
             m = self._slice_index(from_index)
             if self._within_bounds(to_index):
                 n = self._slice_index(to_index)
+                self._revealed_count += (self.revealed[n].stop - self.revealed[m].start) - self._compute_len(self.revealed[m:n + 1])
                 self.revealed[m:n + 1] = [slice(self.revealed[m].start, self.revealed[n].stop)]
             elif to_index == self.universe.stop:
+                self._revealed_count += (self.universe.stop - self.revealed[m].start) - self._compute_len(self.revealed[m:])
                 self.revealed[m:] = [slice(self.revealed[m].start, self.universe.stop)]
             else:
                 n = self._gap_index(to_index) + (1 if self.revealed[0].start == self.universe.start else 0)
+                self._revealed_count += (to_index - self.revealed[m].start) - self._compute_len(self.revealed[m:n])
                 self.revealed[m:n] = [slice(self.revealed[m].start, to_index)]
         elif self._within_bounds(from_index - 1):
             m = self._slice_index(from_index - 1)
             if self._within_bounds(to_index):
                 n = self._slice_index(to_index)
+                self._revealed_count += (self.revealed[n].stop - self.revealed[m].start) - self._compute_len(self.revealed[m:n + 1])
                 self.revealed[m:n + 1] = [slice(self.revealed[m].start, self.revealed[n].stop)]
             elif to_index == self.universe.stop:
+                self._revealed_count += (self.universe.stop - self.revealed[m].start) - self._compute_len(self.revealed[m:])
                 self.revealed[m:] = [slice(self.revealed[m].start, self.universe.stop)]
             else:
                 n = self._gap_index(to_index) + (0 if self.revealed[0].start == self.universe.start else -1)
+                self._revealed_count += (to_index - self.revealed[m].start) - self._compute_len(self.revealed[m:n + 1])
                 self.revealed[m:n + 1] = [slice(self.revealed[m].start, to_index)]
         elif from_index == self.universe.stop:
             pass
@@ -218,15 +224,17 @@ class Selection(IMutableGSlice):
             m = self._gap_index(from_index) + (1 if self.revealed[0].start == self.universe.start else 0)
             if self._within_bounds(to_index):
                 n = self._slice_index(to_index)
+                self._revealed_count += (self.revealed[n].stop - from_index) - self._compute_len(self.revealed[m:n + 1])
                 self.revealed[m:n + 1] = [slice(from_index, self.revealed[n].stop)]
             elif to_index <= from_index:
                 pass
             elif to_index == self.universe.stop:
+                self._revealed_count += (self.universe.stop - from_index) - self._compute_len(self.revealed[m:])
                 self.revealed[m:] = [slice(from_index, self.universe.stop)]
             else:
                 n = self._gap_index(to_index)
+                self._revealed_count += (to_index - from_index) - self._compute_len(self.revealed[m:n])
                 self.revealed[m:n] = [slice(from_index, to_index)]
-        self._revealed_count = self._compute_len()
         return len(self) - original_length
 
     def include_partially(self, from_index: Optional[int], to_index: Optional[int], count: Union[int, tuple]):
@@ -511,9 +519,10 @@ class Selection(IMutableGSlice):
     def __getitem__(self, item):
         return self.virtual2physical(item)
 
-    def _compute_len(self):
-        """ :return the total number of revealed elements. """
-        return sum(segment.stop - segment.start for segment in self.revealed)
+    @staticmethod
+    def _compute_len(slicelist: List[slice]):
+        """ :return The sum of the lengths of every slice in @slicelist. """
+        return sum(segment.stop - segment.start for segment in slicelist)
 
     def __len__(self):
         return self._revealed_count

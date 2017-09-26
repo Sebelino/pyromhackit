@@ -423,6 +423,7 @@ class TestThreeRevealedIntervals(object):
         (1, 3, [slice(0, 3), slice(4, 6), slice(9, 10)]),
         (2, 4, [slice(0, 6), slice(9, 10)]),
         (8, 9, [slice(0, 2), slice(4, 6), slice(8, 10)]),
+        (3, 7, [slice(0, 2), slice(3, 7), slice(9, 10)]),
     ])
     def test_include(self, from_index, to_index, expected):
         self.v.include(from_index, to_index)

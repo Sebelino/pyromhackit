@@ -232,7 +232,7 @@ class Selection(IMutableGSlice):
                 self._revealed_count += (self.universe.stop - from_index) - self._compute_len(self.revealed[m:])
                 self.revealed[m:] = [slice(from_index, self.universe.stop)]
             else:
-                n = self._gap_index(to_index)
+                n = self._gap_index(to_index) + (1 if self.revealed[0].start == self.universe.start else 0)
                 self._revealed_count += (to_index - from_index) - self._compute_len(self.revealed[m:n])
                 self.revealed[m:n] = [slice(from_index, to_index)]
         return len(self) - original_length

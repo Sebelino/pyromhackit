@@ -141,19 +141,19 @@ class TestEnglishDictionaryBasedIdentifier(object):
         self.corpus = ("hello " * 1000)[:1000]
 
     def test_str2selection_2pow0(self, benchmark):
-        corpus = self.corpus * 2**0
+        corpus = self.corpus * 2 ** 0
         benchmark(self.identifier.str2selection, corpus)
 
     def test_str2selection_2pow1(self, benchmark):
-        corpus = self.corpus * 2**1
+        corpus = self.corpus * 2 ** 1
         benchmark(self.identifier.str2selection, corpus)
 
     def test_str2selection_2pow2(self, benchmark):
-        corpus = self.corpus * 2**2
+        corpus = self.corpus * 2 ** 2
         benchmark(self.identifier.str2selection, corpus)
 
     def test_str2selection_2pow3(self, benchmark):
-        corpus = self.corpus * 2**3
+        corpus = self.corpus * 2 ** 3
         benchmark(self.identifier.str2selection, corpus)
 
     def test_str2selection_2pow4(self, benchmark):

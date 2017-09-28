@@ -87,11 +87,6 @@ class TestSliceIndex(object):
 
 
 class TestComplement(object):
-    def test_complement_500(self, benchmark):
-        v = Selection(universe=slice(0, 2 * 500),
-                      revealed=[slice(2 * i, 2 * i + 1) for i in range(500)])
-        benchmark(v.complement)
-
     def test_complement_1000(self, benchmark):
         v = Selection(universe=slice(0, 2 * 1000),
                       revealed=[slice(2 * i, 2 * i + 1) for i in range(1000)])
@@ -100,6 +95,11 @@ class TestComplement(object):
     def test_complement_2000(self, benchmark):
         v = Selection(universe=slice(0, 2 * 2000),
                       revealed=[slice(2 * i, 2 * i + 1) for i in range(2000)])
+        benchmark(v.complement)
+
+    def test_complement_4000(self, benchmark):
+        v = Selection(universe=slice(0, 2 * 4000),
+                      revealed=[slice(2 * i, 2 * i + 1) for i in range(4000)])
         benchmark(v.complement)
 
 

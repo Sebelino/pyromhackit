@@ -49,7 +49,7 @@ class TestInclude(object):
         benchmark(self.include_n_times, self.v, 2000)
 
 
-class TestIncludePartiallyFromLeft(object):
+class TestIncludePartially(object):
     def setup(self):
         self.v = Selection(universe=slice(0, 100000), revealed=[])
 
@@ -57,10 +57,13 @@ class TestIncludePartiallyFromLeft(object):
     def do_n_times(selection, n):
         # revealed = [(0, 1), (2, 3), ..., (n-2, n-1)]
         for i in range(0, n):
-            selection._include_partially_from_left(2 * i, 2 * i + 1, 1)
+            selection.include_partially(2 * i, 2 * i + 1, 1)
 
     def test_include_2000_times(self, benchmark):
         benchmark(self.do_n_times, self.v, 2000)
+
+    def test_include_4000_times(self, benchmark):
+        benchmark(self.do_n_times, self.v, 4000)
 
 
 class TestSliceIndex(object):

@@ -543,8 +543,8 @@ class SelectiveBytestringSourcedStringMmap(SelectiveGMmap, BytestringSourcedStri
     def selection(self) -> Selection:
         return self._selection
 
-    def _nonvirtualint2physical(self, location: int):
+    def _nonvirtualint2physical(self, location: int) -> slice:
         return slice(4 * location, 4 * (location + 1))
 
-    def _nonvirtualselection2physical(self, location: Selection):
+    def _nonvirtualselection2physical(self, location: Selection) -> Selection:
         return location * 4

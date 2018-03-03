@@ -47,7 +47,7 @@ class IMutableGSlice(IGSlice, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def include_partially(self, from_index: Optional[int], to_index: Optional[int], count: Union[int, tuple]):
+    def include_partially(self, from_index: Optional[int], to_index: Optional[int], count: Union[int, Tuple[int, int]]):
         """ Let S be the sequence of excluded integers in [@from_index, @to_index). Includes the first n and the last m
         integers in S, where either n = m = @count or (n, m) = @count.
         :return The number of excluded elements that were included. """
@@ -161,7 +161,7 @@ class Selection(IMutableGSlice):
         self._revealed_count = Selection._compute_len(self.revealed)
         return original_length - len(self)
 
-    def exclude_virtual(self, from_index, to_index):
+    def exclude_virtual(self, from_index: Optional[int], to_index: Optional[int]):
         if from_index is None or from_index < -len(self) or from_index >= len(self):
             p_from_index = None
         else:
@@ -172,7 +172,7 @@ class Selection(IMutableGSlice):
             p_to_index = self.virtual2physical(to_index)
         return self.exclude(p_from_index, p_to_index)
 
-    def include(self, from_index, to_index):
+    def include(self, from_index: Optional[int], to_index: Optional[int]):
         original_length = len(self)
         if isinstance(from_index, int) and -self.universe.stop <= from_index < 0:
             from_index = from_index % self.universe.stop

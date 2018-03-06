@@ -77,6 +77,12 @@ class TestInclude(object):
         object_under_test.include(from_index, to_index)
         assert list(object_under_test.pairs()) == list(expected.pairs())
 
+    @staticmethod
+    def test_impl():  # Tests implementation details! Remove??
+        s = Selection(universe=slice(0, 3), revealed=[])
+        s.include(0, 3)
+        assert list(s._intervals) == [3]
+
 
 class TestExclude(object):
     @staticmethod

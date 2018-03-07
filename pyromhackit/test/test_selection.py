@@ -101,12 +101,6 @@ class TestInclude(object):
         assert list(s._intervals) == [3]
 
 
-def test_include():
-    s = Selection(universe=slice(0, 3), intervals=[1, 3])
-    s.include(None, None)
-    assert len(s) == 3
-
-
 class TestExclude(object):
     @staticmethod
     @pytest.fixture(params=[

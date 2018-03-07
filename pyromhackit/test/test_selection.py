@@ -30,52 +30,69 @@ def test_init2():
 class TestInclude(object):
     @staticmethod
     @pytest.fixture(params=[
-        ([(1, 9)], 9, 10, [(1, 10)]),
-        ([(1, 10)], None, None, [(0, 10)]),
-        ([(3, 7)], 1, 2, [(1, 2), (3, 7)]),
-        ([(3, 7)], 1, 3, [(1, 7)]),
-        ([(3, 7)], 1, 5, [(1, 7)]),
-        ([(3, 7)], 1, 7, [(1, 7)]),
-        ([(3, 7)], 1, 8, [(1, 8)]),
-        ([(3, 7)], 3, 3, [(3, 7)]),
-        ([(3, 7)], 3, 5, [(3, 7)]),
-        ([(3, 7)], 3, 7, [(3, 7)]),
-        ([(3, 7)], 3, 8, [(3, 8)]),
-        ([(3, 7)], 4, 6, [(3, 7)]),
-        ([(3, 7)], 4, 7, [(3, 7)]),
-        ([(3, 7)], 4, 8, [(3, 8)]),
-        ([(3, 7)], 7, 7, [(3, 7)]),
-        ([(3, 7)], 7, 8, [(3, 8)]),
-        ([(3, 7)], 8, 9, [(3, 7), (8, 9)]),
-        ([(3, 7)], 4, 10, [(3, 10)]),
-        ([(3, 7)], 4, 11, [(3, 10)]),
-        ([(3, 7)], 0, 0, [(3, 7)]),
-        ([(3, 7)], 10, 10, [(3, 7)]),
-        ([(4, 10)], 0, 10, [(0, 10)]),
-        ([(4, 10)], 2, 10, [(2, 10)]),
-        ([(2, 4), (6, 9)], 2, 5, [(2, 5), (6, 9)]),
-        ([(2, 4), (6, 9)], 4, 4, [(2, 4), (6, 9)]),
-        ([(2, 4), (6, 9)], 4, 5, [(2, 5), (6, 9)]),
-        ([(0, 2), (4, 6), (9, 10)], 1, 3, [(0, 3), (4, 6), (9, 10)]),
-        ([(0, 2), (4, 6), (9, 10)], 2, 3, [(0, 3), (4, 6), (9, 10)]),
-        ([(0, 2), (4, 6), (9, 10)], 2, 4, [(0, 6), (9, 10)]),
-        ([(0, 2), (4, 6), (9, 10)], 3, 7, [(0, 2), (3, 7), (9, 10)]),
-        ([(0, 2), (4, 6), (9, 10)], 8, 9, [(0, 2), (4, 6), (8, 10)]),
-        ([(0, 5)], 1, 2, [(0, 5)]),
-        ([(2, 5), (6, 9)], 9, 10, [(2, 5), (6, 10)]),
+        ([(1, 9)], 9, 10, 1, [(1, 10)]),
+        ([(1, 10)], None, None, 1, [(0, 10)]),
+        ([(3, 7)], 1, 2, 1, [(1, 2), (3, 7)]),
+        ([(3, 7)], 1, 3, 2, [(1, 7)]),
+        ([(3, 7)], 1, 5, 2, [(1, 7)]),
+        ([(3, 7)], 1, 7, 2, [(1, 7)]),
+        ([(3, 7)], 1, 8, 3, [(1, 8)]),
+        ([(3, 7)], 3, 3, 0, [(3, 7)]),
+        ([(3, 7)], 3, 5, 0, [(3, 7)]),
+        ([(3, 7)], 3, 7, 0, [(3, 7)]),
+        ([(3, 7)], 3, 8, 1, [(3, 8)]),
+        ([(3, 7)], 4, 6, 0, [(3, 7)]),
+        ([(3, 7)], 4, 7, 0, [(3, 7)]),
+        ([(3, 7)], 4, 8, 1, [(3, 8)]),
+        ([(3, 7)], 7, 7, 0, [(3, 7)]),
+        ([(3, 7)], 7, 8, 1, [(3, 8)]),
+        ([(3, 7)], 8, 9, 1, [(3, 7), (8, 9)]),
+        ([(3, 7)], 4, 10, 3, [(3, 10)]),
+        ([(3, 7)], 4, 11, 3, [(3, 10)]),
+        ([(3, 7)], 0, 0, 0, [(3, 7)]),
+        ([(3, 7)], 10, 10, 0, [(3, 7)]),
+        ([(4, 10)], 0, 10, 4, [(0, 10)]),
+        ([(4, 10)], 2, 10, 2, [(2, 10)]),
+        ([(2, 4), (6, 9)], 2, 5, 1, [(2, 5), (6, 9)]),
+        ([(2, 4), (6, 9)], 4, 4, 0, [(2, 4), (6, 9)]),
+        ([(2, 4), (6, 9)], 4, 5, 1, [(2, 5), (6, 9)]),
+        ([(0, 2), (4, 6), (9, 10)], 1, 3, 1, [(0, 3), (4, 6), (9, 10)]),
+        ([(0, 2), (4, 6), (9, 10)], 2, 3, 1, [(0, 3), (4, 6), (9, 10)]),
+        ([(0, 2), (4, 6), (9, 10)], 2, 4, 2, [(0, 6), (9, 10)]),
+        ([(0, 2), (4, 6), (9, 10)], 3, 7, 2, [(0, 2), (3, 7), (9, 10)]),
+        ([(0, 2), (4, 6), (9, 10)], 8, 9, 1, [(0, 2), (4, 6), (8, 10)]),
+        ([(0, 5)], 1, 2, 0, [(0, 5)]),
+        ([(2, 5), (6, 9)], 9, 10, 1, [(2, 5), (6, 10)]),
     ])
-    def data_and_expected_selection(request):
-        revealed, from_index, to_index, expected_revealed = request.param
+    def data_and_expected(request):
+        revealed, from_index, to_index, expected_return_value, expected_revealed = request.param
         object_under_test = Selection(universe=slice(0, 10), revealed=revealed)
         expected = Selection(universe=slice(0, 10), revealed=expected_revealed)
-        return object_under_test, from_index, to_index, expected
+        return object_under_test, from_index, to_index, expected_return_value, expected
 
     @staticmethod
-    def test_selection_matches_expected(
-            data_and_expected_selection: Tuple[Selection, Optional[int], Optional[int], Selection]):
+    @pytest.fixture()
+    def data_and_expected_selection(data_and_expected):
+        revealed, from_index, to_index, _, expected = data_and_expected
+        return revealed, from_index, to_index, expected
+
+    @staticmethod
+    @pytest.fixture()
+    def data_and_expected_return_value(data_and_expected):
+        revealed, from_index, to_index, expected_return_value, _ = data_and_expected
+        return revealed, from_index, to_index, expected_return_value
+
+    @staticmethod
+    def test_selection_matches_expected(data_and_expected_selection):
         object_under_test, from_index, to_index, expected = data_and_expected_selection
         object_under_test.include(from_index, to_index)
         assert list(object_under_test.pairs()) == list(expected.pairs())
+
+    @staticmethod
+    def test_selection_matches_return_value(data_and_expected_return_value):
+        object_under_test, from_index, to_index, expected = data_and_expected_return_value
+        returned = object_under_test.include(from_index, to_index)
+        assert expected == returned
 
     @staticmethod
     def test_impl():  # Tests implementation details! Remove??
@@ -197,7 +214,7 @@ class TestExclude(object):
     def test_tiny_selection_matches_return_value(tiny_data_and_expected_return_value):
         object_under_test, from_index, to_index, expected = tiny_data_and_expected_return_value
         returned = object_under_test.exclude(from_index, to_index)
-        assert returned == expected
+        assert expected == returned
 
     @staticmethod
     @pytest.fixture(params=[

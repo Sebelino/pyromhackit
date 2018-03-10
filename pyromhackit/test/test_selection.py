@@ -269,7 +269,7 @@ class TestExclude(object):
     def test_selection_matches_expected(data_and_expected_selection):
         object_under_test, from_index, to_index, expected_revealed = data_and_expected_selection
         object_under_test.exclude(from_index, to_index)
-        assert list(object_under_test.pairs()) == list(expected_revealed.pairs())
+        assert list(expected_revealed.pairs()) == list(object_under_test.pairs())
 
     @staticmethod
     def test_selection_length(data_and_expected_selection):
@@ -305,7 +305,7 @@ class TestSubslice(object):
     def test_mut(data: Tuple[Selection, Optional[int], Optional[int], Selection]):
         object_under_test, from_index, to_index, expected = data
         returned = object_under_test.subslice(from_index, to_index)
-        assert list(returned.pairs()) == list(expected.pairs())
+        assert list(expected.pairs()) == list(returned.pairs())
 
 
 class TestIncludePartiallyFromLeft(object):

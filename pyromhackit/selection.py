@@ -246,19 +246,14 @@ class Selection(IMutableGSlice):
                 else:
                     from_start = 0 if m == 0 else self._intervals[m - 1]
                     from_end = self._intervals[m]
-                    to_start = self._intervals[n - 1]
-                    to_end = self.universe.stop if n == len(self._intervals) else self._intervals[n]
-                    intermediates = self._intervals[m + 1:n - 1]
                     self._revealed_count -= from_end - from_start
                     if from_start > 0:
                         self._intervals.remove(from_start)
                     self._intervals.remove(from_end)
             else:
                 if to_index_is_included:
-                    #from_start = 0 if m == 0 else self._intervals[m - 1]
                     from_end = self._intervals[m]
                     to_start = self._intervals[n - 1]
-                    #to_end = self._intervals[n]
                     if m == n:
                         self._revealed_count -= to_index - from_index
                         if from_index > 0:

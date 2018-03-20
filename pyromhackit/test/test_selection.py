@@ -450,22 +450,6 @@ class TestVirtualExclusion(object):
         assert self.v == Selection(universe=slice(0, 5), revealed=[])
 
 
-class TestGapSliceGap(object):
-    def setup(self):
-        self.v = Selection(universe=slice(0, 10), revealed=[slice(3, 7)])
-
-    """ Misc """
-
-    @pytest.mark.parametrize("pindex, expected", [
-        (0, 0),
-        (2, 0),
-        (7, 1),
-    ])
-    @pytest.mark.skip()
-    def test_gap_index(self, pindex, expected):
-        assert self.v._gap_index(pindex) == expected
-
-
 def test_exclude_all_and_include():
     v = Selection(slice(0, 10))
     v.exclude(0, 10)
@@ -479,16 +463,6 @@ class TestIndexing(object):
         self.v = Selection(slice(0, 10))
         self.v.exclude(0, 3)
         self.v.exclude(7, 10)
-
-    @pytest.mark.skip()
-    def test_index(self):
-        assert self.v._index(5) == slice(3, 7)
-
-    @pytest.mark.skip()
-    @pytest.mark.parametrize("pindex", [2, 7])
-    def test_index_raises(self, pindex):
-        with pytest.raises(IndexError):
-            self.v._index(pindex)
 
     @pytest.mark.parametrize("vindex, expected", [
         (0, 3),
@@ -558,10 +532,6 @@ class TestFullyExcluded(object):
         self.v.include(0, 10)
         assert len(self.v) == 10
 
-    def test_index_raises(self):
-        with pytest.raises(IndexError):
-            self.v._index(0)
-
     def test_v2p_raises(self):
         with pytest.raises(IndexError):
             self.v.virtual2physical(0)
@@ -615,34 +585,6 @@ class TestThreeRevealedIntervals(object):
     def setup(self):
         self.v = Selection(universe=slice(0, 10), revealed=[slice(0, 2), slice(4, 6), slice(9, 10)])
 
-    @pytest.mark.parametrize("pindex, expected", [
-        (0, 0),
-        (1, 0),
-        (4, 1),
-        (5, 1),
-        (9, 2),
-    ])
-    @pytest.mark.skip()
-    def test_slice_index(self, pindex, expected):
-        assert self.v._slice_index(pindex) == expected
-
-    @pytest.mark.parametrize("pindex", [
-        2, 3, 6, 7, 8,
-    ])
-    def test_slice_index_raises(self, pindex):
-        with pytest.raises(IndexError):
-            self.v._slice_index(pindex)
-
-    @pytest.mark.parametrize("pindex, expected", [
-        (2, 0),
-        (3, 0),
-        (7, 1),
-        (8, 1),
-    ])
-    @pytest.mark.skip()
-    def test_gap_index(self, pindex, expected):
-        assert self.v._gap_index(pindex) == expected
-
     @pytest.mark.parametrize("from_index, to_index, expected_revealed", [
         (0, 10, [slice(0, 2), slice(4, 6), slice(9, 10)]),
         (None, None, [slice(0, 2), slice(4, 6), slice(9, 10)]),
@@ -672,17 +614,6 @@ class TestThreeRevealedIntervals(object):
 class TestThreeExcludedIntervals(object):
     def setup(self):
         self.v = Selection(universe=slice(0, 10), revealed=[slice(2, 4), slice(6, 9)])
-
-    @pytest.mark.skip()
-    @pytest.mark.parametrize("pindex, expected", [
-        (0, 0),
-        (1, 0),
-        (4, 1),
-        (5, 1),
-        (9, 2),
-    ])
-    def test_gap_index(self, pindex, expected):
-        assert self.v._gap_index(pindex) == expected
 
     @pytest.mark.parametrize("from_index, to_index, count, expected_revealed", [
         (None, None, 1, [slice(1, 10)]),

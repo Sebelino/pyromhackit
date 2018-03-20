@@ -584,60 +584,6 @@ class Selection(IMutableGSlice):
                 return middle
         raise IndexError("{} is not in any interval.".format(pindex))
 
-    def _slice_index(self, pindex):
-        """ :return n if @pindex is in the nth slice (zero-indexed).
-        :raise IndexError if @pindex is outside any slice. """
-        n = self._intervals.bisect_right(pindex)
-        if len(self._intervals) % 2 == 0:
-            if n % 2 == 1:
-                return n // 2
-        else:
-            if n % 2 == 0:
-                return n // 2
-        raise IndexError("{} is not in any interval.".format(pindex))
-
-    def _gap_index(self, pindex):
-        """ :return n if there are n slices to the left to @pindex.
-        :raise IndexError if @pindex is outside any slice in the complement selection. """
-        if self.universe.stop <= pindex:
-            raise IndexError("{} is outside universe {}.".format(pindex, self.universe))
-        if len(self._intervals) == 0:
-            return 0
-        if len(self._intervals) == 1:
-            if pindex < self._intervals[0].start:
-                return 0
-            elif self._intervals[0].stop <= pindex:
-                return 0 + (0 if self._intervals[0].start == self.universe.start else 1)
-            raise IndexError("{} is in interval {}.".format(pindex, self._intervals[0]))
-        if pindex < self._intervals[0].start:
-            return 0
-        if self._intervals[-1].stop <= pindex:
-            return len(self._intervals) + (-1 if self._intervals[0].start == self.universe.start else 0)
-        lower = 0
-        upper = len(self._intervals) - 1
-        while lower + 1 < upper:
-            middle = (lower + upper) // 2
-            midsl = self._intervals[middle]
-            if pindex < midsl.start:
-                upper = middle
-            elif midsl.stop <= pindex:
-                lower = middle
-            else:  # midsl.start <= pindex < midsl.stop:
-                raise IndexError("{} is in interval {}.".format(pindex, midsl))
-        return lower + (0 if self._intervals[0].start == self.universe.start else 1)
-
-    def _within_bounds(self, pindex):
-        try:
-            self._slice_index(pindex)
-            return True
-        except IndexError:
-            return False
-
-    def _index(self, pindex):
-        """ Returns the slice that @pindex is in. """
-        sliceindex = self._slice_index(pindex)
-        return self._intervals[sliceindex]
-
     def select(self, listlike):
         # TODO only works for stringlike objects
         lst = []

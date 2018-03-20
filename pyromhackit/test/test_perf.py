@@ -139,24 +139,8 @@ class TestIncludePartially(object):
         benchmark(self.do_n_times, self.v, 4000)
 
 
-class TestSliceIndex(object):
-    def setup(self):
-        self.v = Selection(universe=slice(0, 2 * 10000),
-                           revealed=[slice(2 * i, 2 * i + 1) for i in range(10000)])
 
-    @staticmethod
-    def slice_index_n_times(selection, n):
-        for i in range(0, n):
-            selection._slice_index(2 * i)
 
-    def test_slice_index_500(self, benchmark):
-        benchmark(self.slice_index_n_times, self.v, 500)
-
-    def test_slice_index_1000(self, benchmark):
-        benchmark(self.slice_index_n_times, self.v, 1000)
-
-    def test_slice_index_2000(self, benchmark):
-        benchmark(self.slice_index_n_times, self.v, 2000)
 
 
 class TestComplement(object):

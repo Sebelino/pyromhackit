@@ -129,18 +129,14 @@ class TestIncludePartially(object):
         for i in range(0, n):
             selection.include_partially(2 * i, 2 * i + 1, 1)
 
-    def test_1000_times(self, benchmark):
-        benchmark(self.do_n_times, self.v, 1000)
+    def test_include_partially_2pow0(self, benchmark):
+        benchmark(self.do_n_times, self.v, 500 * 2 ** 0)
 
-    def test_2000_times(self, benchmark):
-        benchmark(self.do_n_times, self.v, 2000)
+    def test_include_partially_2pow1(self, benchmark):
+        benchmark(self.do_n_times, self.v, 500 * 2 ** 1)
 
-    def test_4000_times(self, benchmark):
-        benchmark(self.do_n_times, self.v, 4000)
-
-
-
-
+    def test_include_partially_2pow2(self, benchmark):
+        benchmark(self.do_n_times, self.v, 500 * 2 ** 2)
 
 
 class TestComplement(object):

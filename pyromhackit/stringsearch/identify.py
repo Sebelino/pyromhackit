@@ -45,8 +45,9 @@ class DictionaryBasedTextIdentifier(TextIdentifier, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def caseinsensitivestr2dictionaryselection(self, string: str) -> Selection:
-        """ :return A selection of the Unicode string @string such that it selects all words found in @string. """
+    def caseinsensitivestr2wordlistselection(self, string: str) -> Selection:
+        """ :return A selection of the Unicode string @string such that it selects all words found in @string with no
+        regard to letter case. """
         raise NotImplementedError
 
 
@@ -72,14 +73,14 @@ class EnglishDictionaryBasedIdentifier(DictionaryBasedTextIdentifier):
                 textselection.include(startindex, startindex + len(word))
         return textselection
 
-    def caseinsensitivestr2dictionaryselection(self, string: str) -> Selection:
+    def caseinsensitivestr2wordlistselection(self, string: str) -> Selection:
         return self.str2wordlistselection(string.lower())
 
     def stream2selection(self, stream: TextIOBase) -> Selection:
         return self.str2selection(stream.read())
 
     def str2selection(self, string: str) -> Selection:
-        dictselection = self.caseinsensitivestr2dictionaryselection(string)
+        dictselection = self.caseinsensitivestr2wordlistselection(string)
         textselection = deepcopy(dictselection)
         textselection.include_expand(None, None, self._tolerated_char_count)
         return textselection
@@ -89,7 +90,7 @@ if __name__ == '__main__':
     """ Reads Unicode data from stdin and finds English text in it. """
     identifier = EnglishDictionaryBasedIdentifier(tolerated_char_count=10)
     content = open(sys.argv[1]).read() if len(sys.argv) == 2 else sys.stdin.read()
-    dictselection = identifier.caseinsensitivestr2dictionaryselection(content)
+    dictselection = identifier.caseinsensitivestr2wordlistselection(content)
     textselection = identifier.str2selection(content)
     print("Dictionary selection: {}".format(list(dictselection)))
     print("Text selection: {}".format(list(textselection)))

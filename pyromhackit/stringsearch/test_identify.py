@@ -23,16 +23,16 @@ class TestEnglishDictionaryBasedIdentifier(object):
         ("hello", Selection(universe=slice(0, 5), revealed=[slice(0, 5)])),
         ("hello there", Selection(universe=slice(0, 11), revealed=[slice(0, 5), slice(6, 11)])),
         (two_embedded_strings, Selection(universe=slice(0, len(two_embedded_strings)), revealed=[
-            slice(10, 15),  # hello
-            slice(40, 43),  # The
-            slice(44, 49),  # quick
-            slice(50, 55),  # brown
-            slice(56, 59),  # fox
-            slice(60, 65),  # jumps
-            slice(66, 70),  # over
-            slice(71, 74),  # the
-            slice(75, 79),  # lazy
-            slice(80, 83),  # dog
+            (10, 15),  # hello
+            (40, 43),  # The
+            (44, 49),  # quick
+            (50, 55),  # brown
+            (56, 59),  # fox
+            (60, 65),  # jumps
+            (66, 70),  # over
+            (71, 74),  # the
+            (75, 79),  # lazy
+            (80, 83),  # dog
         ])),
     ])
     def input_output(self, request):
@@ -40,8 +40,8 @@ class TestEnglishDictionaryBasedIdentifier(object):
 
     def test_caseinsensitivestr2dictionaryselection(self, identifier: DictionaryBasedTextIdentifier, input_output):
         basestr, expected = input_output
-        returned = identifier.caseinsensitivestr2dictionaryselection(basestr)
-        assert returned == expected
+        returned = identifier.caseinsensitivestr2wordlistselection(basestr)
+        assert expected == returned
 
     @pytest.fixture(params=[
         ("hello", "hello"),

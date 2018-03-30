@@ -367,9 +367,11 @@ class Selection(IMutableGSlice):
                     self._revealed_count += (to_remove[0] - from_index) + sum(b - a for a, b in zip(to_remove[1::2], to_remove[::2]))
             else:
                 if from_index_right_of_included:
+                    intermediates = self._intervals[m:n]
+                    del self._intervals[m:n]  # intermediates
                     self._intervals.remove(from_index)
                     self._intervals.add(to_index)
-                    self._revealed_count += to_index - from_index
+                    self._revealed_count += (to_index - from_index) - sum(b - a for a, b in zip(intermediates[::2], intermediates[1::2]))
                 else:
                     to_remove = self._intervals[m:n]
                     del self._intervals[m:n]

@@ -63,6 +63,7 @@ class TestInclude(object):
         ([(0, 2), (4, 6), (9, 10)], 8, 9, 1, [(0, 2), (4, 6), (8, 10)]),
         ([(0, 5)], 1, 2, 0, [(0, 5)]),
         ([(2, 5), (6, 9)], 9, 10, 1, [(2, 5), (6, 10)]),
+        ([(1, 2), (3, 4), (5, 6), (7, 8)], 4, 6, 1, [(1, 2), (3, 6), (7, 8)]),
     ])
     def data_and_expected(request):
         revealed, from_index, to_index, expected_return_value, expected_revealed = request.param

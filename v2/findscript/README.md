@@ -13,7 +13,7 @@ $ python3 findscript.py "PLAYER" mario.nes
 Or:
 
 ```python
-import findscript
+from findscript import findscript
 
 a, b = findscript.load("mario.nes").find("PLAYER")
 assert (a, b) == (10, 16)

@@ -8,8 +8,12 @@ class Rom:
 
     def find(self, searchstring: str):
         bytestring = searchstring.encode()
-        index = self.content.find(bytestring)
-        if index == -1:
+        for offset in range(256):
+            rot_bytestring = bytes([b + offset for b in bytestring])
+            index = self.content.find(rot_bytestring)
+            if index != -1:
+                break
+        else:
             raise NotImplementedError
         return index, index + len(bytestring)
 

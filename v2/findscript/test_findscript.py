@@ -1,4 +1,4 @@
-from findscript import Rom, load
+from .findscript import Rom, load
 
 
 def test_findscript_plain():

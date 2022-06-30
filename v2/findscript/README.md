@@ -19,5 +19,5 @@ from findscript import findscript
 result = findscript.load("mario.nes").find("PLAYER")
 assert result.start == 40904
 assert result.end == 40910
-assert result.offset == 201
+assert result.offset == 55
 ```

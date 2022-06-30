@@ -10,8 +10,8 @@ def test_findscript_plain():
 
 
 def test_findscript_rot4():
-    rom = Rom(b"ls}TPE]IVhs}")
+    rom = Rom(b"gnxOK@XDQcnx")
     search_result = rom.find("PLAYER")
     assert search_result.start == 3
     assert search_result.end == 9
-    assert search_result.offset == 252
+    assert search_result.offset == 1

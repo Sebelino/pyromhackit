@@ -6,3 +6,4 @@ cover
 htmlcov
 copyrighted
 .idea/
+__pycache__/

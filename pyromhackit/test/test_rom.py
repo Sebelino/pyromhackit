@@ -545,8 +545,8 @@ def execution(request):
 12: mn """),
     ("abcdefg", "tabulate 3 --border", tables[0]),
     ("abcdefg", "tabulate 3 -b", tables[0]),
-    ("abcdefg", "tabulate 3 -b --padding 1", tables[1]),
-    ("abcdefg", "tabulate 3 -b -p 1", tables[1]),
+    ("abcdefg", "tabulate 3 -b --padding", tables[1]),
+    ("abcdefg", "tabulate 3 -b -p", tables[1]),
 ], indirect=True)
 def test_execute(execution):
     """ Test ROM.execute(execstr) """

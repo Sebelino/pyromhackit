@@ -141,9 +141,9 @@ class ROM(object):
         return "\n".join(" ".join(lst) for lst in ltbl)
 
     @staticmethod
-    def tabulate(stream, cols, label=False, border=False, padding=0):
+    def tabulate(stream, cols, label=False, border=False, padding=False):
         """ Display the stream of characters in a table. """
-        table = PrettyTable(header=False, border=border, padding_width=padding)
+        table = PrettyTable(header=False, border=border, padding_width=int(padding))
         labelwidth = len(str(len(stream)))
         for i in range(0, len(stream), cols):
             segment = stream[i:i + cols]

@@ -1,20 +1,11 @@
+from dataclasses import dataclass
+
+
+@dataclass(frozen=True)
 class SearchResult:
-    def __init__(self, start: int, end: int, offset: int):
-        self._start = start
-        self._end = end
-        self._offset = offset
-
-    @property
-    def start(self):
-        return self._start
-
-    @property
-    def end(self):
-        return self._end
-
-    @property
-    def offset(self):
-        return self._offset
+    start: int
+    end: int
+    offset: int
 
 
 class Rom:

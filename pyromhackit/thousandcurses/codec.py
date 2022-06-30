@@ -371,7 +371,7 @@ def identity_dict(n):
 def read_yaml(path):
     """ YAML -> Dictionary. """
     stream = open(path, 'r', encoding='utf8')
-    dct = yaml.load(stream)
+    dct = yaml.safe_load(stream)
     return dct
 
 

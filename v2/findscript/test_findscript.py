@@ -14,4 +14,4 @@ def test_findscript_rot4():
     search_result = rom.find("PLAYER")
     assert search_result.start == 3
     assert search_result.end == 9
-    assert search_result.offset == 4
+    assert search_result.offset == 252

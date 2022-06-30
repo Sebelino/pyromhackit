@@ -25,7 +25,7 @@ class Rom:
                 break
         else:
             raise NotImplementedError
-        return SearchResult(index, index + len(bytestring), offset)
+        return SearchResult(index, index + len(bytestring), (256 - offset) % 256)
 
     def rotate(self, offset: int):
         rotated = self._rotate(self.content, offset)

@@ -1,7 +1,7 @@
 sortedcontainers
 termcolor
 langid
-bidict
+bidict==0.14.2
 treelib
 pytest
 pytest-benchmark

@@ -17,6 +17,7 @@ from pyromhackit.tree import SimpleTopology
 Class representing a ROM.
 """
 
+
 class ROM(object):
     """ Read-only memory image. Basically a handle to a file, designed to be easy to read. As you might not be
     interested in reading the whole file, you may optionally select the portions of the file that should be revealed.

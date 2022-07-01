@@ -10,7 +10,7 @@ from pyromhackit.roms.persona1usa.dump import sources
 
 package_dir = os.path.dirname(os.path.abspath(__file__))
 
-tensi_path, = [key for key in sources if '/tensi.bin' in key]
+tensi_path, = [key for key in sources if '/TENSI.BIN' in key]
 
 
 @pytest.mark.skipif(not os.path.isfile(os.path.join(package_dir, tensi_path)), reason="Copyright infringement")

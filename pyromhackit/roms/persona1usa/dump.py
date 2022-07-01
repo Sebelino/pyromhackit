@@ -17,7 +17,7 @@ package_dir = os.path.dirname(os.path.abspath(__file__))
 with open(os.path.join(package_dir, "resources/paths.txt")) as f:
     sources_paths = f.read().strip().split()
 
-sources = {os.path.join("resources", path): dict() for path in sources_paths}
+sources = {path: dict() for path in sources_paths}
 
 try:
     os.makedirs("output")
@@ -30,9 +30,9 @@ persona_visage_path = "resources/persona_visage.json"
 for infile, outfiles in sources.items():
     outfiles["codec"] = persona_codec_path
     outfiles["visage"] = persona_visage_path
-    outfiles["selection"] = os.path.join("resources", "{}.sel.json".format(os.path.basename(infile)))
-    outfiles["irom"] = os.path.join("output", "{}.irom.txt".format(os.path.basename(infile)))
-    outfiles["view"] = os.path.join("output", "{}.view.txt".format(os.path.basename(infile)))
+    outfiles["selection"] = os.path.join("resources", "{}.sel.json".format(os.path.basename(infile).lower()))
+    outfiles["irom"] = os.path.join("output", "{}.irom.txt".format(os.path.basename(infile).lower()))
+    outfiles["view"] = os.path.join("output", "{}.view.txt".format(os.path.basename(infile).lower()))
 
 
 class Archive(object):  # File that can be unzipped into one or more ROMs.

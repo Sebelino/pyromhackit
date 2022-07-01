@@ -12,6 +12,7 @@ package_dir = os.path.dirname(os.path.abspath(__file__))
 
 tensi_path, = [key for key in sources if '/tensi.bin' in key]
 
+
 @pytest.mark.skipif(not os.path.isfile(os.path.join(package_dir, tensi_path)), reason="Copyright infringement")
 def test_read_rom():
     ROM(os.path.join(package_dir, tensi_path))
@@ -22,9 +23,9 @@ def test_read_rom():
 class TestWord(object):
     def setup_class(self):
         rom = ROM(os.path.join(package_dir, tensi_path))
-        idx = 25704*2  # Index of "How"
+        idx = 25704 * 2  # Index of "How"
         wordlength = 6
-        rom = rom[idx:idx+wordlength]
+        rom = rom[idx:idx + wordlength]
         self.irom = Hacker(rom)
 
     def test_src(self):

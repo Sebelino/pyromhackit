@@ -26,7 +26,7 @@ class TestDumpAndFind:
         hacker = Hacker(rom)
         hacker.load_codec(os.path.join(package_dir, sources[tensi_path]['codec']))
         hacker.load_visage(os.path.join(package_dir, sources[tensi_path]['visage']))
-        #hacker.load_selection(tensi_selection_path)
+        # hacker.load_selection(tensi_selection_path)
         dump_path = self.created_files[0]
         hacker.dump_view(dump_path)
         assert os.path.exists(dump_path)
@@ -50,6 +50,7 @@ class TestDumpAndFind:
                 os.remove(created_file)
             except FileNotFoundError:
                 pass
+
 
 @pytest.mark.skipif(not os.path.exists(os.path.join(package_dir, tensi_path)), reason="File not found")
 class TestCoverup:

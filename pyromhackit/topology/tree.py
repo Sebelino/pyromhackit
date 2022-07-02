@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import os
 from abc import abstractmethod, ABCMeta
 from collections import namedtuple

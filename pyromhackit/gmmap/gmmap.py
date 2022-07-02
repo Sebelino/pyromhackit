@@ -4,6 +4,7 @@ from abc import ABCMeta, abstractmethod
 import mmap
 from typing import Optional
 
+from pyromhackit.gmmap.additive import Additive
 from pyromhackit.gmmap.listlike_gmmap import ListlikeGMmap
 from pyromhackit.gmmap.physically_indexed_gmmap import PhysicallyIndexedGMmap
 from pyromhackit.gmmap.sourced_gmmap import SourcedGMmap
@@ -79,16 +80,6 @@ class GMmap(metaclass=ABCMeta):
     def __len__(self):  # Final
         """ :return The number of elements in the sequence. """
         return self._length
-
-
-class Additive(metaclass=ABCMeta):
-    @abstractmethod
-    def __add__(self, operand):
-        return NotImplementedError()
-
-    @abstractmethod
-    def __radd__(self, operand):
-        return NotImplementedError()
 
 
 class BytesMmap(Additive, ListlikeGMmap, PhysicallyIndexedGMmap, metaclass=ABCMeta):

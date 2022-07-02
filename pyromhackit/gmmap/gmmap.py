@@ -5,7 +5,6 @@ from typing import Optional
 
 from pyromhackit.gmmap.additive import Additive
 from pyromhackit.gmmap.bytes_mmap import BytesMmap
-from pyromhackit.gmmap.fixed_width_bytes_mmap import FixedWidthBytesMmap
 from pyromhackit.gmmap.listlike_gmmap import ListlikeGMmap
 from pyromhackit.gmmap.physically_indexed_gmmap import PhysicallyIndexedGMmap
 from pyromhackit.gmmap.selective_gmmap import SelectiveGMmap
@@ -82,22 +81,6 @@ class GMmap(metaclass=ABCMeta):
     def __len__(self):  # Final
         """ :return The number of elements in the sequence. """
         return self._length
-
-
-class SelectiveFixedWidthBytesMmap(SelectiveGMmap, FixedWidthBytesMmap):
-    def __init__(self, width, source):
-        super(SelectiveFixedWidthBytesMmap, self).__init__(width, source)
-        self._selection = Selection(universe=slice(0, self._length))
-
-    @property
-    def selection(self) -> Selection:
-        return self._selection
-
-    def _nonvirtualint2physical(self, location: int):
-        return slice(self.width * location, self.width * (location + 1))
-
-    def _nonvirtualselection2physical(self, location: Selection):
-        return location * self.width
 
 
 class SingletonBytesMmap(BytesMmap):

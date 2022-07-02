@@ -7,37 +7,7 @@ from typing import Optional, Union, List, Tuple, Iterator
 import itertools
 from sortedcontainers import SortedSet
 
-
-class IGSlice(metaclass=ABCMeta):
-    """ A GSlice (generalized slice) is any subset of the set of non-negative integers, paired with an upper bound for
-    them. It provides a way to select zero or more elements from a sequence. """
-
-    @abstractmethod
-    def select(self, sequence):
-        """ :return A sequence x1, x2, ..., xn such that each xi is found in the sequence @sequence and the index of xi
-        in @sequence increases monotonically w.r.t. i. The return value should not depend on the nature of the elements
-        themselves. """
-        raise NotImplementedError
-
-    @abstractmethod
-    def intervals(self):
-        """ :return A sequence of pairs (a, b) such that for every a <= n < b, n is contained in this IGSlice. """
-        raise NotImplementedError
-
-    @abstractmethod
-    def complement(self) -> 'IGSlice':
-        """ :return An IGslice which is identical to this one except that for every 0 <= n < upperbound, n is contained
-        in the IGSlice if and only if it was not contained in this one. """
-        raise NotImplementedError
-
-    def subslice(self, from_index: Optional[int], to_index: Optional[int]) -> 'IGSlice':
-        """ :return A IGSlice which is identical to this one except that any integers outside
-        [@from_index, @to_index) are excluded. """
-        raise NotImplementedError
-
-    def __len__(self):
-        """ :return The cardinality of the set of integers. """
-        raise NotImplementedError
+from pyromhackit.gslice.igslice import IGSlice
 
 
 class IMutableGSlice(IGSlice, metaclass=ABCMeta):
@@ -102,10 +72,10 @@ class Selection(IMutableGSlice):
             intervals: Iterator = None,
             _length: Optional[int] = None  # For performance
     ):
-        #assert isinstance(universe, slice)  # Should universe even be visible/exist?
-        #assert universe.start == 0
-        #assert isinstance(universe.stop, int)
-        #assert universe.stop >= 1  # TODO Do we need this?
+        # assert isinstance(universe, slice)  # Should universe even be visible/exist?
+        # assert universe.start == 0
+        # assert isinstance(universe.stop, int)
+        # assert universe.stop >= 1  # TODO Do we need this?
         self.universe = universe
         if intervals is None and revealed is None:
             self._intervals = self.revealed2sortedset([slice(0, universe.stop)])
@@ -129,7 +99,7 @@ class Selection(IMutableGSlice):
         # 10, [(0, 1), (2, 3), (4, 5), (6, 7), (8, 9)] -> 10, [1, 2, 3, 4, 5, 6, 7, 8, 9]
 
         try:
-            #intervals = SortedSet(a for a, _ in revealed).union(b for _, b in revealed)
+            # intervals = SortedSet(a for a, _ in revealed).union(b for _, b in revealed)
             intervals = SortedSet()
             for a, b in revealed:
                 intervals.add(a)
@@ -205,9 +175,9 @@ class Selection(IMutableGSlice):
         except ValueError:
             to_index_index = None
         from_index_is_included = (
-            len(self._intervals) % 2 == 0 and m % 2 == 1 or len(self._intervals) % 2 == 1 and m % 2 == 0)
+                len(self._intervals) % 2 == 0 and m % 2 == 1 or len(self._intervals) % 2 == 1 and m % 2 == 0)
         to_index_is_included = (
-            len(self._intervals) % 2 == 0 and n % 2 == 1 or len(self._intervals) % 2 == 1 and n % 2 == 0)
+                len(self._intervals) % 2 == 0 and n % 2 == 1 or len(self._intervals) % 2 == 1 and n % 2 == 0)
         from_index_is_leftmost_included = from_index == 0 and from_index_is_included or from_index_index is not None and (
                 len(self._intervals) % 2 == 0 and from_index_index % 2 == 0
                 or len(self._intervals) % 2 == 1 and (from_index == 0 or from_index_index % 2 == 1))
@@ -236,7 +206,7 @@ class Selection(IMutableGSlice):
                             self._intervals.add(to_index)
                         else:
                             self._revealed_count -= (from_end - from_start) + (to_index - self._intervals[n - 1]) + (
-                                from_index - from_start) + sum(
+                                    from_index - from_start) + sum(
                                 b - a for a, b in zip(intermediates[::2], intermediates[1::2]))
                             del self._intervals[m + 1:n - 1]  # intermediates
                             self._intervals.remove(from_start)
@@ -271,7 +241,8 @@ class Selection(IMutableGSlice):
                         self._intervals.remove(to_start)
                 else:
                     to_remove = self._intervals[m:n]
-                    self._revealed_count -= self._intervals[m] - from_index + sum(b - a for a, b in zip(to_remove[1::2], to_remove[::2]))
+                    self._revealed_count -= self._intervals[m] - from_index + sum(
+                        b - a for a, b in zip(to_remove[1::2], to_remove[::2]))
                     del self._intervals[m:n]
                     if from_index != 0:
                         self._intervals.add(from_index)
@@ -285,7 +256,8 @@ class Selection(IMutableGSlice):
                     to_remove = self._intervals[m:n]
                     del self._intervals[m:n]
                     self._intervals.add(to_index)
-                    self._revealed_count -= (to_index - to_remove[0]) + sum(b - a for a, b in zip(to_remove[1::2], to_remove[::2]))
+                    self._revealed_count -= (to_index - to_remove[0]) + sum(
+                        b - a for a, b in zip(to_remove[1::2], to_remove[::2]))
             else:
                 to_remove = self._intervals[m:n]
                 del self._intervals[m:n]
@@ -353,7 +325,8 @@ class Selection(IMutableGSlice):
                 to_remove = self._intervals[m:n]
                 del self._intervals[m:n]
                 self._intervals.add(to_index)
-                self._revealed_count += (to_index - to_remove[-1]) + sum(b - a for a, b in zip(to_remove[1::2], to_remove[::2]))
+                self._revealed_count += (to_index - to_remove[-1]) + sum(
+                    b - a for a, b in zip(to_remove[1::2], to_remove[::2]))
         else:
             if to_index_is_included:
                 if from_index_right_of_included:
@@ -364,21 +337,24 @@ class Selection(IMutableGSlice):
                     to_remove = self._intervals[m:n]
                     del self._intervals[m:n]
                     self._intervals.add(from_index)
-                    self._revealed_count += (to_remove[0] - from_index) + sum(b - a for a, b in zip(to_remove[1::2], to_remove[::2]))
+                    self._revealed_count += (to_remove[0] - from_index) + sum(
+                        b - a for a, b in zip(to_remove[1::2], to_remove[::2]))
             else:
                 if from_index_right_of_included:
                     intermediates = self._intervals[m:n]
                     del self._intervals[m:n]  # intermediates
                     self._intervals.remove(from_index)
                     self._intervals.add(to_index)
-                    self._revealed_count += (to_index - from_index) - sum(b - a for a, b in zip(intermediates[::2], intermediates[1::2]))
+                    self._revealed_count += (to_index - from_index) - sum(
+                        b - a for a, b in zip(intermediates[::2], intermediates[1::2]))
                 else:
                     to_remove = self._intervals[m:n]
                     del self._intervals[m:n]
                     if from_index > 0:
                         self._intervals.add(from_index)
                     self._intervals.add(to_index)
-                    self._revealed_count += (to_index - from_index) - sum(b - a for a, b in zip(to_remove[::2], to_remove[1::2]))
+                    self._revealed_count += (to_index - from_index) - sum(
+                        b - a for a, b in zip(to_remove[::2], to_remove[1::2]))
 
         return len(self) - original_length
 

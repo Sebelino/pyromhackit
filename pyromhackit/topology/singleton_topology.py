@@ -1,4 +1,4 @@
-from pyromhackit.topology.tree import Topology
+from pyromhackit.topology.topology import Topology
 
 
 class SingletonTopology(Topology):

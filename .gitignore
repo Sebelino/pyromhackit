@@ -7,3 +7,4 @@ htmlcov
 copyrighted
 .idea/
 __pycache__/
+.pytest_cache/

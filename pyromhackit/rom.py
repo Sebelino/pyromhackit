@@ -31,7 +31,6 @@ class ROM(object):
             path = rom_specifier
             filesize = os.path.getsize(path)
             source = open(path, 'r')
-            self.memory = SelectiveFixedWidthBytesMmap(2, source)
         else:
             try:
                 bytestr = bytes(rom_specifier)
@@ -42,11 +41,11 @@ class ROM(object):
                 raise NotImplementedError("The bytestring's length cannot be zero.")
             size = len(bytestr)
             source = self.structure.structure(bytestr)
-            if str(structure) == "SimpleTopology(2)":
-                self.memory = SelectiveFixedWidthBytesMmap(2, source)
-            else:
-                # self.memory = SingletonBytesMmap(bytestr)
-                self.memory = SelectiveFixedWidthBytesMmap(1, source)
+        if str(structure) == "SimpleTopology(2)":
+            self.memory = SelectiveFixedWidthBytesMmap(2, source)
+        else:
+            # self.memory = SingletonBytesMmap(bytestr)
+            self.memory = SelectiveFixedWidthBytesMmap(1, source)
 
     def selection(self):
         return deepcopy(self.memory.selection)

@@ -6,7 +6,7 @@ import random
 import unicodedata
 
 from pyromhackit.rom import ROM
-from pyromhackit.hacker import Hacker
+from pyromhackit.hacker import Hacker, Behavior
 import pyromhackit.thousandcurses.codec as codec
 from pyromhackit.tree import SimpleTopology
 from pyromhackit.roms.persona1usa.hexmap import transliter
@@ -87,7 +87,7 @@ def hack(path, outfiles):
         print("Loaded selection: {}".format(time.time() - t))
     except FileNotFoundError:
         pass
-    hacker.set_codec_behavior(Hacker.Behavior.RAISE)
+    hacker.set_codec_behavior(Behavior.RAISE)
     return hacker
 
 

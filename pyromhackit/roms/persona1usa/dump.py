@@ -8,7 +8,7 @@ import unicodedata
 from pyromhackit.rom import ROM
 from pyromhackit.hacker import Hacker, Behavior
 import pyromhackit.thousandcurses.codec as codec
-from pyromhackit.topology.tree import SimpleTopology
+from pyromhackit.topology.simple_topology import SimpleTopology
 from pyromhackit.roms.persona1usa.hexmap import transliter
 from pyromhackit.stringsearch.identify import EnglishDictionaryBasedIdentifier
 

@@ -3,7 +3,7 @@
 import os
 import pytest
 
-from pyromhackit.topology.tree import SimpleTopology
+from pyromhackit.topology.simple_topology import SimpleTopology
 
 package_dir = os.path.dirname(os.path.abspath(__file__))
 

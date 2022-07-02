@@ -8,6 +8,17 @@ In addition, you may define a hierarchical structure on the ROM. A common struct
 structure, where the ROM is divided into a sequence of items where each item is a bytestring of
 length 2. We may call each leaf in such a bytestring tree a ROM atom.
 
+## ROM script
+
+Each byte in a ROM belongs either to the _ROM's script_ or the _ROM's nonscript_.
+A byte is said to belong to the ROM's script if it is used to encode the text stored in the ROM.
+Loosely speaking, the ROM's script is the part of the ROM that we could be interested in dumping or editing.
+
+## ROM nonscript
+
+The part of a ROM that is not the ROM's script.
+This includes stuff like assembly code, image data, etc.
+
 ## IROMs
 An IROM (Isomorphism of a ROM) is an alternative way to represent a ROM, intended to be more
 readable. An IROM instance is created from a ROM instance and provides a way to construct a semantics

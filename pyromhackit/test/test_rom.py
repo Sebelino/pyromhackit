@@ -2,6 +2,7 @@
 
 """ Test suite for ROM class. """
 import os
+import tempfile
 from os.path import isfile
 import re
 import pytest
@@ -415,6 +416,15 @@ def test_str_contracted(expected, max_width, rombytes):
     else:
         returned = rom.str_contracted(max_width)
         assert returned == expected
+
+
+class TestStructuredROMFromFile:
+    def test_atomcount(self):
+        with tempfile.NamedTemporaryFile() as f:
+            f.write(b"1h0o0w")
+            f.flush()
+            rom = ROM(f.name)
+            assert rom.atomcount() == 6
 
 
 class TestStructuredROM(object):

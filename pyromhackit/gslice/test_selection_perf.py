@@ -72,19 +72,15 @@ class TestIncludePartiallyFromLeft(object):
         for i in range(0, n):
             selection._include_partially_from_left(2 * i, 2 * i + 1, 1)
 
-    @pytest.mark.skip()
     def test_2pow0_times(self, benchmark):
         benchmark(self.do_n_times, self.v, 500 * 2 ** 0)
 
-    @pytest.mark.skip()
     def test_2pow1_times(self, benchmark):
         benchmark(self.do_n_times, self.v, 500 * 2 ** 1)
 
-    @pytest.mark.skip()
     def test_2pow2_times(self, benchmark):
         benchmark(self.do_n_times, self.v, 500 * 2 ** 2)
 
-    @pytest.mark.skip()
     def test_2pow3_times(self, benchmark):
         benchmark(self.do_n_times, self.v, 500 * 2 ** 3)
 
@@ -99,19 +95,15 @@ class TestIncludePartiallyFromRight(object):
         for i in range(0, n):
             selection._include_partially_from_right(2 * i, 2 * i + 1, 1)
 
-    @pytest.mark.skip()
     def test_2pow0_times(self, benchmark):
         benchmark(self.do_n_times, self.v, 500 * 2 ** 0)
 
-    @pytest.mark.skip()
     def test_2pow1_times(self, benchmark):
         benchmark(self.do_n_times, self.v, 500 * 2 ** 1)
 
-    @pytest.mark.skip()
     def test_2pow2_times(self, benchmark):
         benchmark(self.do_n_times, self.v, 500 * 2 ** 2)
 
-    @pytest.mark.skip()
     def test_2pow3_times(self, benchmark):
         benchmark(self.do_n_times, self.v, 500 * 2 ** 3)
 

@@ -19,11 +19,6 @@ with open(os.path.join(package_dir, "resources/paths.txt")) as f:
 
 sources = {path: dict() for path in sources_paths}
 
-try:
-    os.makedirs("output")
-except FileExistsError:
-    pass
-
 persona_codec_path = "resources/persona_codec.json"
 persona_visage_path = "resources/persona_visage.json"
 
@@ -123,6 +118,11 @@ def dump_selections():
 
 
 if __name__ == '__main__':
+    try:
+        os.makedirs("output")
+    except FileExistsError:
+        pass
+
     dump_selections()
     dump_iroms_and_views()
 

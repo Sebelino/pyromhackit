@@ -1,4 +1,5 @@
-# ROM
+# Glossary
+## ROM
 A ROM (Read-only memory) -- in the context of this ROM-hacking library -- is an object holding a
 read-only sequence of bytes. This source of this sequence may be a file, or simply a raw bytestring.
 Since byte sequences loaded from a file tend to be large, and you may only be interested in a small
@@ -7,7 +8,7 @@ In addition, you may define a hierarchical structure on the ROM. A common struct
 structure, where the ROM is divided into a sequence of items where each item is a bytestring of
 length 2. We may call each leaf in such a bytestring tree a ROM atom.
 
-# IROMs
+## IROMs
 An IROM (Isomorphism of a ROM) is an alternative way to represent a ROM, intended to be more
 readable. An IROM instance is created from a ROM instance and provides a way to construct a semantics
 for the ROM's content.
@@ -16,11 +17,11 @@ a codec -- a one-to-one correspondence -- between each ROM atom and each string 
 In an IROM, the ROM is immutable and you are modifying the codec to your liking until the string
 representation looks the way you want it to.
 
-# PROM
+## PROM
 A PROM (Programmable ROM) is similar to an IROM except that its bytestring representation is
 modifiable while its string representation is immutable.
 
-# EROM
+## EROM
 
 * IROM: To modify a character c into c' is to change a codec entry b <-> c into b <-> c'.
         The underlying ROM is immutable.

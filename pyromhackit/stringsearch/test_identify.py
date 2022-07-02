@@ -3,7 +3,7 @@
 import pytest
 
 from pyromhackit.stringsearch.identify import EnglishDictionaryBasedIdentifier, DictionaryBasedTextIdentifier
-from pyromhackit.selection import Selection
+from pyromhackit.gslice.selection import Selection
 
 
 class TestEnglishDictionaryBasedIdentifier(object):

@@ -3,7 +3,7 @@
 import os
 import pytest
 
-from pyromhackit.selection import Selection
+from pyromhackit.gslice.selection import Selection
 from pyromhackit.stringsearch.identify import EnglishDictionaryBasedIdentifier
 
 package_dir = os.path.dirname(os.path.abspath(__file__))

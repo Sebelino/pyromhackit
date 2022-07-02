@@ -9,7 +9,7 @@ from io import TextIOBase
 import sys
 from termcolor import colored
 
-from pyromhackit.selection import Selection
+from pyromhackit.gslice.selection import Selection
 from pyromhackit.util import findall
 
 package_dir = os.path.dirname(os.path.abspath(__file__))

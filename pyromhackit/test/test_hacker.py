@@ -6,7 +6,7 @@ import pytest
 from pyromhackit.rom import ROM
 from pyromhackit.hacker import Hacker
 from pyromhackit.tree import SimpleTopology
-from pyromhackit.selection import Selection
+from pyromhackit.gslice.selection import Selection
 
 package_dir = os.path.dirname(os.path.abspath(__file__))
 

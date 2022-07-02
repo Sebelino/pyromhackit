@@ -5,7 +5,7 @@ from typing import Tuple, Optional, Union
 
 import pytest
 
-from pyromhackit.selection import Selection
+from pyromhackit.gslice.selection import Selection
 
 package_dir = os.path.dirname(os.path.abspath(__file__))
 

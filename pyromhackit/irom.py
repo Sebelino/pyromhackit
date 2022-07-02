@@ -9,7 +9,7 @@ import re
 from prettytable import PrettyTable
 
 from pyromhackit.gmmap import SelectiveBytestringSourcedStringMmap
-from pyromhackit.selection import Selection
+from pyromhackit.gslice.selection import Selection
 from pyromhackit.thousandcurses.codec import Tree
 from pyromhackit.tree import SimpleTopology
 from pyromhackit.rom import ROM

@@ -6,7 +6,7 @@ from typing import Optional, Union
 
 import itertools
 
-from pyromhackit.selection import Selection
+from pyromhackit.gslice.selection import Selection
 
 
 class GMmap(metaclass=ABCMeta):

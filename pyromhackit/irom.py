@@ -8,7 +8,7 @@ import re
 
 from prettytable import PrettyTable
 
-from pyromhackit.gmmap import SelectiveBytestringSourcedStringMmap
+from pyromhackit.gmmap.gmmap import SelectiveBytestringSourcedStringMmap
 from pyromhackit.gslice.selection import Selection
 from pyromhackit.thousandcurses.codec import Tree
 from pyromhackit.tree import SimpleTopology

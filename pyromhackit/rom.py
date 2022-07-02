@@ -7,7 +7,7 @@ from ast import literal_eval
 import os
 from prettytable import PrettyTable
 
-from pyromhackit.gmmap import SelectiveFixedWidthBytesMmap
+from pyromhackit.gmmap.gmmap import SelectiveFixedWidthBytesMmap
 from pyromhackit.reader import write
 from pyromhackit.thousandcurses import codec
 from pyromhackit.thousandcurses.codec import read_yaml, Tree

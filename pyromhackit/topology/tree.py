@@ -65,20 +65,6 @@ class Topology(metaclass=ABCMeta):
         return self.__class__.__name__
 
 
-class SingletonTopology(Topology):
-    def structure(self, stringlike):
-        return [stringlike]
-
-    def index2leafindex(self, idx):
-        return 0
-
-    def leafindex2indexpath(self, leafindex):
-        return 0,
-
-    def indexpath2index(self, indexpath):
-        return 0
-
-
 class SimpleTopology(Topology):
     def __init__(self, *sizes):
         """ Encompasses the set of trees that consist of any number of children where each child is either a

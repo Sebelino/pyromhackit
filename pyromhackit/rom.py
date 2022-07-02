@@ -41,11 +41,12 @@ class ROM(object):
             if not bytestr:  # mmaps cannot have zero length
                 raise NotImplementedError("The bytestring's length cannot be zero.")
             size = len(bytestr)
+            source = self.structure.structure(bytestr)
             if str(structure) == "SimpleTopology(2)":
-                self.memory = SelectiveFixedWidthBytesMmap(2, self.structure.structure(bytestr))
+                self.memory = SelectiveFixedWidthBytesMmap(2, source)
             else:
                 # self.memory = SingletonBytesMmap(bytestr)
-                self.memory = SelectiveFixedWidthBytesMmap(1, self.structure.structure(bytestr))
+                self.memory = SelectiveFixedWidthBytesMmap(1, source)
 
     def selection(self):
         return deepcopy(self.memory.selection)

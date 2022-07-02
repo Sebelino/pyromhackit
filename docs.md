@@ -3,7 +3,7 @@
 A ROM (Read-only memory) -- in the context of this ROM-hacking library -- is an object holding a
 read-only sequence of bytes. This source of this sequence may be a file, or simply a raw bytestring.
 Since byte sequences loaded from a file tend to be large, and you may only be interested in a small
-portion of the file, you have the option of ignoring arbitary sections of the file.
+portion of the file, you have the option of ignoring arbitrary sections of the file.
 In addition, you may define a hierarchical structure on the ROM. A common structure is the two-byte
 structure, where the ROM is divided into a sequence of items where each item is a bytestring of
 length 2. We may call each leaf in such a bytestring tree a ROM atom.

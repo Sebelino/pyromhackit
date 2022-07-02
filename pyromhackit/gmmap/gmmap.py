@@ -2,9 +2,10 @@ import io
 from abc import ABCMeta, abstractmethod
 
 import mmap
-from typing import Optional, Union
+from typing import Optional
 
 from pyromhackit.gmmap.listlike_gmmap import ListlikeGMmap
+from pyromhackit.gmmap.physically_indexed_gmmap import PhysicallyIndexedGMmap
 from pyromhackit.gmmap.sourced_gmmap import SourcedGMmap
 from pyromhackit.gslice.selection import Selection
 
@@ -78,18 +79,6 @@ class GMmap(metaclass=ABCMeta):
     def __len__(self):  # Final
         """ :return The number of elements in the sequence. """
         return self._length
-
-
-class PhysicallyIndexedGMmap(GMmap, metaclass=ABCMeta):
-    """ GMmap where each physical location that a logical location translates into is either a slice or a Selection. """
-
-    def _physical2bytes(self, physicallocation: Union[slice, Selection], content: mmap.mmap) -> bytes:
-        """ :return The bytestring obtained when accessing the @content mmap using @physicallocation. """
-        if isinstance(physicallocation, slice):
-            return content[physicallocation]
-        elif isinstance(physicallocation, Selection):
-            return physicallocation.select(content)
-        raise TypeError
 
 
 class Additive(metaclass=ABCMeta):

@@ -52,15 +52,15 @@ class Hacker(object):
         self.coverup(None, None)
         for a, b in selection:
             self.reveal(a, b)
-            #self.dst = self.dsttree.transliterate(self.codec)
-            #self.dst = self.dsttree.restructured(self.affection)
+            # self.dst = self.dsttree.transliterate(self.codec)
+            # self.dst = self.dsttree.restructured(self.affection)
 
     # TODO Requires Tree to be mutable. Could let srctree be immutable Tree and dsttree be MutableTree
     def _compute_leaf(self, dstleafpath):
         """ Using self.codec, updates the leaf in self.dsttree pointed to by the index path @dstleafpath. """
         self._compute_dst()
-        #srcleafpath = self.affection.inv[dstleafpath]
-        #srcleaf = self.srctree.reel_in(*srcleafpath)
+        # srcleafpath = self.affection.inv[dstleafpath]
+        # srcleaf = self.srctree.reel_in(*srcleafpath)
 
     def _any_codec(self, occupied=dict()):
         mu = bidict()
@@ -76,7 +76,7 @@ class Hacker(object):
         return mu
 
     def _ascii_codec(self):
-        mu = bidict((bytes([b]), chr(b)) for b in bytes(range(2**8)))
+        mu = bidict((bytes([b]), chr(b)) for b in bytes(range(2 ** 8)))
         return mu
 
     # Operation transformations modify only structure, so only self.affection is affected while self.dsttree can be
@@ -114,13 +114,13 @@ class Hacker(object):
 
     def _persona_codec(self):
         mu = bidict()
-        for i in range(2**8):
-            mu[bytes([i])] = chr(2**9+i)
+        for i in range(2 ** 8):
+            mu[bytes([i])] = chr(2 ** 9 + i)
         mu[bytes([0])] = " "  # 0
-        for i in range(ord('z')-ord('a')+1):  # 1-26
-            mu[bytes([i+0x01])] = chr(ord('a')+i)
-        for i in range(ord('z')-ord('a')+1):  # 224-249
-            mu[bytes([i+0xe0])] = chr(ord('A')+i)
+        for i in range(ord('z') - ord('a') + 1):  # 1-26
+            mu[bytes([i + 0x01])] = chr(ord('a') + i)
+        for i in range(ord('z') - ord('a') + 1):  # 224-249
+            mu[bytes([i + 0xe0])] = chr(ord('A') + i)
         return mu
 
     def set_codec_behavior(self, behavior):
@@ -373,9 +373,9 @@ class Hacker(object):
 
     def __str__(self):
         return self.show()
-        #return str(self.dst)
-        #classname = self.__class__.__name__
-        #return "{}{}".format(classname, self.dsttree)
+        # return str(self.dst)
+        # classname = self.__class__.__name__
+        # return "{}{}".format(classname, self.dsttree)
 
     def __len__(self):
         return len(self.src)
@@ -386,4 +386,3 @@ class Hacker(object):
         cpy.dsttree = Tree(self.dsttree)
         cpy.set_codec_behavior(self.codec_behavior)
         return cpy
-

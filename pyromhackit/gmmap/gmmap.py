@@ -4,7 +4,7 @@ import mmap
 from typing import Optional
 
 from pyromhackit.gmmap.additive import Additive
-from pyromhackit.gmmap.bytes_gmmap import BytesMmap
+from pyromhackit.gmmap.bytes_mmap import BytesMmap
 from pyromhackit.gmmap.fixed_width_bytes_mmap import FixedWidthBytesMmap
 from pyromhackit.gmmap.listlike_gmmap import ListlikeGMmap
 from pyromhackit.gmmap.physically_indexed_gmmap import PhysicallyIndexedGMmap

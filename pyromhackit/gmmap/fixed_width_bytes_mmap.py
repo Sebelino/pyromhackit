@@ -2,7 +2,7 @@ import io
 import mmap
 from typing import Optional
 
-from pyromhackit.gmmap.bytes_gmmap import BytesMmap
+from pyromhackit.gmmap.bytes_mmap import BytesMmap
 from pyromhackit.gmmap.sourced_gmmap import SourcedGMmap
 
 

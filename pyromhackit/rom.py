@@ -11,7 +11,7 @@ from pyromhackit.gmmap.selective_fixed_width_bytes_mmap import SelectiveFixedWid
 from pyromhackit.reader import write
 from pyromhackit.thousandcurses import codec
 from pyromhackit.thousandcurses.codec import read_yaml, Tree
-from pyromhackit.tree import SimpleTopology
+from pyromhackit.topology.tree import SimpleTopology
 
 """
 Class representing a ROM.

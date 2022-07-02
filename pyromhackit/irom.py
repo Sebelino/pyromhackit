@@ -11,7 +11,7 @@ from prettytable import PrettyTable
 from pyromhackit.gmmap.selective_bytestring_sourced_string_mmap import SelectiveBytestringSourcedStringMmap
 from pyromhackit.gslice.selection import Selection
 from pyromhackit.thousandcurses.codec import Tree
-from pyromhackit.tree import SimpleTopology
+from pyromhackit.topology.tree import SimpleTopology
 from pyromhackit.rom import ROM
 
 

@@ -8,3 +8,4 @@ copyrighted
 .idea/
 __pycache__/
 .pytest_cache/
+output/

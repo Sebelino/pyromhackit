@@ -1,8 +1,10 @@
 #!/usr/bin/env python
+import pytest
 
 from pyromhackit.stringsearch.identify import EnglishDictionaryBasedIdentifier
 
 
+@pytest.mark.slow
 class TestEnglishDictionaryBasedIdentifier(object):
     def setup(self):
         self.identifier = EnglishDictionaryBasedIdentifier(tolerated_char_count=0)
@@ -30,6 +32,7 @@ class TestEnglishDictionaryBasedIdentifier(object):
         benchmark(self.identifier.str2selection, corpus)
 
 
+@pytest.mark.slow
 class TestEnglishDictionaryBasedIdentifierTolerated(object):
     def setup(self):
         self.identifier = EnglishDictionaryBasedIdentifier(tolerated_char_count=5)

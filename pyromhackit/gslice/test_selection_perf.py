@@ -5,6 +5,7 @@ import pytest
 from pyromhackit.gslice.selection import Selection
 
 
+@pytest.mark.slow
 class TestExclude(object):
     def setup(self):
         self.v = Selection(universe=slice(0, 100000))
@@ -25,6 +26,7 @@ class TestExclude(object):
         benchmark(self.exclude_n_times, self.v, 500 * 2 ** 2)
 
 
+@pytest.mark.slow
 class TestInclude(object):
     def setup(self):
         self.v = Selection(universe=slice(0, 100000), revealed=[])
@@ -45,6 +47,7 @@ class TestInclude(object):
         benchmark(self.include_n_times, self.v, 500 * 2 ** 2)
 
 
+@pytest.mark.slow
 class TestSubslice(object):
     def setup(self):
         self.without_gaps = Selection(universe=slice(0, 100000))
@@ -62,6 +65,7 @@ class TestSubslice(object):
         benchmark(self.subslice_n_times, self.with_gaps, 2 ** 2)
 
 
+@pytest.mark.slow
 class TestIncludePartiallyFromLeft(object):
     def setup(self):
         self.v = Selection(universe=slice(0, 100000), revealed=[])
@@ -85,6 +89,7 @@ class TestIncludePartiallyFromLeft(object):
         benchmark(self.do_n_times, self.v, 500 * 2 ** 3)
 
 
+@pytest.mark.slow
 class TestIncludePartiallyFromRight(object):
     def setup(self):
         self.v = Selection(universe=slice(0, 100000), revealed=[])
@@ -108,6 +113,7 @@ class TestIncludePartiallyFromRight(object):
         benchmark(self.do_n_times, self.v, 500 * 2 ** 3)
 
 
+@pytest.mark.slow
 class TestIncludePartially(object):
     def setup(self):
         self.v = Selection(universe=slice(0, 100000), revealed=[])
@@ -127,6 +133,7 @@ class TestIncludePartially(object):
         benchmark(self.do_n_times, self.v, 500 * 2 ** 2)
 
 
+@pytest.mark.slow
 class TestComplement(object):
     def test_complement_1000(self, benchmark):
         v = Selection(universe=slice(0, 2 * 1000),
@@ -149,6 +156,7 @@ class TestComplement(object):
         benchmark(v.complement)
 
 
+@pytest.mark.slow
 class TestPreviousSlice(object):
     def setup(self):
         self.v = Selection(universe=slice(0, 2 * 10000),

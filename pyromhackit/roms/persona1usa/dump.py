@@ -68,15 +68,16 @@ def two_byte_structure(bs):
 
 
 def hack(path, outfiles):
-    import time; t = time.time()
+    import time;
+    t = time.time()
     r = ROM(path, structure=SimpleTopology(2))
-    #print("Created ROM: {}".format(time.time() - t))
+    # print("Created ROM: {}".format(time.time() - t))
     hacker = Hacker(r)
-    #print("Created Hacker: {}".format(time.time() - t))
+    # print("Created Hacker: {}".format(time.time() - t))
     hacker.load_codec(outfiles["codec"])
-    #print("Loaded codec: {}".format(time.time() - t))
+    # print("Loaded codec: {}".format(time.time() - t))
     hacker.load_visage(outfiles["visage"])
-    #print("Loaded visage: {}".format(time.time() - t))
+    # print("Loaded visage: {}".format(time.time() - t))
     try:
         hacker.load_selection(outfiles["selection"])
         print("Loaded selection: {}".format(time.time() - t))
@@ -95,7 +96,7 @@ def dump_iroms_and_views():
             continue
         print("Hacking {}".format(infile))
         hacker = hack(infile, outfiles)
-        #hacker[chr(9166)] = '\n'
+        # hacker[chr(9166)] = '\n'
         hacker.dump(outfiles["irom"])
         hacker.dump_view(outfiles["view"])
         # hacker.reveal(None, None); hacker.load_selection_from_copy('e2dump.txt')
@@ -108,9 +109,10 @@ def dump_selections():
             print("Skipping {}".format(infile))
             continue
         print("Dumping selection for {}".format(infile))
-        import time; t = time.time()
+        import time;
+        t = time.time()
         hacker = hack(infile, outfiles)
-        #hacker[chr(9166)] = '\n'
+        # hacker[chr(9166)] = '\n'
         sel = EnglishDictionaryBasedIdentifier(tolerated_char_count=15).str2selection(str(hacker.dst))
         hacker.set_selection(sel)
         hacker.dump_selection(outfiles["selection"])
@@ -126,10 +128,8 @@ if __name__ == '__main__':
     dump_selections()
     dump_iroms_and_views()
 
-    #infile = "resources/copyrighted/psp_game/usrdir/pack/dng/d01/d01.bin"
-    #hacker = hack(infile, sources[infile])
-
-
+    # infile = "resources/copyrighted/psp_game/usrdir/pack/dng/d01/d01.bin"
+    # hacker = hack(infile, sources[infile])
 
 # Decoding function:
 # 1. Totality. True iff the domain of definition equals the domain of discourse (the set of all bytestrings).

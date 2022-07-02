@@ -30,8 +30,8 @@ class ROM(object):
         if isinstance(rom_specifier, str):
             path = rom_specifier
             filesize = os.path.getsize(path)
-            file = open(path, 'r')
-            self.memory = SelectiveFixedWidthBytesMmap(2, file)
+            source = open(path, 'r')
+            self.memory = SelectiveFixedWidthBytesMmap(2, source)
         else:
             try:
                 bytestr = bytes(rom_specifier)

@@ -81,14 +81,6 @@ class GMmap(metaclass=ABCMeta):
         return self._length
 
 
-class DeletableGMmap(GMmap, metaclass=ABCMeta):
-    @abstractmethod  # Can this be non-abstract? Hmm...
-    def __delitem__(self, location):  # Final
-        """ Removes the @location'th element, if @location is an integer; or the sub-sequence retrieved when slicing the
-        sequence with @location, if @location is a slice. """
-        raise NotImplementedError()
-
-
 class IndexedGMmap(GMmap, metaclass=ABCMeta):
     """ GMmap where the indices used to access elements in the sequence are either integers or slices. """
 

@@ -18,22 +18,23 @@ class LeetFinder(Finder):
         )
 
 
-def test_finder_rot0():
-    finder = RotatingMonobyteFinder(LeetFinder())
+@pytest.fixture
+def finder():
+    return RotatingMonobyteFinder(LeetFinder())
+
+
+def test_finder_rot0(finder):
     finder.find(b"hoy1337doy")
 
 
-def test_finder_rot1():
-    finder = RotatingMonobyteFinder(LeetFinder())
+def test_finder_rot1(finder):
     finder.find(b"ipz2448epz")
 
 
-def test_finder_rot255():
-    finder = RotatingMonobyteFinder(LeetFinder())
+def test_finder_rot255(finder):
     finder.find(b"gnx0226cnx")
 
 
-def test_finder_no_match():
-    finder = RotatingMonobyteFinder(LeetFinder())
+def test_finder_no_match(finder):
     with pytest.raises(SemanticsNotFoundException):
         finder.find(b"hoy1338doy")

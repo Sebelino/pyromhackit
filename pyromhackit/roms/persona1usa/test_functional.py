@@ -17,6 +17,7 @@ tensi_path, = [key for key in sources if '/TENSI.BIN' in key]
 
 
 @pytest.mark.skipif(not os.path.exists(os.path.join(package_dir, tensi_path)), reason="File not found")
+@pytest.mark.slow
 class TestDumpAndFind:
     def setup_class(self):
         self.created_files = [os.path.join(package_dir, "tensi.txt")]
@@ -53,6 +54,7 @@ class TestDumpAndFind:
 
 
 @pytest.mark.skipif(not os.path.exists(os.path.join(package_dir, tensi_path)), reason="File not found")
+@pytest.mark.slow
 class TestCoverup:
     def setup(self):
         self.created_files = [os.path.join(package_dir, "tensi.txt")]

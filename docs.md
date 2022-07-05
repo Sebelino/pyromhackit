@@ -21,6 +21,37 @@ Loosely speaking, the ROM's script is the part of the ROM that we could be inter
 The part of a ROM that is not the ROM's script.
 This includes stuff like assembly code, image data, etc.
 
+## Topology
+A ROM topology is a function that
+takes a bytestring and outputs a tree
+in which each leaf is bytestring
+and each non-leaf is a function which takes
+its children as input.
+The evaluation of the tree's root node
+is equal to the supplied bytestring.
+
+For example, consider an ISO file containing
+three files: TENSI.BIN, GAKI.BIN, WORM.BIN.
+Each of the BIN files contains
+text stored with two bytes per character.
+A suitable topology is one which takes the
+bytestring as input and outputs a tree with
+the following properties:
+* The root node of the tree is a function
+which extracts the ISO.
+* Each of its three child
+nodes is a concatenation function.
+* Each of the three children has child nodes
+which are all leaves.
+* Each leaf consist of a bytestring of length 2.
+
+## Codec
+A bijective dictionary mapping a character
+to a bytestring.
+
+## Semantics
+A ROM semantics is a _topology_ paired with a _codec_.
+
 ## IROMs
 
 An IROM (Isomorphism of a ROM) is an alternative way to represent a ROM, intended to be more

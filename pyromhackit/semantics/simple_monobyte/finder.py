@@ -19,7 +19,7 @@ class SimpleMonobyteFinder(Finder):
         return count
 
     def find(self, bs: bytes) -> Semantics:
-        codec = {bytes([b]): bytes([b]).decode() for b in bs}
+        codec = {bytes([b]): chr(b) for b in bs}
         topology = SimpleTopology(1)
         dictionary = EnglishDictionary()
         matches = dict()

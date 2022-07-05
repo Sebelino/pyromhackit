@@ -47,3 +47,21 @@ def test_finder_no_match(finder):
 def test_finder_multiple_matches(finder):
     result = finder.find(b"1337 and 2448")
     assert len(result.semantics_set) == 2
+
+
+def test_finder_multiple_matches_check_codecs(finder):
+    bytestring = b"1337hoy2448"
+    result = finder.find(bytestring)
+
+    s1 = result.semantics_set[0]
+    tree1 = s1.topology.structure(bytestring)
+    string1 = "".join([s1.codec[bs] for bs in tree1])
+
+    s2 = result.semantics_set[1]
+    tree2 = s2.topology.structure(bytestring)
+    string2 = "".join([s2.codec[bs] for bs in tree2])
+
+    assert {string1, string2} == {
+        "1337hoy2448",
+        "0226gnx1337",
+    }

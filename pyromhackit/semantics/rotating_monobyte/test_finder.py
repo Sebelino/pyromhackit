@@ -3,19 +3,21 @@ import pytest
 from .finder import RotatingMonobyteFinder
 from ..exception import SemanticsNotFoundException
 from ..finder import Finder
+from ..search_result import SearchResult
 from ..semantics import Semantics
 from ...topology.simple_topology import SimpleTopology
 
 
 class LeetFinder(Finder):
-    def find(self, bs: bytes) -> Semantics:
+    def find(self, bs: bytes) -> SearchResult:
         if b"1337" not in bs.lower():
             raise SemanticsNotFoundException
         codec = {bytes([b]): bytes([b]).decode() for b in bs}
-        return Semantics(
+        semantics = Semantics(
             topology=SimpleTopology(1),
             codec=codec,
         )
+        return SearchResult((semantics,))
 
 
 @pytest.fixture

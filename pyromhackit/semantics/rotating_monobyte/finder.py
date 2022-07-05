@@ -1,21 +1,23 @@
 from ..exception import SemanticsNotFoundException
 from ..finder import Finder
-from ..semantics import Semantics
+from ..search_result import SearchResult
 
 
 class RotatingMonobyteFinder(Finder):
     def __init__(self, finder: Finder):
         self._finder = finder
 
-    def find(self, bs: bytes) -> Semantics:
+    def find(self, bs: bytes) -> SearchResult:
         matches = dict()
         for offset in range(256):
             offset_bs = bytes([(b + offset) % 256 for b in bs])
             try:
-                semantics = self._finder.find(offset_bs)
+                result = self._finder.find(offset_bs)
+                semantics, = result.semantics_set
                 matches[offset] = semantics
             except SemanticsNotFoundException:
                 continue
         if len(matches) != 1:
             raise SemanticsNotFoundException
-        return next(iter(matches.values()))
+        semantics = next(iter(matches.values()))
+        return SearchResult((semantics,))

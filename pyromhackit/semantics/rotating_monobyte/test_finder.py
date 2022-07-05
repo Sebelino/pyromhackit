@@ -38,3 +38,8 @@ def test_finder_rot255(finder):
 def test_finder_no_match(finder):
     with pytest.raises(SemanticsNotFoundException):
         finder.find(b"hoy1338doy")
+
+
+def test_finder_multiple_matches(finder):
+    with pytest.raises(SemanticsNotFoundException):
+        finder.find(b"1337 and 2448")

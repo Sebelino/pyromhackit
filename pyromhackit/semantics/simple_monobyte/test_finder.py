@@ -1,6 +1,4 @@
-import pytest
-
-from .finder import SimpleMonobyteFinder, SemanticsNotFoundException
+from .finder import SimpleMonobyteFinder
 from ..semantics import Semantics
 
 
@@ -47,5 +45,5 @@ def test_finder_world():
 def test_finder_finds_nothing():
     finder = SimpleMonobyteFinder()
     bytestring = b".%$~,&"
-    with pytest.raises(SemanticsNotFoundException):
-        finder.find(bytestring)
+    result = finder.find(bytestring)
+    assert len(result.semantics_set) == 0

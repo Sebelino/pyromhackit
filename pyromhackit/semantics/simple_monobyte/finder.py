@@ -1,5 +1,4 @@
 from ..english_dictionary import EnglishDictionary
-from ..exception import SemanticsNotFoundException
 from ..finder import Finder
 from ..search_result import SearchResult
 from pyromhackit.topology.simple_topology import SimpleTopology
@@ -28,6 +27,6 @@ class SimpleMonobyteFinder(Finder):
             matches[word] = self.count_matches(word, bs.lower())
         matches = {w: c for w, c in matches.items() if c >= 1}
         if len(matches) == 0:
-            raise SemanticsNotFoundException()
+            return SearchResult(tuple())
         semantics = Semantics(topology=topology, codec=codec)
         return SearchResult((semantics,))

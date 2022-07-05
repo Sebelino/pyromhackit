@@ -131,3 +131,20 @@ portions of the ROM.
 
 6. Repeat step 4-5 until you are happy with the string representation.
 7. Save it to a file.
+
+
+# Example: Super Mario Bros. NES ROM
+
+Verify the checksum:
+```bash
+$ sha256sum pyromhackit/roms/mario/copyrighted/mario.nes
+ec299b990e8bfee8ba46e3f61d63b2e1ae5b8a2e431de84e2e4bbd692dc53586  pyromhackit/roms/mario/copyrighted/mario.nes
+```
+
+Create a ROM instance:
+```python
+from pyromhackit.rom import ROM
+rom = ROM("pyromhackit/roms/mario/copyrighted/mario.nes")
+from pyromhackit.hacker import Hacker
+hacker = Hacker(rom)
+```

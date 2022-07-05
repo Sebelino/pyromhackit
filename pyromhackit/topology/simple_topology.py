@@ -1,4 +1,4 @@
-from pyromhackit.topology.topology import Topology
+from .topology import Topology
 
 
 class SimpleTopology(Topology):

@@ -1,6 +1,6 @@
-from .english_dictionary import EnglishDictionary
-from .exception import SemanticsNotFoundException
-from .semantics import Semantics
+from ..english_dictionary import EnglishDictionary
+from ..exception import SemanticsNotFoundException
+from ..semantics import Semantics
 from pyromhackit.topology.simple_topology import SimpleTopology
 
 

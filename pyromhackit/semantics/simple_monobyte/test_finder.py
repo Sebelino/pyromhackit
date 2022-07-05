@@ -1,7 +1,7 @@
 import pytest
 
 from .finder import SimpleMonobyteFinder, SemanticsNotFoundException
-from .semantics import Semantics
+from ..semantics import Semantics
 
 
 def test_finder_hello():

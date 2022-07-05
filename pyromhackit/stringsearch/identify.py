@@ -32,7 +32,7 @@ class TextIdentifier(metaclass=ABCMeta):
 
 
 class DictionaryBasedTextIdentifier(TextIdentifier, metaclass=ABCMeta):
-    """ ITextIdentifier based on finding text using a set of strings ("words"). """
+    """ TextIdentifier based on finding text using a set of strings ("words"). """
 
     @abstractmethod
     def wordlist(self) -> frozenset:

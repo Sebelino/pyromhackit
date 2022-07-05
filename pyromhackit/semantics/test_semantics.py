@@ -1,4 +1,6 @@
-from .finder import SimpleMonobyteFinder
+import pytest
+
+from .finder import SimpleMonobyteFinder, SemanticsNotFoundException
 from .semantics import Semantics
 
 
@@ -37,3 +39,10 @@ def test_finder_world():
     assert b"".join(byteslist) == bytestring
     stringlist = [returned.codec[bs] for bs in byteslist]
     assert stringlist == ["&", "&", "W", "o", "r", "l", "d"]
+
+
+def test_finder_finds_nothing():
+    finder = SimpleMonobyteFinder()
+    bytestring = b".%$~,&"
+    with pytest.raises(SemanticsNotFoundException):
+        finder.find(bytestring)

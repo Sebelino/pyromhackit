@@ -11,7 +11,7 @@ class LeetFinder(Finder):
     def find(self, bs: bytes) -> SearchResult:
         if b"1337" not in bs.lower():
             return SearchResult(tuple())
-        codec = {bytes([b]): bytes([b]).decode() for b in bs}
+        codec = {bytes([b]): chr(b) for b in bs}
         semantics = Semantics(
             topology=SimpleTopology(1),
             codec=codec,

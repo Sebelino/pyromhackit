@@ -5,9 +5,7 @@ from ..semantics import Semantics
 def test_finder_hello():
     finder = SimpleMonobyteFinder()
     bytestring = b"&&Hello$$$"
-    search_result = finder.find(bytestring)
-    assert len(search_result.semantics_set) == 1
-    semantics, = search_result.semantics_set
+    semantics = finder.find(bytestring)
     assert semantics.codec.keys() == {b"&", b"$", b"H", b"e", b"l", b"o"}
     assert {
         (b"H", "H"),
@@ -24,9 +22,7 @@ def test_finder_hello():
 def test_finder_world():
     finder = SimpleMonobyteFinder()
     bytestring = b"&&World"
-    result = finder.find(bytestring)
-    assert len(result.semantics_set) == 1
-    semantics, = result.semantics_set
+    semantics = finder.find(bytestring)
     assert isinstance(semantics, Semantics)
     assert semantics.codec.keys() == {b"&", b"W", b"o", b"r", b"l", b"d"}
     assert {
@@ -45,5 +41,5 @@ def test_finder_world():
 def test_finder_finds_nothing():
     finder = SimpleMonobyteFinder()
     bytestring = b".%$~,&"
-    result = finder.find(bytestring)
-    assert len(result.semantics_set) == 0
+    semantics = finder.find(bytestring)
+    assert semantics is None

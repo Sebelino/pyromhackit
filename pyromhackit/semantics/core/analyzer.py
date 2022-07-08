@@ -1,5 +1,7 @@
 from typing import Dict, Optional
 
+from pyromhackit.semantics.core.persist_to_file import persist_to_file
+
 
 class Analyzer:
 
@@ -18,15 +20,20 @@ class Analyzer:
             index += len(word)
         return count
 
-    def word_frequency(self, bs: bytes) -> Dict[bytes, int]:
+    @staticmethod
+    @persist_to_file(path="/tmp/word_frequency.json")
+    def word_frequency_static(bs: bytes, dictionary, count_matches_func):
         matches = dict()
         bs_lowercased = bs.lower()
-        for word in self._dictionary.iterbytestrings():
-            count = self.count_matches(word, bs_lowercased)
+        for word in dictionary.iterbytestrings():
+            count = count_matches_func(word, bs_lowercased)
             if count == 0:
                 continue
             matches[word] = count
         return matches
+
+    def word_frequency(self, bs: bytes) -> Dict[bytes, int]:
+        return self.word_frequency_static(bs, self._dictionary, self.count_matches)
 
     def find(self, bs: bytes) -> Optional[Dict[bytes, str]]:
         codec = {bytes([b]): chr(b) for b in bs}

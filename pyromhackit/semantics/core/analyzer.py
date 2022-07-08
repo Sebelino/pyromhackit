@@ -20,8 +20,9 @@ class Analyzer:
 
     def word_frequency(self, bs: bytes) -> Dict[bytes, int]:
         matches = dict()
+        bs_lowercased = bs.lower()
         for word in self._dictionary.iterbytestrings():
-            count = self.count_matches(word, bs.lower())
+            count = self.count_matches(word, bs_lowercased)
             if count == 0:
                 continue
             matches[word] = count

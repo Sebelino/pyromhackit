@@ -29,24 +29,3 @@ def test_word_frequency(analyzer):
     assert freqs == {
         b"1337": 2,
     }
-
-
-def test_find_no_match(analyzer):
-    bytestring = b"2337hoy2337"
-    codec = analyzer.find(bytestring)
-
-    assert codec is None
-
-
-def test_find_match(analyzer):
-    bytestring = b"1337hoy1337"
-    codec = analyzer.find(bytestring)
-
-    assert codec == {
-        b"1": "1",
-        b"3": "3",
-        b"7": "7",
-        b"h": "h",
-        b"o": "o",
-        b"y": "y",
-    }

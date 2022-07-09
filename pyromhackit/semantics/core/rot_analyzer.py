@@ -29,7 +29,7 @@ class RotAnalyzer:
 
     def __init__(self, analyzer: Analyzer):
         self._analyzer = analyzer
-        self.path = "/tmp/rothoy.json"
+        self.path = "/tmp/pyromhackit_all_word_frequencies.json"
 
     @classmethod
     def offset_codec(cls, codec: Dict[bytes, str], offset: int):

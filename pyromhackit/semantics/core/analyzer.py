@@ -27,7 +27,7 @@ class Analyzer:
 
     def __init__(self, dictionary):
         self._dictionary = dictionary
-        self.path = "/tmp/hoy.json"
+        self.path = "/tmp/pyromhackit_word_frequency.json"
 
     @staticmethod
     def count_matches(word: bytes, bytestring: bytes) -> int:

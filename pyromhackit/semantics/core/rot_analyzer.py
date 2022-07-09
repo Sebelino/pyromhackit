@@ -49,17 +49,3 @@ class RotAnalyzer:
                 continue
             freqs[offset] = freq
         return freqs
-
-    def find_rot(self, bs) -> Optional[Dict[bytes, str]]:
-        freqs = self.all_word_frequencies(bs)
-        max_offset = None
-        max_score = 0
-        for offset, freq in freqs.items():
-            score = sum(freq.values())
-            if score > max_score:
-                max_score = score
-                max_offset = offset
-        if max_offset is None:
-            return None
-        codec = {bytes([b]): chr((b + max_offset) % 256) for b in bs}
-        return codec

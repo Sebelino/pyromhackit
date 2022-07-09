@@ -15,7 +15,7 @@ class LeetDictionary:
 
 @pytest.fixture
 def analyzer() -> Analyzer:
-    return Analyzer(LeetDictionary())
+    return Analyzer(LeetDictionary(), path="/tmp/pyromhackit_word_frequency.test.json")
 
 
 def test_count_matches(analyzer):

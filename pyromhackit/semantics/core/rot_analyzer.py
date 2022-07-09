@@ -1,6 +1,6 @@
 import ast
 import json
-from typing import Dict, Optional
+from typing import Dict
 
 from .analyzer import Analyzer
 

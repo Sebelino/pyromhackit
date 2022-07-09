@@ -4,6 +4,8 @@ import pytest
 
 from .analyzer import Analyzer
 
+CACHE_PATH = "/tmp/pyromhackit_word_frequency.test.json"
+
 
 class LeetDictionary:
     def __init__(self):
@@ -15,7 +17,7 @@ class LeetDictionary:
 
 @pytest.fixture
 def analyzer() -> Analyzer:
-    return Analyzer(LeetDictionary(), path="/tmp/pyromhackit_word_frequency.test.json")
+    return Analyzer(LeetDictionary(), cache_path=CACHE_PATH)
 
 
 def test_count_matches(analyzer):

@@ -39,10 +39,11 @@ def persist_to_file(original_func):
 
 
 class Analyzer:
+    DEFAULT_CACHE_PATH = "/tmp/pyromhackit_word_frequency.json"
 
-    def __init__(self, dictionary, path="/tmp/pyromhackit_word_frequency.json"):
+    def __init__(self, dictionary, cache_path=DEFAULT_CACHE_PATH):
         self._dictionary = dictionary
-        self.path = path
+        self.path = cache_path
         self._inmemory_cache = None
 
     @staticmethod

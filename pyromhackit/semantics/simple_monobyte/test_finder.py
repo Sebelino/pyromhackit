@@ -1,9 +1,16 @@
+import pytest
+
 from .finder import SimpleMonobyteFinder
+from ..core.test_analyzer import CACHE_PATH
 from ..semantics import Semantics
 
 
-def test_finder_hello():
-    finder = SimpleMonobyteFinder()
+@pytest.fixture
+def finder():
+    return SimpleMonobyteFinder(cache_path=CACHE_PATH)
+
+
+def test_finder_hello(finder):
     bytestring = b"&&Hello$$$"
     semantics = finder.find(bytestring)
     assert semantics.codec.keys() == {b"&", b"$", b"H", b"e", b"l", b"o"}
@@ -19,8 +26,7 @@ def test_finder_hello():
     assert stringlist == ["&", "&", "H", "e", "l", "l", "o", "$", "$", "$"]
 
 
-def test_finder_world():
-    finder = SimpleMonobyteFinder()
+def test_finder_world(finder):
     bytestring = b"&&World"
     semantics = finder.find(bytestring)
     assert isinstance(semantics, Semantics)
@@ -38,8 +44,7 @@ def test_finder_world():
     assert stringlist == ["&", "&", "W", "o", "r", "l", "d"]
 
 
-def test_finder_finds_nothing():
-    finder = SimpleMonobyteFinder()
+def test_finder_finds_nothing(finder):
     bytestring = b".%$~,&"
     semantics = finder.find(bytestring)
     assert semantics is None

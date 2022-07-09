@@ -8,8 +8,8 @@ from ..semantics import Semantics
 
 
 class SimpleMonobyteFinder(Finder):
-    def __init__(self):
-        self._analyzer = Analyzer(EnglishDictionary())
+    def __init__(self, cache_path: str):
+        self._analyzer = Analyzer(EnglishDictionary(), cache_path=cache_path)
 
     def _find_codec(self, bs: bytes) -> Optional[Dict[bytes, str]]:
         codec = {bytes([b]): chr(b) for b in bs}

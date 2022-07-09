@@ -1,23 +1,25 @@
+import ast
 import json
 from typing import Dict, Optional
 
 
-def persist_to_file(path: str):
+def persist_to_file():
     def decorator(original_func):
-        try:
-            with open(path, 'r') as f:
-                cache = json.load(f)
-        except (IOError, ValueError) as e:
-            cache = dict()
+        def new_func(self: 'Analyzer', bs: bytes):
+            try:
+                with open(self.path, 'r') as f:
+                    cache = json.load(f)
+            except (IOError, ValueError):
+                cache = dict()
 
-        def new_func(cache_param: bytes, *args):
-            cache_param_str = repr(cache_param)
-            if cache_param_str not in cache:
-                dct = original_func(cache_param, *args)
-                cache[cache_param_str] = {repr(word): wordcount for word, wordcount in dct.items()}
-                with open(path, "w") as f:
+            bs_repr = repr(bs)
+            if bs_repr not in cache:
+                dct = original_func(self, bs)
+                cache[bs_repr] = {repr(word): wordcount for word, wordcount in dct.items()}
+                with open(self.path, "w") as f:
                     json.dump(cache, f)
-            return cache[cache_param_str]
+                return dct
+            return {ast.literal_eval(string_bs): value for string_bs, value in cache[bs_repr].items()}
 
         return new_func
 
@@ -28,6 +30,7 @@ class Analyzer:
 
     def __init__(self, dictionary):
         self._dictionary = dictionary
+        self.path = "/tmp/hoy.json"
 
     @staticmethod
     def count_matches(word: bytes, bytestring: bytes) -> int:
@@ -41,20 +44,16 @@ class Analyzer:
             index += len(word)
         return count
 
-    @staticmethod
-    @persist_to_file(path="/tmp/word_frequency.json")
-    def word_frequency_static(bs: bytes, dictionary, count_matches_func):
+    @persist_to_file()
+    def word_frequency(self, bs: bytes) -> Dict[bytes, int]:
         matches = dict()
         bs_lowercased = bs.lower()
-        for word in dictionary.iterbytestrings():
-            count = count_matches_func(word, bs_lowercased)
+        for word in self._dictionary.iterbytestrings():
+            count = self.count_matches(word, bs_lowercased)
             if count == 0:
                 continue
             matches[word] = count
         return matches
-
-    def word_frequency(self, bs: bytes) -> Dict[bytes, int]:
-        return self.word_frequency_static(bs, self._dictionary, self.count_matches)
 
     def find(self, bs: bytes) -> Optional[Dict[bytes, str]]:
         codec = {bytes([b]): chr(b) for b in bs}

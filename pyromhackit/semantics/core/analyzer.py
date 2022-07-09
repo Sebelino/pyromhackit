@@ -3,27 +3,24 @@ import json
 from typing import Dict, Optional
 
 
-def persist_to_file():
-    def decorator(original_func):
-        def new_func(self: 'Analyzer', bs: bytes):
-            try:
-                with open(self.path, 'r') as f:
-                    cache = json.load(f)
-            except (IOError, ValueError):
-                cache = dict()
+def persist_to_file(original_func):
+    def new_func(self: 'Analyzer', bs: bytes):
+        try:
+            with open(self.path, 'r') as f:
+                cache = json.load(f)
+        except (IOError, ValueError):
+            cache = dict()
 
-            bs_repr = repr(bs)
-            if bs_repr not in cache:
-                dct = original_func(self, bs)
-                cache[bs_repr] = {repr(word): wordcount for word, wordcount in dct.items()}
-                with open(self.path, "w") as f:
-                    json.dump(cache, f)
-                return dct
-            return {ast.literal_eval(string_bs): value for string_bs, value in cache[bs_repr].items()}
+        bs_repr = repr(bs)
+        if bs_repr not in cache:
+            dct = original_func(self, bs)
+            cache[bs_repr] = {repr(word): wordcount for word, wordcount in dct.items()}
+            with open(self.path, "w") as f:
+                json.dump(cache, f)
+            return dct
+        return {ast.literal_eval(string_bs): value for string_bs, value in cache[bs_repr].items()}
 
-        return new_func
-
-    return decorator
+    return new_func
 
 
 class Analyzer:
@@ -44,7 +41,7 @@ class Analyzer:
             index += len(word)
         return count
 
-    @persist_to_file()
+    @persist_to_file
     def word_frequency(self, bs: bytes) -> Dict[bytes, int]:
         matches = dict()
         bs_lowercased = bs.lower()

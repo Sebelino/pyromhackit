@@ -5,27 +5,24 @@ from typing import Dict, Optional
 from .analyzer import Analyzer
 
 
-def persist_to_file():
-    def decorator(original_func):
-        def new_func(self, bs: bytes):
-            try:
-                with open(self.path, 'r') as f:
-                    cache = json.load(f)
-            except (IOError, ValueError):
-                cache = dict()
-            bs_repr = repr(bs)
-            if bs_repr not in cache:
-                dct = original_func(self, bs)
-                cache[bs_repr] = {offset: {repr(w): c for w, c in d.items()} for offset, d in dct.items()}
-                with open(self.path, "w") as f:
-                    json.dump(cache, f)  # Note, offset is stored as a string in JSON
-                return dct
-            return {int(offset): {ast.literal_eval(bs): wc for bs, wc in wordcount.items()} for offset, wordcount in
-                    cache[bs_repr].items()}
+def persist_to_file(original_func):
+    def new_func(self, bs: bytes):
+        try:
+            with open(self.path, 'r') as f:
+                cache = json.load(f)
+        except (IOError, ValueError):
+            cache = dict()
+        bs_repr = repr(bs)
+        if bs_repr not in cache:
+            dct = original_func(self, bs)
+            cache[bs_repr] = {offset: {repr(w): c for w, c in d.items()} for offset, d in dct.items()}
+            with open(self.path, "w") as f:
+                json.dump(cache, f)  # Note, offset is stored as a string in JSON
+            return dct
+        return {int(offset): {ast.literal_eval(bs): wc for bs, wc in wordcount.items()} for offset, wordcount in
+                cache[bs_repr].items()}
 
-        return new_func
-
-    return decorator
+    return new_func
 
 
 class RotAnalyzer:
@@ -42,7 +39,7 @@ class RotAnalyzer:
             d[bytes([(b - offset) % 256])] = chr(b)
         return d
 
-    @persist_to_file()
+    @persist_to_file
     def all_word_frequencies(self, bs: bytes) -> Dict[int, Dict[bytes, int]]:
         freqs = dict()
         for offset in range(256):

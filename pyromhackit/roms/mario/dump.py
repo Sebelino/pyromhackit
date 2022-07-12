@@ -5,8 +5,9 @@ from pyromhackit.rom import ROM
 from pyromhackit.semantics.rotating_monobyte.finder import RotatingMonobyteFinder
 from pyromhackit.stringsearch.identify import EnglishDictionaryBasedIdentifier
 
-if __name__ == '__main__':
-    rom = ROM("copyrighted/mario.nes")
+
+def dump_rom(path: str):
+    rom = ROM(path)
     bs = bytes(rom)
     finder = RotatingMonobyteFinder()
     semantics = finder.find(bs)
@@ -17,3 +18,7 @@ if __name__ == '__main__':
     print(selection.select(irom_string))
     highlight_each_selection(irom_string, selection, 10)
     plot_selection(selection)
+
+
+if __name__ == '__main__':
+    dump_rom("copyrighted/mario.nes")

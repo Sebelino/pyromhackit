@@ -7,7 +7,7 @@ from pyromhackit.gslice.selection import Selection
 
 
 def selection2bitarray(selection: Selection) -> List[float]:
-    excluded_number = 0.5
+    excluded_number = 0.0
     included_number = 1.0
     bit_array = []
     last_end = 0
@@ -23,7 +23,7 @@ def selection2bitarray(selection: Selection) -> List[float]:
 
 
 def bitarray2bitmatrix(bit_array: List[float]) -> List[List[float]]:
-    absent_number = 0.0
+    absent_number = 0.5
     width = 2 ** math.ceil(math.log2(math.sqrt(len(bit_array))))
     bit_matrix = []
     for i, n in enumerate(bit_array):

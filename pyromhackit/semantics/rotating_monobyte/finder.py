@@ -1,4 +1,4 @@
-from typing import Optional, Dict
+from typing import Optional, Dict, Tuple
 
 from ..core.analyzer import Analyzer
 from ..core.rot_analyzer import RotAnalyzer
@@ -13,12 +13,40 @@ class RotatingMonobyteFinder(Finder):
         self._analyzer = RotAnalyzer(Analyzer(dictionary))
 
     @staticmethod
-    def _freq2score(freq: Dict[bytes, int]) -> float:
-        return sum(freq.values())
+    def _freq2score_tuple(freq: Dict[bytes, int]) -> Tuple[float]:
+        """ @return: A tuple (i1, i2, i3, ...) where in is the number of found words of length n. """
+        max_word_length = max(len(word) for word in freq.keys())
+        score_list = [0.0] * max_word_length
+        scores = dict()
+        for word, wordcount in freq.items():
+            if len(word) not in scores:
+                scores[len(word)] = 0
+            scores[len(word)] += wordcount
+        for word_length, count in scores.items():
+            score_list[word_length - 1] = count
+        return tuple(score_list)
+
+    @staticmethod
+    def _normalize_score_tuples(score_dict: Dict[int, Tuple[float]]) -> Dict[int, Tuple[float]]:
+        if not score_dict:
+            return score_dict
+        max_tuple_length = max(len(tpl) for tpl in score_dict.values())
+        for cutoff_index in range(max_tuple_length):
+            vertical_scores = {tpl[cutoff_index] if cutoff_index < len(tpl) else 0.0 for tpl in score_dict.values()}
+            if vertical_scores == {0.0}:
+                continue
+            return {offset: tpl[cutoff_index:] for offset, tpl in score_dict.items()}
+        return score_dict
+
+    @staticmethod
+    def _scoretuple2score(score_tuple: Tuple[float]) -> float:
+        return sum(score_tuple)
 
     def _find_rot(self, bs) -> Optional[Dict[bytes, str]]:
         freqs = self._analyzer.all_word_frequencies(bs)
-        scores = {offset: self._freq2score(freq) for offset, freq in freqs.items()}
+        scores = {offset: self._freq2score_tuple(freq) for offset, freq in freqs.items()}
+        scores = self._normalize_score_tuples(scores)
+        scores = {offset: self._scoretuple2score(score_tuple) for offset, score_tuple in scores.items()}
         if not scores:
             return None
         max_score = max(scores.values())

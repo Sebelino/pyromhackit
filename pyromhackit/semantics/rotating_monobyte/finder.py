@@ -12,12 +12,16 @@ class RotatingMonobyteFinder(Finder):
     def __init__(self, dictionary=EnglishDictionary()):
         self._analyzer = RotAnalyzer(Analyzer(dictionary))
 
+    @staticmethod
+    def _freq2score(freq: Dict[bytes, int]) -> float:
+        return sum(freq.values())
+
     def _find_rot(self, bs) -> Optional[Dict[bytes, str]]:
         freqs = self._analyzer.all_word_frequencies(bs)
         max_offset = None
         max_score = 0
         for offset, freq in freqs.items():
-            score = sum(freq.values())
+            score = self._freq2score(freq)
             if score > max_score:
                 max_score = score
                 max_offset = offset

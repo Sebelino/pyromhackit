@@ -11,9 +11,8 @@ if __name__ == '__main__':
     finder = RotatingMonobyteFinder()
     semantics = finder.find(bs)
     irom_string = ''.join(semantics.codec[b] for b in semantics.topology.structure(bs))
-    tolerated_char_count = 0
-    identifier = EnglishDictionaryBasedIdentifier(tolerated_char_count=tolerated_char_count)
+    identifier = EnglishDictionaryBasedIdentifier()
     selection = identifier.str2selection(irom_string)
     print("Script:")
     print(selection.select(irom_string))
-    highlight_each_selection(irom_string, selection, tolerated_char_count)
+    highlight_each_selection(irom_string, selection, 10)

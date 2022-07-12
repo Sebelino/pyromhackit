@@ -141,10 +141,8 @@ $ sha256sum pyromhackit/roms/mario/copyrighted/mario.nes
 ec299b990e8bfee8ba46e3f61d63b2e1ae5b8a2e431de84e2e4bbd692dc53586  pyromhackit/roms/mario/copyrighted/mario.nes
 ```
 
-Create a ROM instance:
-```python
-from pyromhackit.rom import ROM
-rom = ROM("pyromhackit/roms/mario/copyrighted/mario.nes")
-from pyromhackit.hacker import Hacker
-hacker = Hacker(rom)
+Run the sample dumping script:
+```bash
+$ cd pyromhackit/roms/mario
+$ PYTHONPATH=../../.. python3 dump.py
 ```

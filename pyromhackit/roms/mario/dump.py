@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-
+from pyromhackit.gslice.plot import plot_selection
 from pyromhackit.gslice.view import highlight_each_selection
 from pyromhackit.rom import ROM
 from pyromhackit.semantics.rotating_monobyte.finder import RotatingMonobyteFinder
@@ -16,3 +16,4 @@ if __name__ == '__main__':
     print("Script:")
     print(selection.select(irom_string))
     highlight_each_selection(irom_string, selection, 10)
+    plot_selection(selection)

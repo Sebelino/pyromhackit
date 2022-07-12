@@ -52,6 +52,9 @@ to a bytestring.
 ## Semantics
 A ROM semantics is a _topology_ paired with a _codec_.
 
+## Finder
+An object which, given a bytestring, provides a _semantics_ for the bytestring, if one can be found.
+
 ## IROMs
 
 An IROM (Isomorphism of a ROM) is an alternative way to represent a ROM, intended to be more

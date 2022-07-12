@@ -44,9 +44,9 @@ class RotatingMonobyteFinder(Finder):
 
     def _find_rot(self, bs) -> Optional[Dict[bytes, str]]:
         freqs = self._analyzer.all_word_frequencies(bs)
-        scores = {offset: self._freq2score_tuple(freq) for offset, freq in freqs.items()}
-        scores = self._normalize_score_tuples(scores)
-        scores = {offset: self._scoretuple2score(score_tuple) for offset, score_tuple in scores.items()}
+        tscores = {offset: self._freq2score_tuple(freq) for offset, freq in freqs.items()}
+        tscores = self._normalize_score_tuples(tscores)
+        scores = {offset: self._scoretuple2score(score_tuple) for offset, score_tuple in tscores.items()}
         if not scores:
             return None
         max_score = max(scores.values())

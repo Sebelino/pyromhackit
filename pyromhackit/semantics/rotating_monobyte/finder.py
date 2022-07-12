@@ -18,16 +18,14 @@ class RotatingMonobyteFinder(Finder):
 
     def _find_rot(self, bs) -> Optional[Dict[bytes, str]]:
         freqs = self._analyzer.all_word_frequencies(bs)
-        max_offset = None
-        max_score = 0
-        for offset, freq in freqs.items():
-            score = self._freq2score(freq)
-            if score > max_score:
-                max_score = score
-                max_offset = offset
-        if max_offset is None:
+        scores = {offset: self._freq2score(freq) for offset, freq in freqs.items()}
+        if not scores:
             return None
-        codec = {bytes([b]): chr((b + max_offset) % 256) for b in bs}
+        max_score = max(scores.values())
+        if max_score <= 0:
+            return None
+        max_score_offset = {o for o, s in scores.items() if s == max_score}.pop()
+        codec = {bytes([b]): chr((b + max_score_offset) % 256) for b in bs}
         return codec
 
     def find(self, bs: bytes) -> Optional[Semantics]:

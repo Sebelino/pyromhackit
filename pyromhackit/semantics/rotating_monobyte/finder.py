@@ -40,7 +40,7 @@ class RotatingMonobyteFinder(Finder):
 
     @staticmethod
     def _scoretuple2score(score_tuple: Tuple[float]) -> float:
-        return sum(score_tuple)
+        return sum(s * 10 ** i for i, s in enumerate(score_tuple))
 
     def _find_rot(self, bs) -> Optional[Dict[bytes, str]]:
         freqs = self._analyzer.all_word_frequencies(bs)
